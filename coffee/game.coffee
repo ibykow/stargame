@@ -1,30 +1,39 @@
-root = exports ? this
-module = module ? {}
-
-module.exports = root.Game = class Game
-  @randomColorString: (range = 0xFFFFFF >> 2, base = range * 3) ->
-    "#" + (Math.floor(Math.random() * range) + base).toString(16)
-
+(module ? {}).exports = class Game
   @isNumeric: (v) ->
-    not isNaN(parseFloat(v)) and isFinite v;
+    not isNaN(parseFloat(v)) and isFinite v
+
+  @randomInt: (min = 0, max = 99) ->
+    return Math.floor(Math.random() * (max - min) + min)
+
+  @padString: (s, n = 2, p = '0') ->
+    return '' unless s and typeof s is 'string'
+    len = n - s.length
+    return s if len <= 0
+    (p for [1..len]).join('') + s
+
+  @randomColorString: (min = 0xff >> 1, max = 0xff) ->
+    '#' + Game.padString(Game.randomInt(min, max).toString 16) +
+      Game.padString(Game.randomInt(min, max).toString 16) +
+      Game.padString(Game.randomInt(min, max).toString 16)
 
   constructor: (@width = 800, @height = 800) ->
     @players = []
     @objects = []
 
   randomPosition: ->
-    [ Math.floor(Math.random() * this.width),
-      Math.floor(Math.random() * this.height) ]
+    [ Game.randomInt(0, @width), Game.randomInt(0, @height)]
 
   serialize: ->
     states = []
     for player in @players
       states.push player.serialize() unless not player
-    { w: @width, h: @height, players: states }
+    { width: @width, height: @height, players: states }
 
   patch: (state) ->
-    @width = state.w ? @width
-    @height = state.h ? @height
+    @width = state.width ? @width
+    @height = state.height ? @height
+
+    return unless state.players
     for playerState in state.players
       index = playerState.id - 1
       player = @players[index]
