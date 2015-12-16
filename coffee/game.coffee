@@ -1,6 +1,7 @@
 root = exports ? this
+module = module ? {}
 
-root.Game = class Game
+module.exports = root.Game = class Game
   @randomColorString: (range = 0xFFFFFF >> 2, base = range * 3) ->
     "#" + (Math.floor(Math.random() * range) + base).toString(16)
 
@@ -19,12 +20,12 @@ root.Game = class Game
     states = []
     for player in @players
       states.push player.serialize() unless not player
-    { w: @width, h: @height, states: states }
+    { w: @width, h: @height, players: states }
 
   patch: (state) ->
     @width = state.w ? @width
     @height = state.h ? @height
-    for playerState in state.p
+    for playerState in state.players
       index = playerState.id - 1
       player = @players[index]
       if player then player.patch(playerState)
@@ -36,8 +37,8 @@ root.Game = class Game
     p.ship = new Ship(p, playerState.ship)
 
   @GameObject: class GameObject
-    constructor: (@game, @position = Game.randomPosition(),
-      @theta = 0, @color = randomColorString()) ->
+    constructor: (@game, @position = @game.randomPosition(),
+      @theta = 0, @color = Game.randomColorString()) ->
 
   @MovableObject: class MovableObject extends Game.GameObject
     constructor: (@game, @position, @theta, @color, @velocity = [0, 0]) ->
@@ -67,6 +68,7 @@ root.Game = class Game
   @Player: class Player
     constructor: (@game, @id, @socket, @name = 'Bob') ->
       return unless @game and @id
+      @ship = new Ship @, {}
       @keys = (false for [1..0xFF])
     serialize: ->
         { id: @id, name: @name, ship: @ship?.serialize() }
@@ -76,12 +78,12 @@ root.Game = class Game
       @ship.patch(state.ship) if state.ship
 
   @Ship: class Ship extends MovableObject
-    constructor: (@player, {@position, @theta, @velocity, @color }) ->
-      return unless @player
+    constructor: (@player, state = {@position, @theta, @velocity, @color }) ->
+      return unless @player and state
       super(@player.game, @position, @theta, @color)
     serialize: ->
-      { position: @position, orientation: @orientation, velocity: @velocity
-        theta: @theata, color: @color }
+      { position: @position, orientation: @orientation, velocity: @velocity,
+      theta: @theta, color: @color }
     patch: (state) ->
       for key of state
         @[key] = state[key]

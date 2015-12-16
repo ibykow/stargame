@@ -1,10 +1,10 @@
 var app = require('express')();
 var http = require('http').Server(app);
 var io = require('socket.io')(http);
-var Game = require('./lib/game').Game;
+var Game = require('./lib/game');
 var g = new Game();
 var port = 3000;
-var logger = require('./logger'),
+var logger = require('./lib/logger'),
     log = logger.info,
     info = logger.info,
     elog = logger.error,
@@ -34,7 +34,7 @@ io.on('connection', function (socket) {
     for (var i = 0; g.players[i]; i++)
         ;
 
-    g.players[i] = new Game.Player(g, socket, i + 1);
+    g.players[i] = new Game.Player(g, i + 1, socket);
 
     info("player", g.players[i].id, "connected");
 
