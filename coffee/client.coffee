@@ -17,33 +17,26 @@ client = null
     @canvas.style.margin = 0
     @canvas.style.left = (Client.INNER_WIDTH_OFFSET >> 1) + 'px'
     @events.window.resize.call @
-    @c = canvas.getContext('2d')
 
     # connect to server
     @socket = io.connect(Client.URI)
 
-    # initialize events
+    # initialize socket events
     @socket.on(event, cb.bind(@)) for event, cb of @events.socket
-    window.addEventListener(event, cb.bind(@)) for event, cb of @events.window
 
   events:
     socket:
       welcome: (data) ->
-        @game = new Game(data.w, data.h, data.fr)
-        @player = new Player(@game, data.id, @socket)
-        @player.name = 'Guest'
-        @socket.emit 'join', @player.name
+        context = @canvas.getContext('2d')
+
+        @game = new ClientGame(data, @canvas, context, data.player.id)
+        @socket.emit 'join', @game.player.name
         @frame.run.bind(@) @game.tick.time
 
-        @game.canvas = @canvas
-        @game.c = @c
-        @game.clear = ->
-          @c.globalAlpha = 1
-          @c.fillStyle = Client.COLORS.BACKGROUND.DEFAULT
-          @c.fillRect 0, 0, @canvas.width, @canvas.height
+        # Listen for window events
+        addListener = window.addEventListener
+        addListener(event, cb.bind(@)) for event, cb of @events.window
 
-        @game.draw = ->
-          @clear()
 
       join: (data) ->
         console.log 'player', data.id + ', ' + data.name, 'has joined'

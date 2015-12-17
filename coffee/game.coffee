@@ -31,13 +31,9 @@ if require?
     player.update() for player in @players
     sprite.update() for sprite in @sprites
 
-  draw: ->
-
   step: (time) ->
     # increment the tick
     @tick.count++
     @tick.dt = time - @tick.time
     @tick.time = time
-
     @update()
-    @draw()

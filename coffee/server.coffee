@@ -23,13 +23,15 @@ module.exports = class Server
         # associate event handler
         socket.on(event, cb.bind(player)) for event, cb of @events.socket
 
-        # send the id back to the client
+        # send the id and game information back to the client
         socket.emit('welcome', {
-          w: @game.width
-          h: @game.height
-          fr: @game.frictionRate
-          tick: @game.tick
-          id: player.id
+          game:
+            width: @game.width
+            height: @game.height
+            frictionRate: @game.frictionRate
+            tick: @game.tick
+          player:
+            id: player.id
         })
 
         log 'Player', player.id, 'has joined'

@@ -1,4 +1,4 @@
-(module ? {}).exports = Util = {
+(module ? {}).exports = Util =
   findEmptySlot: (arr) ->
     return unless arr and Array.isArray arr
     for slot in [0..arr.length]
@@ -20,4 +20,3 @@
     '#' + Util.padString(Util.randomInt(min, max).toString 16) +
       Util.padString(Util.randomInt(min, max).toString 16) +
       Util.padString(Util.randomInt(min, max).toString 16)
-}
