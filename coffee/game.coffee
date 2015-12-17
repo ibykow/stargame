@@ -4,6 +4,8 @@ Util = require './util' if require?
   constructor: (@width = 800, @height = 800) ->
     @players = []
     @sprites = []
+    @frames = []
+    @nextFrameIndex = 0
 
   randomPosition: ->
     [ Util.randomInt(0, @width), Util.randomInt(0, @height)]
