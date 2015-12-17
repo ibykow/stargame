@@ -20,3 +20,19 @@ if require?
       @gear = 0
 
     super()
+
+  draw: ->
+    c = @player.game.c
+
+    c.save()
+    c.fillStyle = @color
+    c.translate @position...
+    c.rotate @position[2]
+    c.globalAlpha = 1
+    c.beginPath()
+    c.moveTo 10, 0
+    c.lineTo -10, 5
+    c.lineTo -10, -5
+    c.closePath()
+    c.fill()
+    c.restore()
