@@ -16,13 +16,22 @@ client = null
     @canvas.style.padding = 0
     @canvas.style.margin = 0
     @canvas.style.left = (Client.INNER_WIDTH_OFFSET >> 1) + 'px'
-    @events.window.resize.call @
 
     # connect to server
     @socket = io.connect(Client.URI)
 
-    # initialize socket events
+    # initialize event listeners
     @socket.on(event, cb.bind(@)) for event, cb of @events.socket
+    window.addEventListener(event, cb.bind(@)) for event, cb of @events.window
+
+    # resize the canvas for the first time
+    @events.window.resize.call @
+
+    @keys = (false for [0..0xFF])
+    @mouse =
+      x: 0
+      y: 0
+      buttons: [false, false, false]
 
   events:
     socket:
@@ -32,11 +41,6 @@ client = null
         @game = new ClientGame(data, @canvas, context, data.player.id)
         @socket.emit 'join', @game.player.name
         @frame.run.bind(@) @game.tick.time
-
-        # Listen for window events
-        addListener = window.addEventListener
-        addListener(event, cb.bind(@)) for event, cb of @events.window
-
 
       join: (data) ->
         console.log 'player', data.id + ', ' + data.name, 'has joined'
@@ -54,24 +58,29 @@ client = null
 
     window:
       keydown: (e) ->
+        @keys[e.keyCode] = true
 
       keyup: (e) ->
+        @keys[e.keyCode] = false
 
       mousemove: (e) ->
+        @mouse.x = e.clientX - canvas.boundingRect.left
+        @mouse.y = e.clientY - canvas.boundingRect.top
 
       mousedown: (e) ->
+        @mouse.buttons[e.button] = true
 
       mouseup: (e) ->
+        @mouse.buttons[e.button] = false
 
       click: (e) ->
 
       resize: (e) ->
         @canvas.width = window.innerWidth - Client.INNER_WIDTH_OFFSET
-
-        @canvas.height = window.innerHeight -
-          Client.INNER_WIDTH_OFFSET
+        @canvas.height = window.innerHeight - Client.INNER_WIDTH_OFFSET
         @canvas.halfWidth = @canvas.width >> 1
         @canvas.halfHeight = @canvas.height >> 1
+        @canvas.boundingRect = @canvas.getBoundingClientRect()
 
   frame:
     run: (timestamp) ->
