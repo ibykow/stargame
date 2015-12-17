@@ -1,8 +1,9 @@
 if require?
+  Util = require './util'
   Player = require './player'
 
 (module ? {}).exports = class Game
-  constructor: (@width = 1025, @height = 1025) ->
+  constructor: (@width = 1025, @height = 1025, @frictionRate = 0.95) ->
     @players = []
     @sprites = []
     @paused = true
@@ -11,12 +12,11 @@ if require?
       time: 0
       dt: 0
 
-  getOpenPlayerSlot: ->
-    for slot in [0..@players.length]
-      return slot if not @players[slot]
+  randomPosition: ->
+    [Util.randomInt(0, @width), Util.randomInt(0, @height), 0]
 
   newPlayer: (socket) ->
-    i = @getOpenPlayerSlot()
+    i = Util.findEmptySlot(@players)
     @players[i] = new Player(@, i + 1, socket)
 
   removePlayer: (p) ->
@@ -39,5 +39,5 @@ if require?
     @tick.dt = time - @tick.time
     @tick.time = time
 
-    @update
-    @draw
+    @update()
+    @draw()

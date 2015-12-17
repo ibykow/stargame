@@ -4,7 +4,7 @@ client = null
 (module ? {}).exports = class Client
   @INNER_WIDTH_OFFSET: 4
   @FRAME_MS: 16
-  @URI: 'http://localhost:3000'
+  @URI: 'http://192.168.0.101:3000'
   @COLORS:
     BACKGROUND:
       DEFAULT: "#444"
@@ -19,9 +19,6 @@ client = null
     @events.window.resize.call @
     @c = canvas.getContext('2d')
 
-    # create a new game
-    @g = new Game()
-
     # connect to server
     @socket = io.connect(Client.URI)
 
@@ -32,11 +29,21 @@ client = null
   events:
     socket:
       welcome: (data) ->
-        @game = new Game(data.w, data.h)
-        @game.tick = data.tick
+        @game = new Game(data.w, data.h, data.fr)
         @player = new Player(@game, data.id, @socket)
         @player.name = 'Guest'
         @socket.emit 'join', @player.name
+        @frame.run.bind(@) @game.tick.time
+
+        @game.canvas = @canvas
+        @game.c = @c
+        @game.clear = ->
+          @c.globalAlpha = 1
+          @c.fillStyle = Client.COLORS.BACKGROUND.DEFAULT
+          @c.fillRect 0, 0, @canvas.width, @canvas.height
+
+        @game.draw = ->
+          @clear()
 
       join: (data) ->
         console.log 'player', data.id + ', ' + data.name, 'has joined'
@@ -73,21 +80,9 @@ client = null
         @canvas.halfWidth = @canvas.width >> 1
         @canvas.halfHeight = @canvas.height >> 1
 
-  clear: ->
-    @c.globalAlpha = 1
-    @c.fillStyle = Client.COLORS.BACKGROUND.DEFAULT
-    @c.fillRect 0, 0, @canvas.width, @canvas.height
-
-  update: ->
-
-  draw: ->
-    @clear()
-
   frame:
     run: (timestamp) ->
-      @update()
-      @draw()
-
+      @game.step timestamp
       @frame.request = window.requestAnimationFrame @frame.run.bind @
 
     stop: ->
@@ -112,9 +107,8 @@ window.onload = ->
     window.requestAnimationFrame = (callback, element) ->
       currTime = +new Date
       timeToCall = Math.max(0, client.FRAME_MS - (currTime - lastTime))
-      id = window.setTimeout((-> callback(currTime + timeToCall)), timeToCall)
       lastTime = currTime + timeToCall
-      id
+      window.setTimeout((-> callback(currTime + timeToCall)), timeToCall)
 
   window.cancelAnimationFrame ?= (id) -> clearTimeout(id)
 )()

@@ -27,6 +27,7 @@ module.exports = class Server
         socket.emit('welcome', {
           w: @game.width
           h: @game.height
+          fr: @game.frictionRate
           tick: @game.tick
           id: player.id
         })

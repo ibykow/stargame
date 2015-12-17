@@ -1,4 +1,9 @@
 (module ? {}).exports = Util = {
+  findEmptySlot: (arr) ->
+    return unless arr and Array.isArray arr
+    for slot in [0..arr.length]
+      return slot if not arr[slot]
+
   isNumeric: (v) ->
     not isNaN(parseFloat(v)) and isFinite v
 
