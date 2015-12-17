@@ -8,7 +8,7 @@ Util = require './util' if require?
     @nextFrameIndex = 0
 
   randomPosition: ->
-    [ Util.randomInt(0, @width), Util.randomInt(0, @height)]
+    [Util.randomInt(0, @width), Util.randomInt(0, @height)]
 
   serialize: ->
     states = []

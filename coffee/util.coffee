@@ -1,4 +1,4 @@
-(module ? {}).exports = Util = {
+(module ? {}).exports = Util =
   isNumeric: (v) ->
     not isNaN(parseFloat(v)) and isFinite v
 
@@ -15,4 +15,3 @@
     '#' + Util.padString(Util.randomInt(min, max).toString 16) +
       Util.padString(Util.randomInt(min, max).toString 16) +
       Util.padString(Util.randomInt(min, max).toString 16)
-}

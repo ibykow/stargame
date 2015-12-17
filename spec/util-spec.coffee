@@ -9,8 +9,6 @@ describe 'Util', ->
         expect(Number.isInteger n).toBe true
         expect(n).toBeLessThan max
         expect(n).not.toBeLessThan min
-    it 'generates a random integer between negative and positive'
-      [min, max] = [-2, 10]
 
   describe '.padString', ->
     it 'pads a string up to a specified length', ->

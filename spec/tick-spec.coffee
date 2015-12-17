@@ -11,7 +11,7 @@ describe 'Tick', ->
   describe '.new', ->
     it 'creates a new first tick', ->
       expect(tick).toBeDefined()
-      expect(tick.count).toEqual 0
+      expect(tick.count).toEqual 1
       expect(tick.time).toEqual 0
       expect(tick.dt).toEqual 0
 
@@ -19,7 +19,7 @@ describe 'Tick', ->
       time = 16
       lastTime = 0
 
-      for i in [1..100]
+      for i in [2..100]
         tick = new Tick(time, tick)
 
         expect(tick).toBeDefined()

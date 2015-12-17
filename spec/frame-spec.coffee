@@ -3,28 +3,19 @@ Game = require '../coffee/game'
 Frame = require '../coffee/frame'
 
 describe 'Frame', ->
-  [g, f] = []
+  [game, frame] = []
+  state = {width: 640, height: 480, players: [], sprites: [] }
 
   beforeEach ->
-    g = new Game()
+    game = new Game(state.width, state.height)
 
   describe '.new', ->
     it 'should create a new first frame', ->
-      f = new Frame g
-      expect(f).toBeDefined()
-      expect(f.tick).toEqual 0
-      expect(f.time).toEqual 0
-      expect(f.dt).toEqual 0
-      expect(f.state).toEqual {}
-      expect(f.input).toEqual []
-
-    it 'should create a new frame with the given attributes', ->
-      state = {width: 10, height: 20, sprites: []}
-      f = new Frame g, 160, 10, [], state
-
-      expect(f).toBeDefined()
-      expect(f.tick).toEqual 10
-      expect(f.time).toEqual 160
-      expect(f.dt).toEqual 0
-      expect(f.state).toEqual state
-      expect(f.input).toEqual []
+      frame = new Frame game
+      expect(frame).toBeDefined()
+      expect(frame.tick).toBeDefined()
+      expect(frame.tick.count).toEqual 1
+      expect(frame.tick.time).toEqual 0
+      expect(frame.tick.dt).toEqual 0
+      expect(frame.state).toEqual state
+      expect(frame.inputs).toEqual []
