@@ -2,7 +2,7 @@ if require?
   Util = require './util'
 
 (module ? {}).exports = class Sprite
-  constructor: (@game, @position, @width = 10, @height = 10, @color) ->
+  constructor: (@game, @width = 10, @height = 10, @position, @color) ->
     return null unless @game
     @position ?= @game.randomPosition()
     @color ?= Util.randomColorString()
@@ -20,6 +20,13 @@ if require?
   update: ->
     @updateVelocity()
     @updatePosition()
+
+  getState: ->
+    { position: @position
+      velocity: @velocity
+      width: @width
+      height: @height
+      color: @color }
 
   draw: ->
     @game.c.fillStyle = @color

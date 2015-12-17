@@ -7,7 +7,7 @@ client = null
   @URI: 'http://192.168.0.101:3000'
   @COLORS:
     BACKGROUND:
-      DEFAULT: "#444"
+      DEFAULT: "#000"
 
   constructor: (@canvas) ->
     return unless @canvas
