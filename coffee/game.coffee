@@ -1,86 +1,43 @@
-Util = require './util' if require?
+if require?
+  Player = require './player'
 
 (module ? {}).exports = class Game
-  constructor: (@width = 800, @height = 800) ->
+  constructor: (@width = 1025, @height = 1025) ->
     @players = []
     @sprites = []
-    @frames = []
-    @nextFrameIndex = 0
+    @paused = true
+    @tick =
+      count: 0
+      time: 0
+      dt: 0
 
-  randomPosition: ->
-    [Util.randomInt(0, @width), Util.randomInt(0, @height)]
+  getOpenPlayerSlot: ->
+    for slot in [0..@players.length]
+      return slot if not @players[slot]
 
-  serialize: ->
-    states = []
-    for player in @players
-      states.push player.serialize() unless not player
-    { width: @width, height: @height, players: states }
+  newPlayer: (socket) ->
+    i = @getOpenPlayerSlot()
+    @players[i] = new Player(@, i + 1, socket)
 
-  patch: (state) ->
-    @width = state.width ? @width
-    @height = state.height ? @height
+  removePlayer: (p) ->
+    return unless p and p.id
+    @players[p.id - 1] = null
 
-    return unless state.players
-    for playerState in state.players
-      index = playerState.id - 1
-      player = @players[index]
-      if player then player.patch(playerState)
-      else @players[index] = @playerFromState(playerState)
+    # remove empty slots from end of @players list
+    @players.length-- while @players.length and
+    not @players[@players.length - 1]
 
-  playerFromState: (playerState) ->
-    p = new Player(@, playerState.id, null, playerState.name)
-    p.state = playerState
-    p.ship = new Ship(p, playerState.ship)
+  update: ->
+    player.update() for player in @players
+    sprite.update() for sprite in @sprites
 
-  @GameObject: class GameObject
-    constructor: (@game, @position = @game.randomPosition(),
-      @theta = 0, @color = Util.randomInt()) ->
+  draw: ->
 
-  @MovableObject: class MovableObject extends Game.GameObject
-    constructor: (@game, @position, @theta, @color, @velocity = [0, 0]) ->
-      super(@game, @position, @theta, @color)
+  step: (time) ->
+    # increment the tick
+    @tick.count++
+    @tick.dt = time - @tick.time
+    @tick.time = time
 
-    accelerate: ->
-      @velocity[0] -= @velocity[0] * @game.friction
-      @velocity[1] -= @velocity[1] * @game.friction
-
-    updateVelocity: ->
-      @velocity[0] && @velocity[1]
-
-    updatePosition: ->
-      @position[0] = (@position[0] + @velocity[0] + @game.width) % @game.width
-      @position[1] = (@position[1] - @velocity[1] + @game.height) % @game.height
-
-    update: ->
-      @accelerate()
-      @updatePosition() if @updateVelocity()
-
-  @Star: class Star extends MovableObject
-    @MAX_SIZE: 30
-    constructor: (@game) ->
-      super(@game)
-      @size = Math.floor(Math.random() * Star.MAX_SIZE)
-
-  @Player: class Player
-    constructor: (@game, @id, @socket, @name = 'Bob') ->
-      return unless @game and @id
-      @ship = new Ship @, {}
-      @keys = (false for [1..0xFF])
-    serialize: ->
-        { id: @id, name: @name, ship: @ship?.serialize() }
-
-    patch: (state) ->
-      @color = state.color ? @color
-      @ship.patch(state.ship) if state.ship
-
-  @Ship: class Ship extends MovableObject
-    constructor: (@player, state = {@position, @theta, @velocity, @color }) ->
-      return unless @player and state
-      super(@player.game, @position, @theta, @color)
-    serialize: ->
-      { position: @position, orientation: @orientation, velocity: @velocity,
-      theta: @theta, color: @color }
-    patch: (state) ->
-      for key of state
-        @[key] = state[key]
-      @position = state.position
+    @update
+    @draw

@@ -1,71 +1,77 @@
-# Make Client exportable to support tests
 client = null
 
+# Make Client exportable to support tests
 (module ? {}).exports = class Client
   @INNER_WIDTH_OFFSET: 4
   @FRAME_MS: 16
   @URI: 'http://localhost:3000'
   @COLORS:
-      BACKGROUND:
-          DEFAULT: "#444"
+    BACKGROUND:
+      DEFAULT: "#444"
 
   constructor: (@canvas) ->
     return unless @canvas
 
+    # initialize canvas
     @canvas.style.padding = 0
     @canvas.style.margin = 0
     @canvas.style.left = (Client.INNER_WIDTH_OFFSET >> 1) + 'px'
-
-    @eventHandlers.resize.call(@)
+    @events.window.resize.call @
     @c = canvas.getContext('2d')
+
+    # create a new game
     @g = new Game()
 
-    window.addEventListener(event, @eventHandlers[event]) for event of @eventHandlers
-
+    # connect to server
     @socket = io.connect(Client.URI)
 
-    # Check this in JS
-    @socket.on 'init', (data) =>
-      @state = data.state
-      @id = data.id
-      console.log 'init', data.id, @
-      @frame.run.call(@, 0)
+    # initialize events
+    @socket.on(event, cb.bind(@)) for event, cb of @events.socket
+    window.addEventListener(event, cb.bind(@)) for event, cb of @events.window
 
-    @socket.on 'state', (data) =>
-      @state = data
+  events:
+    socket:
+      welcome: (data) ->
+        @game = new Game(data.w, data.h)
+        @game.tick = data.tick
+        @player = new Player(@game, data.id, @socket)
+        @player.name = 'Guest'
+        @socket.emit 'join', @player.name
 
-    @socket.on 'newPlayer', (playerID) =>
-      console.log 'player', playerID, 'is new'
+      join: (data) ->
+        console.log 'player', data.id + ', ' + data.name, 'has joined'
 
-    @socket.on 'playerLeft', (playerID) =>
-      console.log 'player', playerID, 'has left'
-      @state.players?.splice(playerID - 1, 1)
+      leave: (id) ->
+        console.log 'player', id, 'has left'
 
-    @socket.on 'disconnect', =>
-      console.log 'Game over!'
-      @frame.stop()
-      @socket.close()
+      disconnect: ->
+        console.log 'Game over!'
+        @frame.stop.bind(@)()
+        @socket.close()
 
-  eventHandlers:
-    keydown: (e) ->
+      state: (data) ->
+        @state = data
 
-    keyup: (e) ->
+    window:
+      keydown: (e) ->
 
-    mousemove: (e) ->
+      keyup: (e) ->
 
-    mousedown: (e) ->
+      mousemove: (e) ->
 
-    mouseup: (e) ->
+      mousedown: (e) ->
 
-    click: (e) ->
+      mouseup: (e) ->
 
-    resize: (e) ->
-      @canvas.width = window.innerWidth - Client.INNER_WIDTH_OFFSET
+      click: (e) ->
 
-      @canvas.height = window.innerHeight -
-        Client.INNER_WIDTH_OFFSET
-      @canvas.halfWidth = @canvas.width >> 1
-      @canvas.halfHeight = @canvas.height >> 1
+      resize: (e) ->
+        @canvas.width = window.innerWidth - Client.INNER_WIDTH_OFFSET
+
+        @canvas.height = window.innerHeight -
+          Client.INNER_WIDTH_OFFSET
+        @canvas.halfWidth = @canvas.width >> 1
+        @canvas.halfHeight = @canvas.height >> 1
 
   clear: ->
     @c.globalAlpha = 1
@@ -73,20 +79,9 @@ client = null
     @c.fillRect 0, 0, @canvas.width, @canvas.height
 
   update: ->
-    if @state
-      @g.patch @state
-      @state = null
-
-    player.update() for player in @g.players
-
-  drawPlayer: (p) ->
-    return unless p and p.ship
-    @c.fillStyle = p.ship.color
-    @c.fillRect p.ship.position[0], p.ship.position[1], 10, 10
 
   draw: ->
     @clear()
-    @drawPlayer p for p in @g.players
 
   frame:
     run: (timestamp) ->
@@ -101,7 +96,7 @@ client = null
     request: null
 
 window.onload = ->
-    client = new Client(document.querySelector 'canvas')
+  client = new Client(document.querySelector 'canvas')
 
 (->
   lastTime = 0
