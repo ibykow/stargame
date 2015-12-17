@@ -1,7 +1,7 @@
 # Make Client exportable to support tests
 client = null
 
-(module ? {}).exports = Client = class Client
+(module ? {}).exports = class Client
   @INNER_WIDTH_OFFSET: 4
   @FRAME_MS: 16
   @URI: 'http://localhost:3000'

@@ -1,6 +1,7 @@
 var app = require('express')();
 var http = require('http').Server(app);
 var io = require('socket.io')(http);
+var Game = require('./lib/util');
 var Game = require('./lib/game');
 var g = new Game();
 var port = 3000;
@@ -12,7 +13,6 @@ var logger = require('./lib/logger'),
 var intervals = {
     client: null
 };
-
 
 http.listen(port, function (err) {
     if (err)

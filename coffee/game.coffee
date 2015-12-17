@@ -1,27 +1,12 @@
+Util = require './util' if require?
+
 (module ? {}).exports = class Game
-  @isNumeric: (v) ->
-    not isNaN(parseFloat(v)) and isFinite v
-
-  @randomInt: (min = 0, max = 99) ->
-    return Math.floor(Math.random() * (max - min) + min)
-
-  @padString: (s, n = 2, p = '0') ->
-    return '' unless s and typeof s is 'string'
-    len = n - s.length
-    return s if len <= 0
-    (p for [1..len]).join('') + s
-
-  @randomColorString: (min = 0xff >> 1, max = 0xff) ->
-    '#' + Game.padString(Game.randomInt(min, max).toString 16) +
-      Game.padString(Game.randomInt(min, max).toString 16) +
-      Game.padString(Game.randomInt(min, max).toString 16)
-
   constructor: (@width = 800, @height = 800) ->
     @players = []
-    @objects = []
+    @sprites = []
 
   randomPosition: ->
-    [ Game.randomInt(0, @width), Game.randomInt(0, @height)]
+    [ Util.randomInt(0, @width), Util.randomInt(0, @height)]
 
   serialize: ->
     states = []
@@ -47,7 +32,7 @@
 
   @GameObject: class GameObject
     constructor: (@game, @position = @game.randomPosition(),
-      @theta = 0, @color = Game.randomColorString()) ->
+      @theta = 0, @color = Util.randomInt()) ->
 
   @MovableObject: class MovableObject extends Game.GameObject
     constructor: (@game, @position, @theta, @color, @velocity = [0, 0]) ->
