@@ -7,7 +7,7 @@ module.exports = class Server
     return unless @io
 
     # create a new game
-    @game = new Game(800, 800)
+    @game = new Game(1024, 600)
     @game.server = @
 
     # initialize io event handlers

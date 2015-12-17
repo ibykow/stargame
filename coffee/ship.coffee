@@ -11,11 +11,12 @@ if require?
 
   updateVelocity: ->
     if @brake
-      @brake = false
       @velocity[0] *= Ship.BRAKE_RATE
       @velocity[1] *= Ship.BRAKE_RATE
+      @brake = false
     else if @gear
       @velocity[0] += @gear * Math.cos(@position[2])
       @velocity[1] += @gear * Math.sin(@position[2])
+      @gear = 0
 
     super()

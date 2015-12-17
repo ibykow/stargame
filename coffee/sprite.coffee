@@ -14,6 +14,8 @@ if require?
 
   updatePosition: ->
     @position[i] += @velocity[i] for i in [0...@position.length]
+    @position[0] = (@position[0] + @game.width) % @game.width
+    @position[1] = (@position[1] + @game.height) % @game.height
 
   update: ->
     @updateVelocity()

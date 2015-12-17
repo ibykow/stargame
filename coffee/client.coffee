@@ -33,12 +33,25 @@ client = null
       y: 0
       buttons: [false, false, false]
 
+  keymap: new Array 0x100
+
+  generateInputs: ->
+    for i in [0...@keymap.length] when @keys[i] and @keymap[i]
+      @keymap[i]
+
   events:
     socket:
       welcome: (data) ->
         context = @canvas.getContext('2d')
 
         @game = new ClientGame(data, @canvas, context, data.player.id)
+
+        @keymap[32] = 'brake'
+        @keymap[37] = 'left'
+        @keymap[38] = 'forward'
+        @keymap[39] = 'right'
+        @keymap[40] = 'reverse'
+
         @socket.emit 'join', @game.player.name
         @frame.run.bind(@) @game.tick.time
 
@@ -84,6 +97,7 @@ client = null
 
   frame:
     run: (timestamp) ->
+      @game.player.inputs = @generateInputs()
       @game.step timestamp
       @frame.request = window.requestAnimationFrame @frame.run.bind @
 
