@@ -24,16 +24,15 @@ Sprite = require './sprite'
       color: star.color
 
   generateShipStates: ->
-    for player in @players
+    for player in @players when player
       id: player.id
       ship: player.ship.getState()
 
   preparePlayerInputs: ->
-    for player in @players
-      if player.input.length
+    for player in @players when player
+      if player.input and player.input.length
         player.input.sort (a, b) -> a.tick.count - b.tick.count
         player.input = player.input.reduce ((p, n) -> p.concat n.input), []
-        console.log player.input
 
   update: ->
     @preparePlayerInputs()
@@ -41,6 +40,7 @@ Sprite = require './sprite'
 
   step: (time) ->
     super time # it's the best kind
+    shipStates = @generateShipStates()
     @server.io.emit 'state',
-      ships: @generateShipStates()
+      ships: shipStates
       tick: @tick

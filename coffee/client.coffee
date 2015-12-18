@@ -68,6 +68,8 @@ client = null
 
       state: (data) ->
         @game.state = data unless @game.state.tick.count > data.tick.count
+        # console.log @game.state.ships.length, @game.state.tick.count,
+          # data.ships.length, data.tick.count
 
     window:
       keydown: (e) ->
@@ -98,8 +100,6 @@ client = null
   frame:
     run: (timestamp) ->
       input = @game.player.input = @generateInput()
-
-      @game.processState()
 
       @game.step timestamp
 
@@ -135,7 +135,7 @@ window.onload = ->
   if not window.requestAnimationFrame
     window.requestAnimationFrame = (callback, element) ->
       currTime = +new Date
-      timeToCall = Math.max(0, client.FRAME_MS - (currTime - lastTime))
+      timeToCall = Math.max(0, Client.FRAME_MS - (currTime - lastTime))
       lastTime = currTime + timeToCall
       window.setTimeout((-> callback(currTime + timeToCall)), timeToCall)
 

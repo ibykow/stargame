@@ -16,7 +16,7 @@ if require?
     [Util.randomInt(0, @width), Util.randomInt(0, @height), 0]
 
   newPlayer: (socket) ->
-    i = Util.findEmptySlot(@players)
+    i = Util.findEmptySlot @players
     @players[i] = new Player(@, i + 1, socket)
 
   removePlayer: (p) ->

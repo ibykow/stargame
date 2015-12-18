@@ -23,7 +23,7 @@ if require?
 
     @inputs = []
 
-    console.log @player.ship
+    # console.log @player.ship
 
   generateSprites: ->
     for state in @states
@@ -61,12 +61,15 @@ if require?
 
     # find our ship in the state list
     i = 0
-    for i in [0...@state.ships.length] when @state.ships.id is not @player.id
-      i
+    for i in [0...@state.ships.length]
+      break if @state.ships[i].id is @player.id
 
     shipState = @state.ships.splice(i, 1)
 
+    # console.log @state.ships, ',', shipState
+
     @correctPrediction(shipState, @state.tick) unless not shipState
+    # console.log @state.ships, ',', shipState
 
   update: ->
     super()
@@ -82,8 +85,12 @@ if require?
     sprite.draw() for sprite in @sprites
     @player.ship.draw()
 
-    if @state and @state.ships
-      for state in @state.ships
-        position = state.position
-        color = state.color
-        Ship.draw(@c, position, color) unless state.id is @player.id
+    for state in @state.ships
+      # console.log 'Now drawing', state.id, @state.tick.count
+      position = state.ship.position
+      color = state.ship.color
+      Ship.draw(@c, position, color) unless state.id is @player.id
+
+  step: (time) ->
+    @processState()
+    super time

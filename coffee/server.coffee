@@ -1,6 +1,6 @@
+log = console.log
 Player = require './player'
 Game = require './servergame'
-log = console.log
 
 module.exports = class Server
   @FRAME_INTERVAL: 16
