@@ -99,16 +99,18 @@ client = null
     run: (timestamp) ->
       input = @game.player.input = @generateInput()
 
+      @game.processState()
+
       @game.step timestamp
 
       inputLogEntry =
         tick: @game.tick
         input: input
 
-      @game.inputs.push inputLogEntry
-
       if input.length
         @socket.emit 'input', inputLogEntry
+
+      @game.inputs.push inputLogEntry
 
       @frame.request = window.requestAnimationFrame @frame.run.bind @
 

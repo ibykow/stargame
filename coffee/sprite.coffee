@@ -28,6 +28,13 @@ if require?
     height: @height
     color: @color
 
+  setState: (state) ->
+    @position = state.position ? @position
+    @velocity = state.velocity ? @velocity
+    @width = state.width ? @width
+    @height = state.height ? @height
+    @color = state.color ? @color
+
   draw: ->
     @game.c.fillStyle = @color
     @game.c.fillRect  @position[0] - @width / 2,

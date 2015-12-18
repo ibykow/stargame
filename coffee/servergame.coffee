@@ -32,8 +32,8 @@ Sprite = require './sprite'
     for player in @players
       if player.input.length
         player.input.sort (a, b) -> a.tick.count - b.tick.count
-        player.input = player.input.reduce ((p, n) ->
-          return p.concat n.input), []
+        player.input = player.input.reduce ((p, n) -> p.concat n.input), []
+        console.log player.input
 
   update: ->
     @preparePlayerInputs()
