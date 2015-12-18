@@ -17,13 +17,11 @@ if require?
     @sprites = @generateSprites()
 
     @state =
-      tick: @tick
+      tick: { count: 0, time: 0, dt: 0 }
       ships: []
       processed: true
 
     @inputs = []
-
-    # console.log @player.ship
 
   generateSprites: ->
     for state in @states
@@ -32,11 +30,6 @@ if require?
   correctPrediction: (shipState, tick) ->
     # set the current ship state to the last known server state
     @player.ship.setState(shipState)
-
-    if tick.count >= @tick.count
-      # We're beyond correcting
-      @tick = tick
-      @inputs = []
 
     # Make sure our inputs go back far enough
     return unless @inputs.length and tick.count >= @inputs[0].tick.count
@@ -66,10 +59,7 @@ if require?
 
     shipState = @state.ships.splice(i, 1)
 
-    # console.log @state.ships, ',', shipState
-
     @correctPrediction(shipState, @state.tick) unless not shipState
-    # console.log @state.ships, ',', shipState
 
   update: ->
     super()
@@ -86,7 +76,6 @@ if require?
     @player.ship.draw()
 
     for state in @state.ships
-      # console.log 'Now drawing', state.id, @state.tick.count
       position = state.ship.position
       color = state.ship.color
       Ship.draw(@c, position, color) unless state.id is @player.id

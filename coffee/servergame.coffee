@@ -44,3 +44,4 @@ Sprite = require './sprite'
     @server.io.emit 'state',
       ships: shipStates
       tick: @tick
+      fromServer: true

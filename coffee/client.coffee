@@ -68,8 +68,6 @@ client = null
 
       state: (data) ->
         @game.state = data unless @game.state.tick.count > data.tick.count
-        # console.log @game.state.ships.length, @game.state.tick.count,
-          # data.ships.length, data.tick.count
 
     window:
       keydown: (e) ->
@@ -100,7 +98,6 @@ client = null
   frame:
     run: (timestamp) ->
       input = @game.player.input = @generateInput()
-
       @game.step timestamp
 
       inputLogEntry =

@@ -31,6 +31,7 @@ if require?
     player.update() for player in @players when player
     sprite.update() for sprite in @sprites
 
+
   step: (time) ->
     # increment the tick
     @tick.count++
