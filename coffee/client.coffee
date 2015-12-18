@@ -35,7 +35,7 @@ client = null
 
   keymap: new Array 0x100
 
-  generateInputs: ->
+  generateInput: ->
     for i in [0...@keymap.length] when @keys[i] and @keymap[i]
       @keymap[i]
 
@@ -67,7 +67,7 @@ client = null
         @socket.close()
 
       state: (data) ->
-        @game.state = data
+        @game.state = data unless @game.state.tick.count > data.tick.count
 
     window:
       keydown: (e) ->
@@ -97,9 +97,19 @@ client = null
 
   frame:
     run: (timestamp) ->
-      @game.player.inputs = @generateInputs()
-      @socket.emit 'input', @game.player.inputs if @game.player.inputs.length
+      input = @game.player.input = @generateInput()
+
       @game.step timestamp
+
+      inputLogEntry =
+        tick: @game.tick
+        input: input
+
+      @game.inputs.push inputLogEntry
+
+      if input.length
+        @socket.emit 'input', inputLogEntry
+
       @frame.request = window.requestAnimationFrame @frame.run.bind @
 
     stop: ->

@@ -28,7 +28,15 @@ Sprite = require './sprite'
       id: player.id
       ship: player.ship.getState()
 
+  preparePlayerInputs: ->
+    for player in @players
+      if player.input.length
+        player.input.sort (a, b) -> a.tick.count - b.tick.count
+        player.input = player.input.reduce ((p, n) ->
+          return p.concat n.input), []
+
   update: ->
+    @preparePlayerInputs()
     super()
 
   step: (time) ->

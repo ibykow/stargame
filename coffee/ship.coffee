@@ -25,18 +25,6 @@ if require?
     @gear = 0
     @brake = false
 
-  updateVelocity: ->
-    if @brake
-      @velocity[0] *= Ship.BRAKE_RATE
-      @velocity[1] *= Ship.BRAKE_RATE
-      @brake = false
-    else if @gear
-      @velocity[0] += @gear * Math.cos(@position[2])
-      @velocity[1] += @gear * Math.sin(@position[2])
-      @gear = 0
-
-    super()
-
   draw: ->
     c = @player.game.c
     Ship.draw(c, @position, @color)

@@ -81,7 +81,7 @@ module.exports = class Server
         # push to local player object for handling in frame loop
         # discard if tick count is lower than last server sent tick count
 
-        @inputs = data
+        @input.push(data)
         # unless @game.server.ticks.sent and
         # data.tick.count < @game.server.ticks.sent.count
 

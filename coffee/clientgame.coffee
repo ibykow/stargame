@@ -14,22 +14,20 @@ if require?
     @players = [@player]
 
     @sprites = @generateSprites()
-    @state = {}
+
+    @state =
+      tick: @tick
+      ships: [@player.ship.getState()]
+
+    @inputs = []
+
+    console.log @player.ship
 
   generateSprites: ->
     for state in @states
       new Sprite(@, state.width, state.height, state.position, state.color)
 
-  updateFromState: ->
-    return unless @state.ships
-    myShip = (@state.ships.filter (s) =>
-      return s.id == @player.id)[0].ship
-
-    @player.ship.position = myShip.position
-    @player.ship.velocity = myShip.velocity
-
   update: ->
-    @updateFromState() if @state
     super()
     @draw()
 
@@ -45,6 +43,6 @@ if require?
 
     if @state and @state.ships
       for state in @state.ships
-        position = state.ship.position
-        color = state.ship.color
+        position = state.position
+        color = state.color
         Ship.draw(@c, position, color) unless state.id is @player.id

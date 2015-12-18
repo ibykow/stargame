@@ -6,14 +6,16 @@ if require?
   constructor: (@game, @id, @socket) ->
     return null unless @game and @id
     @ship = new Ship(@)
-    @inputs = []
+    @input = []
 
   actions:
     forward: ->
-      @ship.gear = 1
+      @ship.velocity[0] += Math.cos(@ship.position[2])
+      @ship.velocity[1] += Math.sin(@ship.position[2])
 
     reverse: ->
-      @ship.gear = -1
+      @ship.velocity[0] -= Math.cos(@ship.position[2])
+      @ship.velocity[1] -= Math.sin(@ship.position[2])
 
     left: ->
       @ship.position[2] -= Player.TURN_RATE
@@ -22,12 +24,14 @@ if require?
       @ship.position[2] += Player.TURN_RATE
 
     brake: ->
-      @ship.brake = true
+      @ship.velocity[0] *= Ship.BRAKE_RATE
+      @ship.velocity[1] *= Ship.BRAKE_RATE
 
-  processInputs: ->
-    @actions[input].bind(@)() for input in @inputs
-    @inputs = []
+  processInput: ->
+    return if not @input.length
+    @actions[action].bind(@)() for action in @input
+    @input = []
 
   update: ->
-    @processInputs()
+    @processInput()
     @ship.update()
