@@ -3,6 +3,22 @@ if require?
 
 (module ? {}).exports = class Ship extends Sprite
   @BRAKE_RATE: 0.8
+  @draw: (c, position, color) ->
+    return unless c and position and color
+
+    c.save()
+    c.fillStyle = color
+    c.translate position...
+    c.rotate position[2]
+    c.globalAlpha = 1
+    c.beginPath()
+    c.moveTo 10, 0
+    c.lineTo -10, 5
+    c.lineTo -10, -5
+    c.closePath()
+    c.fill()
+    c.restore()
+
   constructor: (@player) ->
     return null unless @player
     super @player.game
@@ -23,16 +39,4 @@ if require?
 
   draw: ->
     c = @player.game.c
-
-    c.save()
-    c.fillStyle = @color
-    c.translate @position...
-    c.rotate @position[2]
-    c.globalAlpha = 1
-    c.beginPath()
-    c.moveTo 10, 0
-    c.lineTo -10, 5
-    c.lineTo -10, -5
-    c.closePath()
-    c.fill()
-    c.restore()
+    Ship.draw(c, @position, @color)

@@ -3,6 +3,7 @@ Game = require './servergame'
 log = console.log
 
 module.exports = class Server
+  @FRAME_INTERVAL: 16
   constructor: (@io) ->
     return unless @io
 
@@ -11,6 +12,14 @@ module.exports = class Server
 
     # initialize io event handlers
     @io.on(event, cb.bind(@)) for event, cb of @events.io
+
+  pause: ->
+    log 'The game is empty. Pausing.'
+    @frame.stop.bind(@)()
+
+  unpause: ->
+    log 'unpausing'
+    @frame.run.bind(@) +new Date
 
   events:
     # @ is the server instance
@@ -23,7 +32,7 @@ module.exports = class Server
         socket.on(event, cb.bind(player)) for event, cb of @events.socket
 
         # send the id and game information back to the client
-        socket.emit('welcome', {
+        socket.emit('welcome',
           game:
             width: @game.width
             height: @game.height
@@ -31,8 +40,7 @@ module.exports = class Server
             tick: @game.tick
             states: @game.states
           player:
-            id: player.id
-        })
+            id: player.id)
 
         log 'Player', player.id, 'has joined'
 
@@ -48,19 +56,19 @@ module.exports = class Server
         @socket.broadcast.emit 'join', { name: name, id: @id }
 
         # start / unpause the game if it's the first player
+        @game.server.unpause() if @game.players.length is 1
 
       disconnect: -> # a client has disconnected
         log 'Player', @id, 'has left'
 
         # notify other players that the player has left
-        io.emit 'leave', @id
+        @game.server.io.emit 'leave', @id
 
         # destroy the player object associated with this socket
         @game.removePlayer(@)
 
         # if this was the last player, pause the game
-        if not @game.players.length
-          log 'The game is empty'
+        @game.server.pause() if not @game.players.length
 
       input: (data) -> # a client has generated input
         # data =
@@ -72,5 +80,15 @@ module.exports = class Server
 
         # push to local player object for handling in frame loop
         # discard if tick count is lower than last server sent tick count
-        @inputs.push data unless @game.server.ticks.sent and
-          data.tick.count < @game.server.ticks.sent.count
+
+        @inputs = data
+        # unless @game.server.ticks.sent and
+        # data.tick.count < @game.server.ticks.sent.count
+
+  frame:
+    run: (timestamp) ->
+      @game.step timestamp
+      ms = Server.FRAME_INTERVAL
+      @frame.request = setTimeout((=> @frame.run.bind(@) (+new Date)), ms)
+    stop: ->
+      clearTimeout(@frame.request)

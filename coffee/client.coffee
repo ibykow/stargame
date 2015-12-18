@@ -67,7 +67,7 @@ client = null
         @socket.close()
 
       state: (data) ->
-        @state = data
+        @game.state = data
 
     window:
       keydown: (e) ->
@@ -98,6 +98,7 @@ client = null
   frame:
     run: (timestamp) ->
       @game.player.inputs = @generateInputs()
+      @socket.emit 'input', @game.player.inputs if @game.player.inputs.length
       @game.step timestamp
       @frame.request = window.requestAnimationFrame @frame.run.bind @
 

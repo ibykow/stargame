@@ -28,7 +28,7 @@ if require?
     not @players[@players.length - 1]
 
   update: ->
-    player.update() for player in @players
+    player.update() for player in @players when player
     sprite.update() for sprite in @sprites
 
   step: (time) ->

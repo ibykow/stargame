@@ -22,3 +22,17 @@ Sprite = require './sprite'
       width: star.width
       height: star.height
       color: star.color
+
+  generateShipStates: ->
+    for player in @players
+      id: player.id
+      ship: player.ship.getState()
+
+  update: ->
+    super()
+
+  step: (time) ->
+    super time # it's the best kind
+    @server.io.emit 'state',
+      ships: @generateShipStates()
+      tick: @tick

@@ -22,11 +22,11 @@ if require?
     @updatePosition()
 
   getState: ->
-    { position: @position
-      velocity: @velocity
-      width: @width
-      height: @height
-      color: @color }
+    position: @position
+    velocity: @velocity
+    width: @width
+    height: @height
+    color: @color
 
   draw: ->
     @game.c.fillStyle = @color
