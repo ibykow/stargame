@@ -3,7 +3,7 @@ Player = require './player'
 Game = require './servergame'
 
 module.exports = class Server
-  @FRAME_INTERVAL: 80
+  @FRAME_INTERVAL: 100
   constructor: (@io) ->
     return unless @io
 

@@ -53,7 +53,6 @@ client = null
         @keymap[40] = 'reverse'
 
         @socket.emit 'join', @game.player.name
-        @frame.run.bind(@) @game.tick.time
 
       join: (data) ->
         console.log 'player', data.id + ', ' + data.name, 'has joined'
@@ -67,26 +66,41 @@ client = null
         @socket.close()
 
       state: (data) ->
-        @game.state = data unless @game.state.tick.count > data.tick.count
+        # set the first state
+        return unless data.ships
+        @game.nextState = data
+        console.log @game.nextState
+
+        # set the tick, then set and process the new state
+        @game.tick = data.tick
+        @events.socketALT.state.bind(@)(data)
+
+        # update the state event handler
+        @socket.removeAllListeners('state')
+        @socket.on('state', @events.socketALT.state.bind @)
+
+        # start the game
+        @frame.run.bind(@) @game.tick.time
+
+    socketALT:
+      state: (data) ->
+        @game.prevState =
+          tick: @game.nextState.tick
+          ships: @game.nextState.ships
+        @game.nextState = data
+        # console.log 'state received', @game.nextState, @game.prevState
+        @game.processStates()
+        @game.interpolation.reset.bind(@game)()
 
     window:
-      keydown: (e) ->
-        @keys[e.keyCode] = true
-
-      keyup: (e) ->
-        @keys[e.keyCode] = false
-
+      keydown: (e) -> @keys[e.keyCode] = true
+      keyup: (e) -> @keys[e.keyCode] = false
+      click: (e) ->
+      mousedown: (e) -> @mouse.buttons[e.button] = true
+      mouseup: (e) -> @mouse.buttons[e.button] = false
       mousemove: (e) ->
         @mouse.x = e.clientX - canvas.boundingRect.left
         @mouse.y = e.clientY - canvas.boundingRect.top
-
-      mousedown: (e) ->
-        @mouse.buttons[e.button] = true
-
-      mouseup: (e) ->
-        @mouse.buttons[e.button] = false
-
-      click: (e) ->
 
       resize: (e) ->
         @canvas.width = window.innerWidth - Client.INNER_WIDTH_OFFSET
@@ -99,6 +113,7 @@ client = null
     run: (timestamp) ->
       input = @game.player.input = @generateInput()
       @game.step timestamp
+      # console.log 'frame', @game.tick
 
       inputLogEntry =
         tick: @game.tick

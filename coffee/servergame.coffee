@@ -40,8 +40,7 @@ Sprite = require './sprite'
 
   step: (time) ->
     super time # it's the best kind
-    shipStates = @generateShipStates()
     @server.io.emit 'state',
-      ships: shipStates
+      ships: @generateShipStates()
       tick: @tick
       fromServer: true

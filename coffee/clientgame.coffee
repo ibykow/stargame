@@ -2,6 +2,7 @@ if require?
   Sprite = require './sprite'
   Ship = require './ship'
   Game = require './game'
+  Client = require './client'
 
 (module ? {}).exports = class ClientGame extends Game
   constructor: (details, @canvas, @c, socket) ->
@@ -13,15 +14,20 @@ if require?
     @player = new Player(@, details.player.id, socket)
     @player.name = 'Guest'
     @players = [@player]
+    @loops = []
 
     @sprites = @generateSprites()
 
-    @state =
-      tick: { count: 0, time: 0, dt: 0 }
-      ships: []
-      processed: true
-
+    @prevState = null
+    @nextState = null
     @inputs = []
+
+  interpolation:
+    reset: ->
+      @interpolation.step = 0
+      @interpolation.rate = Client.FRAME_MS / @nextState.tick.dt
+    step: 0
+    rate: 0
 
   generateSprites: ->
     for state in @initStates
@@ -35,9 +41,8 @@ if require?
     return unless @inputs.length and tick.count >= @inputs[0].tick.count
 
     # Match the input with the state
-    i = 0
-    for i in [0...@inputs.length] when @inputs[i].tick.count < tick.count
-      i
+    while i < @inputs.length
+      break if @inputs[i].tick.count >= tick.count
 
     # Remove the old inputs
     @inputs.splice(0, i)
@@ -46,22 +51,48 @@ if require?
     @player.input = (@inputs.reduce ((p, n) -> p.concat n.input), [])
       .concat @player.input
 
-    console.log 'Rewinding', @player.input.length if @player.input.length
+    # console.log 'Rewinding', @player.input.length if @player.input.length
 
     @player.input.length
 
-  processState: ->
-    return if @state.processed
-    @state.processed = true
+  processStates: ->
+    return if @nextState.processed
+    @nextState.processed = true
 
-    # find our ship in the state list
-    i = 0
-    for i in [0...@state.ships.length]
-      break if @state.ships[i].id is @player.id
+    [i, j, shipState] = [0, 0, null]
 
-    shipState = @state.ships.splice(i, 1)
+    loops = 0
+    # associate each ship state with its previous state
+    # console.log 'intersecting', @nextState.ships.length, @prevState.ships.length
+    while i < @nextState.ships.length
+      loops++
+      # remove our ship from the list
+      # console.log i, j, @nextState.ships[i], @nextState.ships[j]
+      # console.log 'setting', @nextState.ships[i].id, 'and', @prevState.ships[j]
 
-    @correctPrediction(shipState, @state.tick) unless not shipState
+      if @nextState.ships[i].id == @player.id
+        # console.log 'found my ship'
+        shipState = @nextState.ships.splice(i, 1)
+        continue
+
+      return if j >= @prevState.ships.length
+
+      # associate the ship state with its previous state
+      if @nextState.ships[i].id is @prevState.ships[j].id
+        @nextState.ships[i].prevState =
+          id: @prevState.ships[j].id
+          ship: @prevState.ships[j].ship
+        # @nextState.ships[i].prevState = null
+        # console.log 'associated:', @nextState.ships[i].prevState, @prevState.ships[j]
+      else if @nextState.ships[i].id > @prevState.ships[j].id
+        j++
+        continue
+
+      i++
+
+    @correctPrediction(shipState, @nextState.tick) unless not shipState
+
+    @loops.push(loops)
 
   update: ->
     super()
@@ -75,13 +106,20 @@ if require?
   draw: ->
     @clear()
     sprite.draw() for sprite in @sprites
+
+    # console.log 'me:', @tick.count, @nextState.tick.count, @player.ship.position
     @player.ship.draw()
 
-    for state in @state.ships
-      position = state.ship.position
-      color = state.ship.color
-      Ship.draw(@c, position, color) unless state.id is @player.id
+    for state in @nextState.ships
+      if not state.prevState
+        Ship.draw(@c, state.ship.position, state.ship.color)
+        continue
 
-  step: (time) ->
-    @processState()
-    super time
+      nextState = state.ship
+      prevState = state.prevState.ship
+      rate = @interpolation.rate * @interpolation.step
+      @interpolation.step++
+      inter = Sprite.interpolate.bind(@)(prevState, nextState, rate)
+      color = state.ship.color
+      # console.log 'drawing', nextState, prevState, inter, rate
+      Ship.draw(@c, inter.position, color)
