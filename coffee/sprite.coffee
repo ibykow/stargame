@@ -2,6 +2,25 @@ if require?
   Util = require './util'
 
 (module ? {}).exports = class Sprite
+  @interpolate: (prevState, nextState, rate) ->
+    # rate: (ms-per-frame / dt) * step
+    # step: the frame number between prevState and nextState
+    # dt = nextState.tick.time - prevState.tick.time
+    # ex:
+    # nextState.tick.time = 1170
+    # prevState.tick.time = 1090
+    # dt = 1170 - 1090 = 80
+    # ms-per-frame = 16
+    # rate = 1/20 = 0.05
+    # step = 1, 2, 3, 4, or 5, since 80ms has up to five 16ms frames
+
+    velocity: for i in [0...prevState.velocity.length]
+      (nextState.velocity[i] - prevState.velocity[i]) * rate +
+      prevState.velocity[i]
+    position: for i in [0...prevState.position.length]
+      (nextState.position[i] - prevState.position[i]) * rate +
+      prevState.position[i]
+
   constructor: (@game, @width = 10, @height = 10, @position, @color) ->
     return null unless @game
     @position ?= @game.randomPosition()

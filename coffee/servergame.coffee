@@ -8,7 +8,7 @@ Sprite = require './sprite'
     super @width, @height, @frictionRate
     @server = server
     @sprites = @generateStars(numStars)
-    @states = @getStarStates()
+    @initStates = @getStarStates()
 
   generateStars: (n) ->
     for i in [0..n]

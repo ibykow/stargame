@@ -8,7 +8,7 @@ if require?
     return unless details
     super details.game.width, details.game.height, details.game.frictionRate
 
-    { @tick, @states } = details.game
+    { @tick, @initStates } = details.game
 
     @player = new Player(@, details.player.id, socket)
     @player.name = 'Guest'
@@ -24,7 +24,7 @@ if require?
     @inputs = []
 
   generateSprites: ->
-    for state in @states
+    for state in @initStates
       new Sprite(@, state.width, state.height, state.position, state.color)
 
   correctPrediction: (shipState, tick) ->
@@ -45,6 +45,8 @@ if require?
     # Add all the previous inputs together to be played forward
     @player.input = (@inputs.reduce ((p, n) -> p.concat n.input), [])
       .concat @player.input
+
+    console.log 'Rewinding', @player.input.length if @player.input.length
 
     @player.input.length
 

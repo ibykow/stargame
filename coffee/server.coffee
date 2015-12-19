@@ -3,7 +3,7 @@ Player = require './player'
 Game = require './servergame'
 
 module.exports = class Server
-  @FRAME_INTERVAL: 16
+  @FRAME_INTERVAL: 80
   constructor: (@io) ->
     return unless @io
 
@@ -38,7 +38,7 @@ module.exports = class Server
             height: @game.height
             frictionRate: @game.frictionRate
             tick: @game.tick
-            states: @game.states
+            initStates: @game.initStates
           player:
             id: player.id)
 
