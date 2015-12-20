@@ -24,18 +24,42 @@ Sprite = require './sprite'
       color: star.color
 
   generateShipStates: ->
+    states = []
     for player in @players when player
-      id: player.id
-      ship: player.ship.getState()
+      synced = not player.clientState or
+        (player.clientState.position[0] == player.ship.position[0]) and
+        (player.clientState.position[1] == player.ship.position[1]) and
+        (player.clientState.position[2] == player.ship.position[2])
+      states.push
+        id: player.id
+        inputSequence: player.inputSequence
+        ship: player.ship.getState()
+        synced: synced
 
-  preparePlayerInputs: ->
-    for player in @players when player
-      if player.input and player.input.length
-        player.input.sort (a, b) -> a.tick.count - b.tick.count
-        player.input = player.input.reduce ((p, n) -> p.concat n.input), []
+      # if player.clientState
+      #   console.log player.clientState.position[0], player.ship.position[0],
+      #               player.clientState.position[1], player.ship.position[1],
+      #               player.clientState.position[2], player.ship.position[2],
+      #               synced
+
+      player.clientState = null
+
+    states
+
+  prepareInputs: ->
+    for player in @players when player and player.inputs.length
+      player.inputs.sort (a, b) -> a.inputSequence - b.inputSequence
+      latestPlayer = player.inputs[player.inputs.length - 1]
+      player.inputSequence = latestPlayer.inputSequence
+      player.clientState = latestPlayer.clientState
+      temp = []
+      for data in player.inputs
+        temp.push data.input
+
+      player.inputs = temp
 
   update: ->
-    @preparePlayerInputs()
+    @prepareInputs()
     super()
 
   step: (time) ->

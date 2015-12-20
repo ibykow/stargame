@@ -6,7 +6,8 @@ if require?
   constructor: (@game, @id, @socket) ->
     return null unless @game and @id
     @ship = new Ship(@)
-    @input = []
+    @inputs = []
+    @inputSequence = 0
 
   actions:
     forward: ->
@@ -27,11 +28,16 @@ if require?
       @ship.velocity[0] *= Ship.BRAKE_RATE
       @ship.velocity[1] *= Ship.BRAKE_RATE
 
-  processInput: ->
-    return if not @input.length
-    @actions[action].bind(@)() for action in @input
-    @input = []
-
   update: ->
-    @processInput()
-    @ship.update()
+    @inputs = [@inputs] unless @inputs.length and Array.isArray @inputs[0]
+
+    for input in @inputs
+      for act in input when input.length and act?.length
+        @actions[act].bind(@)()
+
+      @ship.update()
+
+      # if input.length
+        # console.log 'input', input, 'position', @ship.position, 'velocity', @ship.velocity
+
+    @inputs = []

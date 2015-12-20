@@ -13,6 +13,9 @@ if require?
     # ms-per-frame = 16
     # rate = 1/20 = 0.05
     # step = 1, 2, 3, 4, or 5, since 80ms has up to five 16ms frames
+
+    # rate = Math.min rate, 1
+
     [vx0, vx1, vy0, vy1] = [
       prevState.velocity[0],
       nextState.velocity[0],
@@ -21,7 +24,11 @@ if require?
     ]
 
     vx = (vx1 - vx0) * rate + vx0
-    vy = (vy1 - vy0) * (vx - vx0) / (vx1 - vx0) + vy0
+
+    if vx1 - vx0
+      vy = (vy1 - vy0) * (vx - vx0) / (vx1 - vx0) + vy0
+    else
+      vy = vy1
 
     [x0, x1, y0, y1] = [
       prevState.position[0],
@@ -30,9 +37,12 @@ if require?
       nextState.position[1]
     ]
 
-
     x = (x1 - x0) * rate + x0
-    y = (y1 - y0) * (x - x0) / (x1 - x0) + y0
+
+    if x1 - x0
+      y = (y1 - y0) * (x - x0) / (x1 - x0) + y0
+    else
+      y = y1
 
     # console.log x0, x1, y0, y1, x, y, rate
 
@@ -47,16 +57,19 @@ if require?
     return null unless @game
     @position ?= @game.randomPosition()
     @color ?= Util.randomColorString()
-    @velocity = [0, 0, 0]
+    @velocity = [0, 0]
 
   updateVelocity: ->
-    @velocity[0] *= @game.frictionRate
-    @velocity[1] *= @game.frictionRate
+    @velocity[0] = Math.trunc(@velocity[0] * @game.frictionRate * 100) / 100
+    @velocity[1] = Math.trunc(@velocity[1] * @game.frictionRate * 100) / 100
+    # console.log 'velocity', @velocity
 
   updatePosition: ->
-    @position[i] += @velocity[i] for i in [0...@position.length]
-    @position[0] = (@position[0] + @game.width) % @game.width
-    @position[1] = (@position[1] + @game.height) % @game.height
+    @position[0] = (@position[0] + @velocity[0] + @game.width) %
+      @game.width
+
+    @position[1] = (@position[1] + @velocity[1] + @game.height) %
+      @game.height
 
   update: ->
     @updateVelocity()

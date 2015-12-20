@@ -3,7 +3,7 @@ Player = require './player'
 Game = require './servergame'
 
 module.exports = class Server
-  @FRAME_INTERVAL: 100
+  @FRAME_INTERVAL: 90
   constructor: (@io) ->
     return unless @io
 
@@ -27,6 +27,7 @@ module.exports = class Server
       connection: (socket) -> # a client connects
         # create a player object around the socket
         player = @game.newPlayer(socket)
+        player.inputs = []
 
         # associate event handler
         socket.on(event, cb.bind(player)) for event, cb of @events.socket
@@ -39,8 +40,8 @@ module.exports = class Server
             frictionRate: @game.frictionRate
             tick: @game.tick
             initStates: @game.initStates
-          player:
-            id: player.id)
+          id: player.id,
+          ship: player.ship.getState())
 
         log 'Player', player.id, 'has joined'
 
@@ -81,7 +82,7 @@ module.exports = class Server
         # push to local player object for handling in frame loop
         # discard if tick count is lower than last server sent tick count
 
-        @input.push(data)
+        @inputs.push(data)
         # unless @game.server.ticks.sent and
         # data.tick.count < @game.server.ticks.sent.count
 

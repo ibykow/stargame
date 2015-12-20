@@ -44,7 +44,7 @@ client = null
       welcome: (data) ->
         context = @canvas.getContext('2d')
 
-        @game = new ClientGame(data, @canvas, context, data.player.id)
+        @game = new ClientGame(data, @canvas, context)
 
         @keymap[32] = 'brake'
         @keymap[37] = 'left'
@@ -53,6 +53,7 @@ client = null
         @keymap[40] = 'reverse'
 
         @socket.emit 'join', @game.player.name
+        @game.player.ship.setState(data.ship)
 
       join: (data) ->
         console.log 'player', data.id + ', ' + data.name, 'has joined'
@@ -88,7 +89,6 @@ client = null
           tick: @game.nextState.tick
           ships: @game.nextState.ships
         @game.nextState = data
-        # console.log 'state received', @game.nextState, @game.prevState
         @game.processStates()
         @game.interpolation.reset.bind(@game)()
 
@@ -111,18 +111,21 @@ client = null
 
   frame:
     run: (timestamp) ->
-      input = @game.player.input = @generateInput()
+      input = @generateInput()
+      @game.player.inputs.push(input)
+
       @game.step timestamp
-      # console.log 'frame', @game.tick
 
+      # console.log 'position at', @game.player.inputSequence, @game.player.ship.position
       inputLogEntry =
-        tick: @game.tick
+        count: @game.tick.count
         input: input
+        inputSequence: @game.player.inputSequence
+        clientState: @game.player.ship.getState()
 
-      if input.length
-        @socket.emit 'input', inputLogEntry
-
+      @game.player.inputSequence++
       @game.inputs.push inputLogEntry
+      @socket.emit 'input', inputLogEntry
 
       @frame.request = window.requestAnimationFrame @frame.run.bind @
 

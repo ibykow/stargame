@@ -11,7 +11,7 @@ if require?
 
     { @tick, @initStates } = details.game
 
-    @player = new Player(@, details.player.id, socket)
+    @player = new Player(@, details.id)
     @player.name = 'Guest'
     @players = [@player]
     @loops = []
@@ -20,6 +20,7 @@ if require?
 
     @prevState = null
     @nextState = null
+    @shipState = null
     @inputs = []
 
   interpolation:
@@ -33,46 +34,53 @@ if require?
     for state in @initStates
       new Sprite(@, state.width, state.height, state.position, state.color)
 
-  correctPrediction: (shipState, tick) ->
-    # set the current ship state to the last known server state
-    @player.ship.setState(shipState)
+  correctPrediction: () ->
+    return unless @shipState?.inputSequence
+    if @shipState.synced
+      if @inputs.length > 20
+        @inputs.splice(0, @inputs.length - 20)
 
-    # Make sure our inputs go back far enough
-    return unless @inputs.length and tick.count >= @inputs[0].tick.count
+      return
+
+    # set the current ship state to the last known server state
+    # Sprite.interpolate(@player.ship, @shipState.ship, 0.9)
+    @player.ship.setState(@shipState.ship)
 
     # Match the input with the state
-    while i < @inputs.length
-      break if @inputs[i].tick.count >= tick.count
+    i = 0
+    for i in [0...@inputs.length]
+      if not @inputs[i].inputSequence?
+        console.log 'invalid inputEntry'
+      break if @inputs[i].inputSequence >= @shipState.inputSequence
 
+    # console.log 'replaying', 'i', i, 'inputs', @inputs, @inputs.length, 'state', @shipState, @player.ship.position
     # Remove the old inputs
     @inputs.splice(0, i)
 
-    # Add all the previous inputs together to be played forward
-    @player.input = (@inputs.reduce ((p, n) -> p.concat n.input), [])
-      .concat @player.input
+    if @inputs.length
+      temp = @inputs.map (e) -> e.input
+      # console.log 'temp', temp, @player.inputs, @player.inputs.length, @inputs[@inputs.length - 1]
 
-    # console.log 'Rewinding', @player.input.length if @player.input.length
+      if Array.isArray(@player.inputs[0]) or (@player.inputs.length is 0)
+        # console.log 'concating'
+        @player.inputs = temp.concat(@player.inputs)
+      else
+        # console.log 'pushing'
+        @player.inputs = @player.inputs.push temp
 
-    @player.input.length
+    # console.log "@player.inputs", @player.inputs, @inputs.length, @inputs
 
   processStates: ->
-    return if @nextState.processed
     @nextState.processed = true
 
-    [i, j, shipState] = [0, 0, null]
+    [i, j] = [0, 0]
 
-    loops = 0
     # associate each ship state with its previous state
-    # console.log 'intersecting', @nextState.ships.length, @prevState.ships.length
     while i < @nextState.ships.length
-      loops++
-      # remove our ship from the list
-      # console.log i, j, @nextState.ships[i], @nextState.ships[j]
-      # console.log 'setting', @nextState.ships[i].id, 'and', @prevState.ships[j]
 
+      # remove our ship from the list
       if @nextState.ships[i].id == @player.id
-        # console.log 'found my ship'
-        shipState = @nextState.ships.splice(i, 1)
+        @shipState = @nextState.ships.splice(i, 1)[0]
         continue
 
       return if j >= @prevState.ships.length
@@ -83,16 +91,12 @@ if require?
           id: @prevState.ships[j].id
           ship: @prevState.ships[j].ship
         # @nextState.ships[i].prevState = null
-        # console.log 'associated:', @nextState.ships[i].prevState, @prevState.ships[j]
       else if @nextState.ships[i].id > @prevState.ships[j].id
         j++
         continue
-
       i++
 
-    @correctPrediction(shipState, @nextState.tick) unless not shipState
-
-    @loops.push(loops)
+    @correctPrediction()
 
   update: ->
     super()
@@ -107,7 +111,6 @@ if require?
     @clear()
     sprite.draw() for sprite in @sprites
 
-    # console.log 'me:', @tick.count, @nextState.tick.count, @player.ship.position
     @player.ship.draw()
 
     for state in @nextState.ships
@@ -121,5 +124,5 @@ if require?
       @interpolation.step++
       inter = Sprite.interpolate.bind(@)(prevState, nextState, rate)
       color = state.ship.color
-      # console.log 'drawing', nextState, prevState, inter, rate
+
       Ship.draw(@c, inter.position, color)
