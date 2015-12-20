@@ -122,6 +122,7 @@ if require?
       prevState = state.prevState.ship
       rate = @interpolation.rate * @interpolation.step
       @interpolation.step++
+
       inter = Sprite.interpolate.bind(@)(prevState, nextState, rate)
       color = state.ship.color
 
