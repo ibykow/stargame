@@ -14,12 +14,8 @@ if require?
     # rate = 1/20 = 0.05
     # step = 1, 2, 3, 4, or 5, since 80ms has up to five 16ms frames
 
-    # rate = Math.min rate, 1
-
-    irate = 1 - rate
-
-    velocity: Util.lerp(prevState.velocity, nextState.velocity, rate, irate)
-    position: Util.lerp(prevState.position, nextState.position, rate, irate)
+    velocity: Util.lerp(prevState.velocity, nextState.velocity, rate)
+    position: Util.lerp(prevState.position, nextState.position, rate)
 
   constructor: (@game, @width = 10, @height = 10, @position, @color) ->
     return null unless @game
@@ -30,7 +26,6 @@ if require?
   updateVelocity: ->
     @velocity[0] = Math.trunc(@velocity[0] * @game.frictionRate * 100) / 100
     @velocity[1] = Math.trunc(@velocity[1] * @game.frictionRate * 100) / 100
-    # console.log 'velocity', @velocity
 
   updatePosition: ->
     @position[0] = (@position[0] + @velocity[0] + @game.width) %

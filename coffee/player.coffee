@@ -37,7 +37,4 @@ if require?
 
       @ship.update()
 
-      # if input.length
-        # console.log 'input', input, 'position', @ship.position, 'velocity', @ship.velocity
-
     @inputs = []

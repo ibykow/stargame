@@ -53,22 +53,16 @@ if require?
         console.log 'invalid inputEntry'
       break if @inputs[i].inputSequence >= @shipState.inputSequence
 
-    # console.log 'replaying', 'i', i, 'inputs', @inputs, @inputs.length, 'state', @shipState, @player.ship.position
     # Remove the old inputs
     @inputs.splice(0, i)
 
     if @inputs.length
       temp = @inputs.map (e) -> e.input
-      # console.log 'temp', temp, @player.inputs, @player.inputs.length, @inputs[@inputs.length - 1]
-
       if Array.isArray(@player.inputs[0]) or (@player.inputs.length is 0)
-        # console.log 'concating'
         @player.inputs = temp.concat(@player.inputs)
       else
-        # console.log 'pushing'
         @player.inputs = @player.inputs.push temp
 
-    # console.log "@player.inputs", @player.inputs, @inputs.length, @inputs
 
   processStates: ->
     @nextState.processed = true

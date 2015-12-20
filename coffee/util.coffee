@@ -21,13 +21,11 @@
       Util.padString(Util.randomInt(min, max).toString 16) +
       Util.padString(Util.randomInt(min, max).toString 16)
 
-  lerp: (p0, p1, rate, irate) ->
-    return p0 if rate is 0
-    return p1 if rate is 1
-
+  lerp: (p0, p1, rate) ->
+    return p0 if rate <= 0
+    return p1 if rate >= 1
     return p1 unless p1 and p0 and (len = Math.min p0.length, p1.length) > 0
-    irate ?= 1 - rate
-    Math.trunc((p1[i] * rate + p0[i] * irate) * 100) / 100 for i in [0...len]
+    Math.trunc(((p1[i] - p0[i]) * rate + p0[i]) * 100) / 100 for i in [0...len]
 
   lerpAll: (points, rate) ->
     irate = 1 - rate

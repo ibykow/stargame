@@ -116,7 +116,6 @@ client = null
 
       @game.step timestamp
 
-      # console.log 'position at', @game.player.inputSequence, @game.player.ship.position
       inputLogEntry =
         count: @game.tick.count
         input: input
