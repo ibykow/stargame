@@ -19,6 +19,10 @@ app.get('/', function (req, res) {
     res.sendFile(__dirname + '/index.html');
 });
 
+app.get('/css/*', function (req, res) {
+    res.sendFile(req.params[0], { root: __dirname + '/static/css' });
+});
+
 app.get('/*', function (req, res) {
     res.sendFile(req.params[0], { root: __dirname });
 });

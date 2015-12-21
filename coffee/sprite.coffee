@@ -28,18 +28,18 @@ if require?
     @updateView()
 
   isInView: ->
-    @game.canvas? and
+    @game.c? and
     (@view[0] >= -@halfWidth) and
     (@view[1] >= -@halfHeight) and
     (@view[0] <= @game.canvas.width + @halfWidth) and
     (@view[1] <= @game.canvas.height + @halfHeight)
 
   updateView: ->
-    @view = [
-      @position[0] - @game.viewOffset[0],
-      @position[1] - @game.viewOffset[1],
-      @position[3]
-    ]
+    return unless @game.c?
+    limit = [@game.width, @game.height]
+    @view = Util.toroidalDelta @position, @game.viewOffset, limit
+    # console.log '@view', @view, @position, @game.viewOffset, limit
+    @view[2] = @position[2]
 
     @visible = @isInView()
 

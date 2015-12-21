@@ -5,7 +5,6 @@ if require?
   @BRAKE_RATE: 0.8
   @draw: (c, position, color) ->
     return unless c and position and color
-
     c.save()
     c.fillStyle = color
     c.translate position...
@@ -21,10 +20,21 @@ if require?
 
   constructor: (@player) ->
     return null unless @player
-    super @player.game
     @gear = 0
+    @width = 20
+    @height = 20
     @brake = false
+    super @player.game
 
   draw: ->
     c = @player.game.c
-    Ship.draw(c, @position, @color)
+    Ship.draw(c, @view, @color)
+
+  updateViewMaster: ->
+    @view = [@game.canvas.halfWidth, @game.canvas.halfHeight, @position[2]]
+    @game.viewOffset = [
+      @position[0] - @game.canvas.halfWidth,
+      @position[1] - @game.canvas.halfHeight
+    ]
+
+    @visible = true

@@ -8,7 +8,7 @@ module.exports = class Server
     return unless @io
 
     # create a new game
-    @game = new Game(@, 1024, 600, 10)
+    @game = new Game(@, (1 << 17) + 1, (1 << 17) + 1, 4000)
 
     # initialize io event handlers
     @io.on(event, cb.bind(@)) for event, cb of @events.io

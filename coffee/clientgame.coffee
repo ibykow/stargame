@@ -14,7 +14,6 @@ if require?
     @player = new Player(@, details.id)
     @player.name = 'Guest'
     @players = [@player]
-    @loops = []
 
     @sprites = @generateSprites()
 
@@ -27,8 +26,6 @@ if require?
     reset: ->
       @interpolation.step = 0
       @interpolation.rate = Client.FRAME_MS / @nextState.tick.dt
-    step: 0
-    rate: 0
 
   generateSprites: ->
     for state in @initStates
@@ -62,7 +59,6 @@ if require?
         @player.inputs = temp.concat(@player.inputs)
       else
         @player.inputs = @player.inputs.push temp
-
 
   processStates: ->
     @nextState.processed = true

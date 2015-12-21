@@ -5,9 +5,11 @@
     return [] if len < 1
 
     for i in [0...len]
-      delta = p1[i] - p0[i]
+      delta = p0[i] - p1[i]
       adelta = Math.abs delta
-      sign = delta / adelta
+      sign = 1
+      if delta < 0
+        sign *= -1
 
       if delta is 0
         p1[i]

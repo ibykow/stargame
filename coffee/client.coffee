@@ -2,7 +2,8 @@ client = null
 
 # Make Client exportable to support tests
 (module ? {}).exports = class Client
-  @INNER_WIDTH_OFFSET: 4
+  @INNER_WIDTH_OFFSET: 0
+  @INNER_HEIGHT_OFFSET: 0
   @FRAME_MS: 16
   @URI: 'http://192.168.0.101:3000'
   @COLORS:
@@ -15,7 +16,7 @@ client = null
     # initialize canvas
     @canvas.style.padding = 0
     @canvas.style.margin = 0
-    @canvas.style.left = (Client.INNER_WIDTH_OFFSET >> 1) + 'px'
+    # @canvas.style.left = 0 + 'px'
 
     # connect to server
     @socket = io.connect(Client.URI)
@@ -54,6 +55,8 @@ client = null
 
         @socket.emit 'join', @game.player.name
         @game.player.ship.setState(data.ship)
+        @game.player.ship.updateView = @game.player.ship.updateViewMaster
+
 
       join: (data) ->
         console.log 'player', data.id + ', ' + data.name, 'has joined'
@@ -104,7 +107,7 @@ client = null
 
       resize: (e) ->
         @canvas.width = window.innerWidth - Client.INNER_WIDTH_OFFSET
-        @canvas.height = window.innerHeight - Client.INNER_WIDTH_OFFSET
+        @canvas.height = window.innerHeight - Client.INNER_HEIGHT_OFFSET
         @canvas.halfWidth = @canvas.width >> 1
         @canvas.halfHeight = @canvas.height >> 1
         @canvas.boundingRect = @canvas.getBoundingClientRect()
