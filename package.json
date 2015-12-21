@@ -1,5 +1,5 @@
 {
-  "name": "netgame",
+  "name": "stargame",
   "version": "0.0.0",
   "description": "A network game",
   "main": "app.js",

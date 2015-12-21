@@ -5,7 +5,6 @@ if require?
   constructor: (@game, @a, @b, @color, @alpha, @id) ->
     return unless @game and @a and @b
     @color ?= "#0f0"
-    console.log 'vector color', @color
     @update()
     @alpha ?= 1
 

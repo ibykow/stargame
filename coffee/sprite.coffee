@@ -45,7 +45,8 @@ if require?
   updateView: ->
     return unless @game.c?
     @view = Sprite.getView(@game, @position)
-    @visible = @isInView()
+    if @visible = @isInView()
+      @game.visibleSprites.push @
 
   updateVelocity: ->
     @velocity[0] = Math.trunc(@velocity[0] * @game.frictionRate * 100) / 100

@@ -15,6 +15,7 @@ if require?
     @player.name = 'Guest'
     @players = [@player]
 
+    @visibleSprites = []
     @sprites = @generateSprites()
 
     @prevState = null
@@ -99,7 +100,8 @@ if require?
 
   draw: ->
     @clear()
-    sprite.draw() for sprite in @sprites
+    sprite.draw() for sprite in @visibleSprites
+    @visibleSprites = []
 
     @player.ship.draw()
     vector.draw() for vector in @player.vectors
@@ -117,7 +119,5 @@ if require?
       inter = Sprite.interpolate.bind(@)(prevState, nextState, rate)
       view = Sprite.getView(@, inter.position)
       color = state.ship.color
-
-      # console.log 'inter', inter.position, color, 'view', view
 
       Ship.draw(@c, view, color)
