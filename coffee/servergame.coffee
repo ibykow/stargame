@@ -14,7 +14,7 @@ Sprite = require './sprite'
     for i in [0..n]
       width = Util.randomInt(5, 20)
       height = Util.randomInt(5, 20)
-      new Sprite(@, width, height)
+      new Sprite(@, null, width, height)
 
   getStarStates: ->
     for star in @sprites

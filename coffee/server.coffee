@@ -4,11 +4,12 @@ Game = require './servergame'
 
 module.exports = class Server
   @FRAME_INTERVAL: 80
+  @startPosition: null
   constructor: (@io) ->
     return unless @io
 
     # create a new game
-    @game = new Game(@, (1 << 17) + 1, (1 << 17) + 1, 4000)
+    @game = new Game(@, (1 << 17) + 1, (1 << 17) + 1, 10000)
 
     # initialize io event handlers
     @io.on(event, cb.bind(@)) for event, cb of @events.io
@@ -26,7 +27,17 @@ module.exports = class Server
     io:
       connection: (socket) -> # a client connects
         # create a player object around the socket
-        player = @game.newPlayer(socket)
+        player = null
+        if Server.startPosition
+          player = @game.newPlayer(socket, [
+            Server.startPosition[0],
+            Server.startPosition[1],
+            0])
+        else
+          player = @game.newPlayer(socket)
+
+        Server.startPosition ?= player.ship.position
+        console.log 'position', Server.startPosition
         player.inputs = []
 
         # associate event handler

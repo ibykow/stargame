@@ -2,6 +2,14 @@ if require?
   Util = require './util'
 
 (module ? {}).exports = class Sprite
+  @getView: (game, position) ->
+    return unless game and position
+
+    limit = [game.width, game.height]
+    view = Util.toroidalDelta position, game.viewOffset, limit
+    view[2] = position[2]
+    view
+
   @interpolate: (prevState, nextState, rate) ->
     # rate: (ms-per-frame / dt) * step
     # step: the frame number between prevState and nextState
@@ -17,7 +25,7 @@ if require?
     velocity: Util.lerp(prevState.velocity, nextState.velocity, rate)
     position: Util.lerp(prevState.position, nextState.position, rate)
 
-  constructor: (@game, @width = 10, @height = 10, @position, @color) ->
+  constructor: (@game, @position, @width = 10, @height = 10, @color) ->
     return null unless @game
     @position ?= @game.randomPosition()
     @color ?= Util.randomColorString()
@@ -36,11 +44,7 @@ if require?
 
   updateView: ->
     return unless @game.c?
-    limit = [@game.width, @game.height]
-    @view = Util.toroidalDelta @position, @game.viewOffset, limit
-    # console.log '@view', @view, @position, @game.viewOffset, limit
-    @view[2] = @position[2]
-
+    @view = Sprite.getView(@game, @position)
     @visible = @isInView()
 
   updateVelocity: ->
@@ -48,11 +52,8 @@ if require?
     @velocity[1] = Math.trunc(@velocity[1] * @game.frictionRate * 100) / 100
 
   updatePosition: ->
-    @position[0] = (@position[0] + @velocity[0] + @game.width) %
-      @game.width
-
-    @position[1] = (@position[1] + @velocity[1] + @game.height) %
-      @game.height
+    @position[0] = (@position[0] + @velocity[0] + @game.width) % @game.width
+    @position[1] = (@position[1] + @velocity[1] + @game.height) % @game.height
 
   update: ->
     @updateVelocity()

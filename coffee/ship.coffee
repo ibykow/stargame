@@ -18,17 +18,16 @@ if require?
     c.fill()
     c.restore()
 
-  constructor: (@player) ->
+  constructor: (@player, @position) ->
     return null unless @player
     @gear = 0
     @width = 20
     @height = 20
     @brake = false
-    super @player.game
+    super @player.game, @position
 
   draw: ->
-    c = @player.game.c
-    Ship.draw(c, @view, @color)
+    Ship.draw(@player.game.c, @view, @color)
 
   updateViewMaster: ->
     @view = [@game.canvas.halfWidth, @game.canvas.halfHeight, @position[2]]

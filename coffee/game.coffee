@@ -16,9 +16,9 @@ if require?
   randomPosition: ->
     [Util.randomInt(0, @width), Util.randomInt(0, @height), 0]
 
-  newPlayer: (socket) ->
+  newPlayer: (socket, position) ->
     i = Util.findEmptySlot @players
-    @players[i] = new Player(@, i + 1, socket)
+    @players[i] = new Player(@, i + 1, socket, position)
 
   removePlayer: (p) ->
     return unless p and p.id

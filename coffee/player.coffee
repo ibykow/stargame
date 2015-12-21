@@ -3,9 +3,10 @@ if require?
 
 (module ? {}).exports = class Player
   @TURN_RATE: 0.06
-  constructor: (@game, @id, @socket) ->
+  constructor: (@game, @id, @socket, position) ->
     return null unless @game and @id
-    @ship = new Ship(@)
+    console.log 'player', position
+    @ship = new Ship(@, position)
     @inputs = []
     @inputSequence = 0
 

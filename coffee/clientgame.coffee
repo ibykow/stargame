@@ -29,7 +29,7 @@ if require?
 
   generateSprites: ->
     for state in @initStates
-      new Sprite(@, state.width, state.height, state.position, state.color)
+      new Sprite(@, state.position, state.width, state.height, state.color)
 
   correctPrediction: () ->
     return unless @shipState?.inputSequence
@@ -114,6 +114,9 @@ if require?
       @interpolation.step++
 
       inter = Sprite.interpolate.bind(@)(prevState, nextState, rate)
+      view = Sprite.getView(@, inter.position)
       color = state.ship.color
 
-      Ship.draw(@c, inter.position, color)
+      # console.log 'inter', inter.position, color, 'view', view
+
+      Ship.draw(@c, view, color)
