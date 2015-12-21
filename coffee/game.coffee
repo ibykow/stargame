@@ -7,6 +7,7 @@ if require?
     @players = []
     @sprites = []
     @paused = true
+    @viewOffset = [0, 0] # userd by sprites
     @tick =
       count: 0
       time: 0

@@ -1,4 +1,22 @@
 (module ? {}).exports = Util =
+  toroidalDelta: (p0, p1, pLimit) ->
+    return unless p0 and p1 and pLimit
+    len = Math.min(Math.min(p0.length, p1.length), pLimit.length)
+    return [] if len < 1
+
+    for i in [0...len]
+      delta = p1[i] - p0[i]
+      adelta = Math.abs delta
+      sign = delta / adelta
+
+      if delta is 0
+        p1[i]
+      else
+        if adelta > pLimit[i] / 2
+          (pLimit[i] - adelta) * sign
+        else
+          delta
+
   findEmptySlot: (arr) ->
     return unless arr and Array.isArray arr
     for slot in [0..arr.length]

@@ -22,6 +22,26 @@ if require?
     @position ?= @game.randomPosition()
     @color ?= Util.randomColorString()
     @velocity = [0, 0]
+    @visible = false
+    @halfWidth = @width / 2
+    @halfHeight = @height / 2
+    @updateView()
+
+  isInView: ->
+    @game.canvas? and
+    (@view[0] >= -@halfWidth) and
+    (@view[1] >= -@halfHeight) and
+    (@view[0] <= @game.canvas.width + @halfWidth) and
+    (@view[1] <= @game.canvas.height + @halfHeight)
+
+  updateView: ->
+    @view = [
+      @position[0] - @game.viewOffset[0],
+      @position[1] - @game.viewOffset[1],
+      @position[3]
+    ]
+
+    @visible = @isInView()
 
   updateVelocity: ->
     @velocity[0] = Math.trunc(@velocity[0] * @game.frictionRate * 100) / 100
@@ -37,6 +57,7 @@ if require?
   update: ->
     @updateVelocity()
     @updatePosition()
+    @updateView()
 
   getState: ->
     position: @position
@@ -53,7 +74,8 @@ if require?
     @color = state.color ? @color
 
   draw: ->
+    return unless @visible
     @game.c.fillStyle = @color
-    @game.c.fillRect  @position[0] - @width / 2,
-                      @position[1] - @height / 2,
+    @game.c.fillRect  @view[0] - @width / 2,
+                      @view[1] - @height / 2,
                       @width, @height
