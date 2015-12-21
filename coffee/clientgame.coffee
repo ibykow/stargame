@@ -102,6 +102,7 @@ if require?
     sprite.draw() for sprite in @sprites
 
     @player.ship.draw()
+    vector.draw() for vector in @player.vectors
 
     for state in @nextState.ships
       if not state.prevState

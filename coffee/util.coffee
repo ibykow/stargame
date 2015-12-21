@@ -8,13 +8,13 @@
       delta = p0[i] - p1[i]
       adelta = Math.abs delta
       sign = 1
-      if delta < 0
+      if delta > 0
         sign *= -1
 
       if delta is 0
         p1[i]
       else
-        if adelta > pLimit[i] / 2
+        if adelta > (pLimit[i] / 2)
           (pLimit[i] - adelta) * sign
         else
           delta

@@ -5,8 +5,8 @@ if require?
   @TURN_RATE: 0.06
   constructor: (@game, @id, @socket, position) ->
     return null unless @game and @id
-    console.log 'player', position
     @ship = new Ship(@, position)
+    @vectors = []
     @inputs = []
     @inputSequence = 0
 
@@ -29,6 +29,9 @@ if require?
       @ship.velocity[0] *= Ship.BRAKE_RATE
       @ship.velocity[1] *= Ship.BRAKE_RATE
 
+  updateVectors: ->
+    vector.update() for vector in @vectors
+
   update: ->
     @inputs = [@inputs] unless @inputs.length and Array.isArray @inputs[0]
 
@@ -39,3 +42,5 @@ if require?
       @ship.update()
 
     @inputs = []
+
+    @updateVectors()

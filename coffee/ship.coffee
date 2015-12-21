@@ -30,7 +30,12 @@ if require?
     Ship.draw(@player.game.c, @view, @color)
 
   updateViewMaster: ->
-    @view = [@game.canvas.halfWidth, @game.canvas.halfHeight, @position[2]]
+    @view = [
+      @game.canvas.halfWidth + @velocity[0],
+      @game.canvas.halfHeight + @velocity[1],
+      @position[2]
+    ]
+
     @game.viewOffset = [
       @position[0] - @game.canvas.halfWidth,
       @position[1] - @game.canvas.halfHeight
