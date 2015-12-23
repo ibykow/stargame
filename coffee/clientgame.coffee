@@ -98,6 +98,12 @@ if require?
         state = data.ships[j]
         @ships.push new InterpolatedShip(@player, state.id, state.ship)
 
+      if i is 0 and j > 0
+        ship = @ships[0]
+        console.log 'vector to', ship
+        vector = new Vector @, @player.ship, ship, "#00f", 0.8, 2, ship.id
+        @player.vectors.push vector
+
     # sort our list of ships by id
     (@ships.sort (a, b) -> a.id - b.id) if inserted
     @correctPrediction()

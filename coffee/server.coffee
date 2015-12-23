@@ -28,17 +28,15 @@ module.exports = class Server
       connection: (socket) -> # a client connects
         # create a player object around the socket
         player = null
-        if Server.startPosition
-          player = @game.newPlayer(socket, [
-            Server.startPosition[0],
-            Server.startPosition[1],
-            0])
-        else
-          player = @game.newPlayer(socket)
+        # if Server.startPosition
+        #   player = @game.newPlayer(socket, [
+        #     Server.startPosition[0],
+        #     Server.startPosition[1],
+        #     0])
+        # else
+        player = @game.newPlayer(socket)
 
         Server.startPosition ?= player.ship.position
-        console.log 'position', Server.startPosition
-        player.inputs = []
 
         # associate event handler
         socket.on(event, cb.bind(player)) for event, cb of @events.socket

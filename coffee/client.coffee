@@ -57,8 +57,8 @@ client = null
         @socket.emit 'join', @game.player.name
         @game.player.ship.setState(data.ship)
         @game.player.ship.updateView = @game.player.ship.updateViewMaster
-        @game.player.vectors.push(new Vector(@game,
-          @game.player.ship, @game.sprites[0], "#88f", 0.35))
+        # @game.player.vectors.push(new Vector(@game,
+        #   @game.player.ship, @game.sprites[0], "#8f8", 0.35))
 
       join: (data) ->
         console.log 'player', data.id + ', ' + data.name, 'has joined'

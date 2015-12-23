@@ -27,6 +27,13 @@
   isNumeric: (v) ->
     not isNaN(parseFloat(v)) and isFinite v
 
+  indexOf: (arr, f) ->
+    return -1 unless Array.isArray(arr) and
+      arr.length and typeof f is 'function'
+
+    return i if f(arr[i], i, arr) for i in [0...arr.length]
+    return -1
+
   randomInt: (min = 0, max = 99) ->
     return Math.floor(Math.random() * (max - min) + min)
 
