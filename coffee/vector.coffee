@@ -10,19 +10,11 @@ if require?
 
   update: ->
     limit = [@game.width, @game.height]
-    p = @position = Util.toroidalDelta(@a.view, @b.view, limit)
+    p = Util.toroidalDelta(@a.view, @b.view, limit)
+    p[2] = Math.atan2(p[0], p[1])
 
-    @position[2] = Math.atan2(p[0], p[1])
     @theta = Math.PI - p[2]
-
     @magnitude = Math.sqrt(p[0] * p[0] + p[1] * p[1])
-    if @magnitude - @prevMagnitude > 100
-      console.log 'delta mag', @magnitude - @prevMagnitude
-      console.log '@a.position', @a.position
-      console.log '@b.position', @b.position
-      console.log '@position', @position
-      console.log ' '
-    @prevMagnitude = @magnitude
 
     if @magnitude < @game.canvas.halfHeight
       @viewAlpha = Math.min @alpha, @magnitude / @game.canvas.halfHeight

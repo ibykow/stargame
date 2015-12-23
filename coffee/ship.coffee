@@ -31,8 +31,8 @@ if require?
 
   updateViewMaster: ->
     @view = [
-      @game.canvas.halfWidth + @velocity[0],
-      @game.canvas.halfHeight + @velocity[1],
+      @game.canvas.halfWidth,
+      @game.canvas.halfHeight,
       @position[2]
     ]
 

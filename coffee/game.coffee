@@ -3,7 +3,7 @@ if require?
   Player = require './player'
 
 (module ? {}).exports = class Game
-  constructor: (@width = 1024, @height = 600, @frictionRate = 0.98) ->
+  constructor: (@width = 1024, @height = 600, @frictionRate = 0.975) ->
     @players = []
     @sprites = []
     @paused = true

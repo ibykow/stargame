@@ -99,6 +99,7 @@ if require?
         state = data.ships[j]
         @ships.push new InterpolatedShip(@player, state.id, state.ship)
 
+      # add a vector to the first ship
       if i is 0 and j > 0
         ship = @ships[0]
         console.log 'vector to', ship
@@ -127,6 +128,13 @@ if require?
 
     @player.ship.draw()
     vector.draw() for vector in @player.vectors
+
+    @c.fillStyle = "#fff"
+    @c.font = "12px Courier New"
+    @c.fillText 'x:' + @player.ship.position[0].toFixed(0), 0, 8
+    @c.fillText 'y:' + @player.ship.position[1].toFixed(0), 80, 8
+    @c.fillText 'r:' + @player.ship.position[2].toFixed(2), 160, 8
+
 
   step: (time) ->
     super time
