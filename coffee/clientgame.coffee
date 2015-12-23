@@ -11,22 +11,22 @@ if require?
 
     { @tick, @initStates } = details.game
 
+    @visibleSprites = []
+
+    @sprites = @generateSprites()
+
     @player = new Player(@, details.id)
     @player.name = 'Guest'
     @players = [@player]
-
-    @visibleSprites = []
-    @sprites = @generateSprites()
-
-    @prevState = null
-    @nextState = null
     @shipState = null
+    @ships = []
+
     @inputs = []
 
   interpolation:
-    reset: ->
+    reset: (dt) ->
       @interpolation.step = 0
-      @interpolation.rate = Client.FRAME_MS / @nextState.tick.dt
+      @interpolation.rate = Client.FRAME_MS / dt
 
   generateSprites: ->
     for state in @initStates
@@ -41,7 +41,6 @@ if require?
       return
 
     # set the current ship state to the last known server state
-    # Sprite.interpolate(@player.ship, @shipState.ship, 0.9)
     @player.ship.setState(@shipState.ship)
 
     # Match the input with the state
@@ -61,37 +60,53 @@ if require?
       else
         @player.inputs = @player.inputs.push temp
 
-  processStates: ->
-    @nextState.processed = true
+  processServerData: (data) ->
+    inserted = false
 
     [i, j] = [0, 0]
 
+    # remove our ship from the pile
+    for i in [0...data.ships.length]
+      if data.ships[i].id == @player.id
+        @shipState = data.ships.splice(i, 1)[0]
+        break
+
+    i = 0
+
     # associate each ship state with its previous state
-    while i < @nextState.ships.length
-
-      # remove our ship from the list
-      if @nextState.ships[i].id == @player.id
-        @shipState = @nextState.ships.splice(i, 1)[0]
+    while i < data.ships.length and j < @ships.length
+      state = data.ships[i]
+      ship = @ships[j]
+      if state.id is ship.id
+        ship.setState state.ship
+      else if state.id > ship.id
+        @ships.splice(j, 1)
         continue
+      else
+        @ships.push new InterpolatedShip(@player, state.id, state.ship)
+        inserted = true
 
-      return if j >= @prevState.ships.length
-
-      # associate the ship state with its previous state
-      if @nextState.ships[i].id is @prevState.ships[j].id
-        @nextState.ships[i].prevState =
-          id: @prevState.ships[j].id
-          ship: @prevState.ships[j].ship
-        # @nextState.ships[i].prevState = null
-      else if @nextState.ships[i].id > @prevState.ships[j].id
-        j++
-        continue
       i++
+      j++
 
+    if j > i
+      # remove disconnected ships
+      @ships.length = i
+    else
+      # insert new ships
+      for j in [i...data.ships.length]
+        state = data.ships[j]
+        @ships.push new InterpolatedShip(@player, state.id, state.ship)
+
+    # sort our list of ships by id
+    (@ships.sort (a, b) -> a.id - b.id) if inserted
     @correctPrediction()
+    @interpolation.reset.bind(@)(data.tick.dt)
 
   update: ->
+    ship.update() for ship in @ships
+    @interpolation.step++
     super()
-    @draw()
 
   clear: ->
     @c.globalAlpha = 1
@@ -106,18 +121,6 @@ if require?
     @player.ship.draw()
     vector.draw() for vector in @player.vectors
 
-    for state in @nextState.ships
-      if not state.prevState
-        Ship.draw(@c, state.ship.position, state.ship.color)
-        continue
-
-      nextState = state.ship
-      prevState = state.prevState.ship
-      rate = @interpolation.rate * @interpolation.step
-      @interpolation.step++
-
-      inter = Sprite.interpolate.bind(@)(prevState, nextState, rate)
-      view = Sprite.getView(@, inter.position)
-      color = state.ship.color
-
-      Ship.draw(@c, view, color)
+  step: (time) ->
+    super time
+    @draw()

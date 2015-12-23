@@ -46,6 +46,7 @@ client = null
         context = @canvas.getContext('2d')
 
         @game = new ClientGame(data, @canvas, context)
+        @game.client = @
 
         @keymap[32] = 'brake'
         @keymap[37] = 'left'
@@ -73,28 +74,17 @@ client = null
       state: (data) ->
         # set the first state
         return unless data.ships
-        @game.nextState = data
-        console.log @game.nextState
 
         # set the tick, then set and process the new state
         @game.tick = data.tick
-        @events.socketALT.state.bind(@)(data)
+        @game.processServerData.bind(@game)(data)
 
         # update the state event handler
         @socket.removeAllListeners('state')
-        @socket.on('state', @events.socketALT.state.bind @)
+        @socket.on('state', @game.processServerData.bind @game)
 
         # start the game
         @frame.run.bind(@) @game.tick.time
-
-    socketALT:
-      state: (data) ->
-        @game.prevState =
-          tick: @game.nextState.tick
-          ships: @game.nextState.ships
-        @game.nextState = data
-        @game.processStates()
-        @game.interpolation.reset.bind(@game)()
 
     window:
       keydown: (e) -> @keys[e.keyCode] = true

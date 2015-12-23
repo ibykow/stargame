@@ -36,12 +36,6 @@ Sprite = require './sprite'
         ship: player.ship.getState()
         synced: synced
 
-      # if player.clientState
-      #   console.log player.clientState.position[0], player.ship.position[0],
-      #               player.clientState.position[1], player.ship.position[1],
-      #               player.clientState.position[2], player.ship.position[2],
-      #               synced
-
       player.clientState = null
 
     states

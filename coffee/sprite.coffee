@@ -10,21 +10,6 @@ if require?
     view[2] = position[2]
     view
 
-  @interpolate: (prevState, nextState, rate) ->
-    # rate: (ms-per-frame / dt) * step
-    # step: the frame number between prevState and nextState
-    # dt = nextState.tick.time - prevState.tick.time
-    # ex:
-    # nextState.tick.time = 1170
-    # prevState.tick.time = 1090
-    # dt = 1170 - 1090 = 80
-    # ms-per-frame = 16
-    # rate = 1/20 = 0.05
-    # step = 1, 2, 3, 4, or 5, since 80ms has up to five 16ms frames
-
-    velocity: Util.lerp(prevState.velocity, nextState.velocity, rate)
-    position: Util.lerp(prevState.position, nextState.position, rate)
-
   constructor: (@game, @position, @width = 10, @height = 10, @color) ->
     return null unless @game
     @position ?= @game.randomPosition()

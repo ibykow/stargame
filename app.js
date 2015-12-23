@@ -16,7 +16,7 @@ http.listen(port, function (err) {
 });
 
 app.get('/', function (req, res) {
-    res.sendFile(__dirname + '/index.html');
+    res.sendFile(__dirname + '/static/index.html');
 });
 
 app.get('/css/*', function (req, res) {
