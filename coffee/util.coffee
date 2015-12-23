@@ -11,13 +11,10 @@
       if delta > 0
         sign *= -1
 
-      if delta is 0
-        p1[i]
+      if adelta > (pLimit[i] / 2)
+        (pLimit[i] - adelta) * sign
       else
-        if adelta > (pLimit[i] / 2)
-          (pLimit[i] - adelta) * sign
-        else
-          delta
+        delta
 
   findEmptySlot: (arr) ->
     return unless arr and Array.isArray arr
