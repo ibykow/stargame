@@ -7,6 +7,8 @@ if require?
 
     limit = [game.width, game.height]
     view = Util.toroidalDelta position, game.viewOffset, limit
+    # view[0] *= game.zoom
+    # view[1] *= game.zoom
     view[2] = position[2]
     view
 
@@ -23,8 +25,8 @@ if require?
   isInView: ->
     w = @halfWidth * @game.zoom
     h = @halfHeight * @game.zoom
-    cw = @game.canvas.width / @game.zoom
-    ch = @game.canvas.height / @game.zoom
+    cw = @game.canvas.width
+    ch = @game.canvas.height
     @game.c? and (@view[0] >= -w) and (@view[1] >= -h) and
       (@view[0] <= cw + w) and (@view[1] <= ch + h)
 
@@ -64,6 +66,9 @@ if require?
   draw: ->
     return unless @visible
     @game.c.fillStyle = @color
-    @game.c.fillRect  (@view[0] - @width / 2) * @game.zoom,
-                      (@view[1] - @height / 2) * @game.zoom,
+    # @game.c.fillRect  (@view[0] - @width / 2) * @game.zoom,
+    #                   (@view[1] - @height / 2) * @game.zoom,
+    #                   @width * @game.zoom, @height * @game.zoom
+    @game.c.fillRect  @view[0] - @width * @game.zoom / 2,
+                      @view[1] - @height * @game.zoom / 2,
                       @width * @game.zoom, @height * @game.zoom

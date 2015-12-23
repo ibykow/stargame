@@ -42,6 +42,9 @@ client = null
 
   events:
     socket:
+      error: (err) ->
+        console.log "Error:", err
+
       welcome: (data) ->
         context = @canvas.getContext('2d')
 
@@ -56,7 +59,8 @@ client = null
 
         @socket.emit 'join', @game.player.name
         @game.player.ship.setState(data.ship)
-        @game.player.ship.updateView = @game.player.ship.updateViewMaster
+        @game.player.ship.updateView = Ship.updateViewMaster
+        # @game.player.ship.draw = Ship.drawMaster
         # @game.player.vectors.push(new Vector(@game,
         #   @game.player.ship, @game.sprites[0], "#8f8", 0.35))
 

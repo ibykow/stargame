@@ -4,12 +4,13 @@ Game = require './servergame'
 
 module.exports = class Server
   @FRAME_INTERVAL: 80
+  @MAP_SIZE: (1 << 15) + 1
   @startPosition: null
   constructor: (@io) ->
     return unless @io
 
     # create a new game
-    @game = new Game(@, (1 << 14) + 1, (1 << 14) + 1, 4000)
+    @game = new Game(@, Server.MAP_SIZE, Server.MAP_SIZE, 4000, 0.99)
 
     # initialize io event handlers
     @io.on(event, cb.bind(@)) for event, cb of @events.io
@@ -97,8 +98,15 @@ module.exports = class Server
 
   frame:
     run: (timestamp) ->
+      dt = +new Date
       @game.step timestamp
-      ms = Server.FRAME_INTERVAL
-      @frame.request = setTimeout((=> @frame.run.bind(@) (+new Date)), ms)
+      dt = +new Date - dt
+      ms = Server.FRAME_INTERVAL - dt
+
+      if ms < 10
+        ms = 10
+
+      @frame.request = setTimeout((=> @frame.run.bind(@)(+new Date)), ms)
+
     stop: ->
       clearTimeout(@frame.request)

@@ -2,7 +2,9 @@ if require?
   Sprite = require './sprite'
 
 (module ? {}).exports = class Ship extends Sprite
-  @BRAKE_RATE: 0.8
+  @BRAKE_RATE: 0.94
+  @DEFAULT_ACC_FACTOR: 2
+  @TURN_RATE: 0.06
   @draw: (c, position, color) ->
     return unless c and position and color
     c.save()
@@ -20,25 +22,44 @@ if require?
 
   constructor: (@player, @position) ->
     return null unless @player
+    @accFactor = Ship.DEFAULT_ACC_FACTOR
     @gear = 0
     @width = 20
     @height = 20
-    @brake = false
     super @player.game, @position
+
+  forward: ->
+    @velocity[0] += Math.cos(@position[2]) * @accFactor
+    @velocity[1] += Math.sin(@position[2]) * @accFactor
+
+  reverse: ->
+    @velocity[0] -= Math.cos @position[2]
+    @velocity[1] -= Math.sin @position[2]
+
+  left: ->
+    @position[2] -= Ship.TURN_RATE
+
+  right: ->
+    @position[2] += Ship.TURN_RATE
+
+  brake: ->
+    @velocity[0] *= Ship.BRAKE_RATE
+    @velocity[1] *= Ship.BRAKE_RATE
 
   draw: ->
     Ship.draw(@player.game.c, @view, @color)
 
-  updateViewMaster: ->
-    @view = [
-      @game.canvas.halfWidth,
-      @game.canvas.halfHeight,
-      @position[2]
-    ]
+  @drawMaster: ->
+    Ship.draw(@player.game.c,
+      [ @game.canvas.halfWidth + @velocity[0],
+        @game.canvas.halfHeight + @velocity[1],
+        @position[2]], @color)
 
-    @game.viewOffset = [
-      @position[0] - @game.canvas.halfWidth,
-      @position[1] - @game.canvas.halfHeight
-    ]
+  @updateViewMaster: ->
+    @view = [@game.canvas.halfWidth + @velocity[0],
+      @game.canvas.halfHeight + @velocity[1],
+      @position[2]]
 
+    @game.viewOffset = [@position[0] - @game.canvas.halfWidth,
+                        @position[1] - @game.canvas.halfHeight]
     @visible = true

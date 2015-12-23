@@ -2,7 +2,6 @@ if require?
   Ship = require './ship'
 
 (module ? {}).exports = class Player
-  @TURN_RATE: 0.06
   constructor: (@game, @id, @socket, position) ->
     return null unless @game and @id
     @ship = new Ship(@, position)
@@ -12,22 +11,19 @@ if require?
 
   actions:
     forward: ->
-      @ship.velocity[0] += Math.cos(@ship.position[2])
-      @ship.velocity[1] += Math.sin(@ship.position[2])
+      @ship.forward()
 
     reverse: ->
-      @ship.velocity[0] -= Math.cos(@ship.position[2])
-      @ship.velocity[1] -= Math.sin(@ship.position[2])
+      @ship.reverse()
 
     left: ->
-      @ship.position[2] -= Player.TURN_RATE
+      @ship.left()
 
     right: ->
-      @ship.position[2] += Player.TURN_RATE
+      @ship.right()
 
     brake: ->
-      @ship.velocity[0] *= Ship.BRAKE_RATE
-      @ship.velocity[1] *= Ship.BRAKE_RATE
+      @ship.brake()
 
   updateVectors: ->
     vector.update() for vector in @vectors

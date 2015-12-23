@@ -20,7 +20,8 @@ if require?
     @players = [@player]
     @shipState = null
     @ships = []
-    @zoom = 0.25
+    # @zoom = 0.2
+    @zoom = 1
 
     @inputs = []
 
@@ -130,11 +131,12 @@ if require?
     vector.draw() for vector in @player.vectors
 
     @c.fillStyle = "#fff"
-    @c.font = "12px Courier New"
-    @c.fillText 'x:' + @player.ship.position[0].toFixed(0), 0, 8
-    @c.fillText 'y:' + @player.ship.position[1].toFixed(0), 80, 8
-    @c.fillText 'r:' + @player.ship.position[2].toFixed(2), 160, 8
-
+    @c.font = "14px Courier New"
+    @c.fillText 'x:' + @player.ship.position[0].toFixed(0), 0, 18
+    @c.fillText 'y:' + @player.ship.position[1].toFixed(0), 80, 18
+    @c.fillText 'r:' + @player.ship.position[2].toFixed(2), 160, 18
+    @c.fillText 'vx:' + @player.ship.velocity[0].toFixed(0), 260, 18
+    @c.fillText 'vy:' + @player.ship.velocity[1].toFixed(0), 340, 18
 
   step: (time) ->
     super time
