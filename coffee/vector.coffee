@@ -5,20 +5,29 @@ if require?
   constructor: (@game, @a, @b, @color = "#0f0", @alpha = 1,
   @lineWidth = 0.5, @id) ->
     return unless @game and @a and @b
-    # @update()
+    @magnitude = 0
+    @prevMagnitude = 0
 
   update: ->
     limit = [@game.width, @game.height]
     p = @position = Util.toroidalDelta(@a.view, @b.view, limit)
 
-    @magnitude = Math.sqrt(p[0] * p[0] + p[1] * p[1])
     @position[2] = Math.atan2(p[0], p[1])
-    @view = [p[0], p[1], Math.PI - p[2]]
+    @theta = Math.PI - p[2]
+
+    @magnitude = Math.sqrt(p[0] * p[0] + p[1] * p[1])
+    if @magnitude - @prevMagnitude > 100
+      console.log 'delta mag', @magnitude - @prevMagnitude
+      console.log '@a.position', @a.position
+      console.log '@b.position', @b.position
+      console.log '@position', @position
+      console.log ' '
+    @prevMagnitude = @magnitude
 
     if @magnitude < @game.canvas.halfHeight
-      @view[3] = Math.min @alpha, @magnitude / @game.canvas.halfHeight
+      @viewAlpha = Math.min @alpha, @magnitude / @game.canvas.halfHeight
     else
-      @view[3] = @alpha
+      @viewAlpha = @alpha
 
   draw: ->
     top = (@magnitude * @game.canvas.halfHeight) / @game.width + 30
@@ -28,9 +37,9 @@ if require?
 
     c.save()
     c.translate(@a.view[0], @a.view[1])
-    c.rotate(@view[2])
+    c.rotate @theta
 
-    c.globalAlpha = @view[3]
+    c.globalAlpha = @viewAlpha
     c.strokeStyle = @color
     c.lineWidth = @lineWidth
 

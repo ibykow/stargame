@@ -21,11 +21,12 @@ if require?
     @updateView()
 
   isInView: ->
-    @game.c? and
-    (@view[0] >= -@halfWidth) and
-    (@view[1] >= -@halfHeight) and
-    (@view[0] <= @game.canvas.width + @halfWidth) and
-    (@view[1] <= @game.canvas.height + @halfHeight)
+    w = @halfWidth * @game.zoom
+    h = @halfHeight * @game.zoom
+    cw = @game.canvas.width / @game.zoom
+    ch = @game.canvas.height / @game.zoom
+    @game.c? and (@view[0] >= -w) and (@view[1] >= -h) and
+      (@view[0] <= cw + w) and (@view[1] <= ch + h)
 
   updateView: ->
     return unless @game.c?
@@ -63,6 +64,6 @@ if require?
   draw: ->
     return unless @visible
     @game.c.fillStyle = @color
-    @game.c.fillRect  @view[0] - @width / 2,
-                      @view[1] - @height / 2,
-                      @width, @height
+    @game.c.fillRect  (@view[0] - @width / 2) * @game.zoom,
+                      (@view[1] - @height / 2) * @game.zoom,
+                      @width * @game.zoom, @height * @game.zoom

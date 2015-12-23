@@ -20,6 +20,7 @@ if require?
     @players = [@player]
     @shipState = null
     @ships = []
+    @zoom = 0.25
 
     @inputs = []
 
