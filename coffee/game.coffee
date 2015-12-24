@@ -6,6 +6,7 @@ if require?
   constructor: (@width = 1 << 8, @height = 1 << 8, @frictionRate = 0.96) ->
     @players = []
     @stars = []
+    @sprites = []
     @paused = true
     @viewOffset = [0, 0] # userd by sprites
     @tick =
@@ -29,7 +30,8 @@ if require?
     not @players[@players.length - 1]
 
   update: ->
-    sprite.update() for sprite in @stars
+    star.update() for star in @stars
+    sprite.update() for sprite in @sprites
     player.update() for player in @players when player
 
   step: (time) ->

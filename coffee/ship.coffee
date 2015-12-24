@@ -1,5 +1,6 @@
 if require?
   Sprite = require './sprite'
+  Bullet = require './bullet'
 
 (module ? {}).exports = class Ship extends Sprite
   @BRAKE_RATE: 0.94
@@ -43,6 +44,10 @@ if require?
   brake: ->
     @velocity[0] *= Ship.BRAKE_RATE
     @velocity[1] *= Ship.BRAKE_RATE
+
+  fire: ->
+    console.log 'firing'
+    @game.sprites.push new Bullet(@)
 
   update: ->
     super()

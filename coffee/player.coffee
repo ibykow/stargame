@@ -25,6 +25,9 @@ if require?
     brake: ->
       @ship.brake()
 
+    fire: ->
+      @ship.fire()
+
   updateVectors: ->
     vector.update() for vector in @vectors
 

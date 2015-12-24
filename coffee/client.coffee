@@ -9,6 +9,13 @@ client = null
   @COLORS:
     BACKGROUND:
       DEFAULT: "#000"
+  @KEY:
+    SPACE: 32
+    LEFT: 37
+    RIGHT: 39
+    UP: 38
+    DOWN: 40
+    F: 'F'.charCodeAt(0)
 
   constructor: (@canvas) ->
     return unless @canvas
@@ -51,11 +58,12 @@ client = null
         @game = new ClientGame(data, @canvas, context)
         @game.client = @
 
-        @keymap[32] = 'brake'
-        @keymap[37] = 'left'
-        @keymap[38] = 'forward'
-        @keymap[39] = 'right'
-        @keymap[40] = 'reverse'
+        @keymap[Client.KEY.UP] = 'forward'
+        @keymap[Client.KEY.DOWN] = 'reverse'
+        @keymap[Client.KEY.LEFT] = 'left'
+        @keymap[Client.KEY.RIGHT] = 'right'
+        @keymap[Client.KEY.SPACE] = 'brake'
+        @keymap[Client.KEY.F] = 'fire'
 
         @socket.emit 'join', @game.player.name
         @game.player.ship.setState(data.ship)
