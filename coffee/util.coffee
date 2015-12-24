@@ -1,4 +1,16 @@
 (module ? {}).exports = Util =
+  areSquareBoundsOverlapped: (a, b) ->
+    # check if square bounds are overlapped
+    return unless Array.isArray(a) and Array.isArray(b)
+
+    for i in [0...a[0].length]
+      if a[0][i] < b[0][i]
+        return false if b[0][i] - a[0][i] > a[1][i]
+      else
+        return false if a[0][i] - b[0][i] > a[1][i]
+
+    true
+
   isInSquareBounds: (point, bounds) ->
     return unless Array.isArray(point) and Array.isArray(bounds) and
       bounds.length is 2
@@ -6,10 +18,8 @@
     len = Math.min(Math.min(bounds[0].length, bounds[1].length), point.length)
 
     for i in [0...len]
-      p = point[i]
-      min = bounds[0][i]
-      max = bounds[1][i]
-      return false if (p < min) or (p > max)
+      delta = point[i] - bounds[0][i]
+      return false if delta < 0 or delta > bounds[1][i]
 
     true
 

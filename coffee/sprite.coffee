@@ -7,6 +7,7 @@ if require?
 
     limit = [game.width, game.height]
     view = Util.toroidalDelta position, game.viewOffset, limit
+    @collided = []
     # view[0] *= game.zoom
     # view[1] *= game.zoom
     view[2] = position[2]
@@ -31,9 +32,16 @@ if require?
 
     @updateView()
 
+  filterCollided: (sprites = @game.visibleSprites) ->
+    return [] unless sprites
+    sprites.filter((sprite) => @isCollidedWith sprite)
+
+  isCollidedWith: (sprite) ->
+    return false if @ is sprite or not sprite?.getBounds
+    Util.areSquareBoundsOverlapped @getBounds(), sprite.getBounds()
+
   getBounds: ->
-    [ [@view[0] - @halfWidth, @view[1] - @halfHeight],
-      [@view[0] + @halfWidth, @view[1] + @halfHeight]]
+    [[@view[0] - @halfWidth, @view[1] - @halfHeight], [@width, @height]]
 
   isInView: ->
     w = @halfWidth * @game.zoom
@@ -56,6 +64,9 @@ if require?
   updatePosition: ->
     @position[0] = (@position[0] + @velocity[0] + @game.width) % @game.width
     @position[1] = (@position[1] + @velocity[1] + @game.height) % @game.height
+
+  updateCollided: ->
+    @collided = @filterCollided()
 
   update: ->
     @updateVelocity()

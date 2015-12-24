@@ -22,11 +22,9 @@ if require?
 
   constructor: (@player, @position) ->
     return null unless @player
+    super @player.game, @position, 20, 20
     @accFactor = Ship.DEFAULT_ACC_FACTOR
     @gear = 0
-    @width = 20
-    @height = 20
-    super @player.game, @position
 
   forward: ->
     @velocity[0] += Math.cos(@position[2]) * @accFactor
@@ -45,6 +43,10 @@ if require?
   brake: ->
     @velocity[0] *= Ship.BRAKE_RATE
     @velocity[1] *= Ship.BRAKE_RATE
+
+  update: ->
+    super()
+    @updateCollided()
 
   draw: ->
     Ship.draw(@player.game.c, @view, @color)

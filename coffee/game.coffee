@@ -3,9 +3,9 @@ if require?
   Player = require './player'
 
 (module ? {}).exports = class Game
-  constructor: (@width = 1 << 8, @height = 1 << 8, @frictionRate = 0.975) ->
+  constructor: (@width = 1 << 8, @height = 1 << 8, @frictionRate = 0.96) ->
     @players = []
-    @sprites = []
+    @stars = []
     @paused = true
     @viewOffset = [0, 0] # userd by sprites
     @tick =
@@ -29,8 +29,8 @@ if require?
     not @players[@players.length - 1]
 
   update: ->
+    sprite.update() for sprite in @stars
     player.update() for player in @players when player
-    sprite.update() for sprite in @sprites
 
   step: (time) ->
     # increment the tick

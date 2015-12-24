@@ -7,7 +7,7 @@ Sprite = require './sprite'
     return unless server
     super @width, @height, @frictionRate
     @server = server
-    @sprites = @generateStars(numStars)
+    @stars = @generateStars(numStars)
     @initStates = @getStarStates()
 
   generateStars: (n) ->
@@ -17,7 +17,7 @@ Sprite = require './sprite'
       new Sprite(@, null, width, height)
 
   getStarStates: ->
-    for star in @sprites
+    for star in @stars
       position: star.position
       width: star.width
       height: star.height

@@ -13,9 +13,7 @@ if require?
 
     @visibleSprites = []
     @mouseSprites = [] # sprites under the mouse
-
-    @sprites = @generateSprites()
-
+    @stars = @generateStars()
     @player = new Player(@, details.id)
     @player.name = 'Guest'
     @players = [@player]
@@ -31,7 +29,7 @@ if require?
       @interpolation.step = 0
       @interpolation.rate = Client.FRAME_MS / dt
 
-  generateSprites: ->
+  generateStars: ->
     for state in @initStates
       new Sprite(@, state.position, state.width, state.height, state.color)
 
@@ -161,6 +159,7 @@ if require?
     @client.mouse.released = false
 
   update: ->
+    @visibleSprites = []
     ship.update() for ship in @ships
     @interpolation.step++
     super()
@@ -174,7 +173,6 @@ if require?
   draw: ->
     @clear()
     sprite.draw() for sprite in @visibleSprites
-    @visibleSprites = []
 
     @player.ship.draw()
     vector.draw() for vector in @player.vectors
