@@ -1,4 +1,18 @@
 (module ? {}).exports = Util =
+  isInSquareBounds: (point, bounds) ->
+    return unless Array.isArray(point) and Array.isArray(bounds) and
+      bounds.length is 2
+
+    len = Math.min(Math.min(bounds[0].length, bounds[1].length), point.length)
+
+    for i in [0...len]
+      p = point[i]
+      min = bounds[0][i]
+      max = bounds[1][i]
+      return false if (p < min) or (p > max)
+
+    true
+
   toroidalDelta: (p0, p1, pLimit) ->
     return unless p0 and p1 and pLimit
     len = Math.min(Math.min(p0.length, p1.length), pLimit.length)

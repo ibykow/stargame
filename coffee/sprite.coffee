@@ -20,7 +20,20 @@ if require?
     @visible = false
     @halfWidth = @width / 2
     @halfHeight = @height / 2
+    @mouse =
+      hovering: false
+      enter: ->
+        console.log 'Planning on staying long?'
+      leave: ->
+        console.log "Please don't leave me!"
+      click: ->
+        console.log 'You clicked me!'
+
     @updateView()
+
+  getBounds: ->
+    [ [@view[0] - @halfWidth, @view[1] - @halfHeight],
+      [@view[0] + @halfWidth, @view[1] + @halfHeight]]
 
   isInView: ->
     w = @halfWidth * @game.zoom

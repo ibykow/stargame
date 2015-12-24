@@ -93,13 +93,17 @@ client = null
     window:
       keydown: (e) -> @keys[e.keyCode] = true
       keyup: (e) -> @keys[e.keyCode] = false
-      click: (e) ->
-      mousedown: (e) -> @mouse.buttons[e.button] = true
-      mouseup: (e) -> @mouse.buttons[e.button] = false
+      click: (e) -> @mouse.clicked = true
+      mousedown: (e) ->
+        @mouse.pressed = true
+        @mouse.buttons[e.button] = true
+      mouseup: (e) ->
+        @mouse.released = true
+        @mouse.buttons[e.button] = false
       mousemove: (e) ->
+        @mouse.moved = true
         @mouse.x = e.clientX - canvas.boundingRect.left
         @mouse.y = e.clientY - canvas.boundingRect.top
-
       resize: (e) ->
         @canvas.width = window.innerWidth - Client.INNER_WIDTH_OFFSET
         @canvas.height = window.innerHeight - Client.INNER_HEIGHT_OFFSET

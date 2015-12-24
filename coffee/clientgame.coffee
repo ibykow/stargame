@@ -12,6 +12,7 @@ if require?
     { @tick, @initStates } = details.game
 
     @visibleSprites = []
+    @mouseSprites = [] # sprites under the mouse
 
     @sprites = @generateSprites()
 
@@ -112,10 +113,58 @@ if require?
     @correctPrediction()
     @interpolation.reset.bind(@)(data.tick.dt)
 
+  isMouseInBounds: (bounds) ->
+    Util.isInSquareBounds([@client.mouse.x, @client.mouse.y], bounds)
+
+  moveMouse: ->
+    prevSprites = @mouseSprites
+    @mouseSprites = []
+
+    # Create new list of mouseSprites
+    for sprite in @visibleSprites
+      continue unless @isMouseInBounds sprite.getBounds()
+      @mouseSprites.push(sprite)
+      sprite.mouse.hovering = true
+
+      sprite.mouse.enter.bind(sprite)() if sprite.mouse.enter? and not
+        ~prevSprites.indexOf(sprite)
+
+    # Remove items from the old list
+    for sprite in prevSprites
+      # skip items which are still under the mouse
+      continue unless ~@mouseSprites.indexOf(sprite) is 0
+
+      sprite.mouse.hovering = false
+      sprite.mouse.leave.bind(sprite)() if sprite.mouse.leave?
+
+  updateMouse: ->
+    # update mouseSprites list
+    @moveMouse() if @client.mouse.moved
+
+    # process click, press and release events
+    if @client.mouse.clicked
+      for sprite in @mouseSprites when sprite.mouse.click?
+        sprite.mouse.click.bind(sprite)(@client.mouse.buttons)
+
+    if @client.mouse.pressed
+      for sprite in @mouseSprites when sprite.mouse.press?
+        sprite.mouse.press.bind(sprite)(@client.mouse.buttons)
+
+    if @client.mouse.released
+      for sprite in @mouseSprites when sprite.mouse.release?
+        sprite.mouse.release.bind(sprite)(@client.mouse.buttons)
+
+    # clear mouse related flags
+    @client.mouse.moved = false
+    @client.mouse.clicked = false
+    @client.mouse.pressed = false
+    @client.mouse.released = false
+
   update: ->
     ship.update() for ship in @ships
     @interpolation.step++
     super()
+    @updateMouse()
 
   clear: ->
     @c.globalAlpha = 1
