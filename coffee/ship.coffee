@@ -37,8 +37,15 @@ if require?
   constructor: (@player, @position) ->
     return null unless @player
     super @player.game, @position, 20, 20
-    @accFactor = Ship.RATES.ACC
+
     @gear = 0
+    @flags.isBraking = false
+
+    # TODO create 'ship engine' class around topSpeed and accFactor
+    # Would allow for engines as upgrades/purchases
+    @topSpeed = 100
+    @accFactor = Ship.RATES.ACC
+
 
   forward: ->
     @velocity[0] += cos(@position[2]) * @accFactor
@@ -56,6 +63,7 @@ if require?
 
   brake: ->
     return unless @magnitude
+    @isBraking = true
     @velocity[0] *= Ship.RATES.BRAKE
     @velocity[1] *= Ship.RATES.BRAKE
 
@@ -83,4 +91,4 @@ if require?
 
     @game.viewOffset = [@position[0] - @game.canvas.halfWidth,
                         @position[1] - @game.canvas.halfHeight]
-    @visible = true
+    @flags.isVisible = true

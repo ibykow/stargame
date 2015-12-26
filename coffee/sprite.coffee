@@ -9,11 +9,15 @@ if require?
 
     limit = [game.width, game.height]
     view = Util.toroidalDelta position, game.viewOffset, limit
-    @collided = []
+    @collisions = []
     # view[0] *= game.zoom
     # view[1] *= game.zoom
     view[2] = position[2]
     view
+
+  flags:
+    isVisible: false
+    isRigid: true
 
   constructor: (@game, @position, @width = 10, @height = 10, @color) ->
     return null unless @game
@@ -21,8 +25,6 @@ if require?
     @color ?= Util.randomColorString()
     @velocity = [0, 0]
     @magnitude = 0
-    @visible = false
-    @rigid = true
     @halfWidth = @width / 2
     @halfHeight = @height / 2
     @mouse =
@@ -36,13 +38,17 @@ if require?
 
     @updateView()
 
+  clearFlags: ->
+    for k in @flags
+      @flags[k] = false
+
   detectCollisions: (sprites = @game.visibleSprites, maxIndex) ->
     # primitive, and inefficient collision detection
     # TODO Consider adding a quadtree implementation to handle big
     # collections such as stars, and bullets, etc.
     # eg. if QuadTree.isQuad(sprites) sprites.detect(@) else ...
-    return [] unless sprites and @rigid
-    sprites.filter((sprite, i) => sprite.rigid and @intersects sprite)
+    return [] unless sprites and @flags.isRigid
+    sprites.filter((sprite, i) => sprite.flags.isRigid and @intersects sprite)
 
   intersects: (sprite) ->
     return false if @ is sprite or not sprite?.getViewBounds
@@ -68,7 +74,7 @@ if require?
   updateView: ->
     return unless @game.c?
     @view = Sprite.getView(@game, @position)
-    if @visible = @isInView()
+    if @flags.isVisible = @isInView()
       @game.visibleSprites.push @
 
   updateVelocity: ->
@@ -81,9 +87,10 @@ if require?
     @position[1] = (@position[1] + @velocity[1] + @game.height) % @game.height
 
   updateCollisions: ->
-    @collided = @detectCollisions @game.visibleSprites
+    @collisions = @detectCollisions @game.visibleSprites
 
   update: ->
+    @clearFlags()
     @updateVelocity()
     @updatePosition()
     @updateView()
@@ -103,7 +110,7 @@ if require?
     @color = state.color ? @color
 
   draw: ->
-    return unless @visible
+    return unless @flags.isVisible
     @game.c.fillStyle = @color
     # @game.c.fillRect  (@view[0] - @width / 2) * @game.zoom,
     #                   (@view[1] - @height / 2) * @game.zoom,
