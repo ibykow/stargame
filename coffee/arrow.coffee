@@ -1,7 +1,7 @@
 if require?
   Util = require './util'
 
-(module ? {}).exports = class Vector
+(module ? {}).exports = class Arrow
   constructor: (@game, @a, @b, @color = "#0f0", @alpha = 1,
   @lineWidth = 0.5, @id) ->
     return unless @game and @a and @b

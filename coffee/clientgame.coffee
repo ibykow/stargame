@@ -99,12 +99,12 @@ if require?
         state = data.ships[j]
         @ships.push new InterpolatedShip(@player, state.id, state.ship)
 
-      # add a vector to the first ship
+      # add an arrow to the first ship
       if i is 0 and j > 0
         ship = @ships[0]
-        console.log 'vector to', ship
-        vector = new Vector @, @player.ship, ship, "#00f", 0.8, 2, ship.id
-        @player.vectors.push vector
+        console.log 'arrow to', ship
+        arrow = new Arrow @, @player.ship, ship, "#00f", 0.8, 2, ship.id
+        @player.arrows.push arrow
 
     # sort our list of ships by id
     (@ships.sort (a, b) -> a.id - b.id) if inserted
@@ -175,7 +175,7 @@ if require?
     sprite.draw() for sprite in @visibleSprites
 
     @player.ship.draw()
-    vector.draw() for vector in @player.vectors
+    arrow.draw() for arrow in @player.arrows
 
     @c.fillStyle = "#fff"
     @c.font = "14px Courier New"

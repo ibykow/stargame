@@ -5,7 +5,7 @@ if require?
   constructor: (@game, @id, @socket, position) ->
     return null unless @game and @id
     @ship = new Ship(@, position)
-    @vectors = []
+    @arrows = []
     @inputs = []
     @inputSequence = 0
 
@@ -28,8 +28,8 @@ if require?
     fire: ->
       @ship.fire()
 
-  updateVectors: ->
-    vector.update() for vector in @vectors
+  updateArrows: ->
+    arrow.update() for arrow in @arrows
 
   update: ->
     @inputs = [@inputs] unless @inputs.length and Array.isArray @inputs[0]
@@ -42,4 +42,4 @@ if require?
 
     @inputs = []
 
-    @updateVectors()
+    @updateArrows()
