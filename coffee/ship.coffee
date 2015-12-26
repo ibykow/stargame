@@ -19,6 +19,22 @@ if require?
     BRAKE: 0.96
     TURN: 0.06
 
+  @glideBrake: ->
+    # glideBrake: A drop-in replacement for the 'brake' instance function.
+    # A constant rate of friction means that holding the brake button
+    # results in the ship gliding smoothly to a stop.
+    # This behavior annoys me to no end, so I opted for the current
+    # default found below (aka responsive braking).
+    # If you want to play around with this drop it into a ship instance via:
+    # `myShip.brake = Ship.glideBrake`
+    # or, to change it for all instances:
+    # 'Ship::brake = Ship.glideBrake'
+    # and of course there's always the copy / paste option.
+    return unless @magnitude
+    @isBraking = true
+    @velocity[0] *= Ship.RATES.BRAKE
+    @velocity[1] *= Ship.RATES.BRAKE
+
   @draw: (c, position, color) ->
     return unless c and position and color
     c.save()
@@ -41,11 +57,10 @@ if require?
     @gear = 0
     @flags.isBraking = false
 
-    # TODO create 'ship engine' class around topSpeed and accFactor
+    # TODO create 'ship engine' class around brakePower and accFactor
     # Would allow for engines as upgrades/purchases
-    @topSpeed = 100
+    @brakePower = 1000
     @accFactor = Ship.RATES.ACC
-
 
   forward: ->
     @velocity[0] += cos(@position[2]) * @accFactor
@@ -62,10 +77,13 @@ if require?
     @position[2] += Ship.RATES.TURN
 
   brake: ->
+    # 'Responsive' / 'variable rate' braking
+    # Provides a smooth braking experience that doesn't drag on at the end
     return unless @magnitude
     @isBraking = true
-    @velocity[0] *= Ship.RATES.BRAKE
-    @velocity[1] *= Ship.RATES.BRAKE
+    rate = min @magnitude * @magnitude / @brakePower, Ship.RATES.BRAKE
+    @velocity[0] *= rate
+    @velocity[1] *= rate
 
   fire: ->
     console.log 'firing'

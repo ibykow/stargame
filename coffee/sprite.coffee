@@ -91,6 +91,8 @@ if require?
     @updateView()
 
   getState: ->
+    # We ignore @magnitude and flags.
+    # ie. independent variables only
     position: @position
     velocity: @velocity
     width: @width
