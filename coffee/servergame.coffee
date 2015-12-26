@@ -2,10 +2,19 @@ Util = require './util'
 Game = require './game'
 Sprite = require './sprite'
 
+# Sprite::updateView gets called during the update stage, so
+# there's not a nicer way of ignoring its functionality without
+# subclassing into ClientSprite or breaking apart Sprite::update.
+# Another way is to have a conditional at the top of the function
+# which checks and exits if we're not on the client. However, having
+# a conditiona being checked every time seems like overkill.
+Sprite::updateView = ->
+
 (module ? {}).exports = class ServerGame extends Game
   constructor: (server, @width, @height, numStars = 10, @frictionRate) ->
     return unless server
     super @width, @height, @frictionRate
+
     @server = server
     @stars = @generateStars(numStars)
     @initStates = @getStarStates()

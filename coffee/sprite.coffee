@@ -4,17 +4,6 @@ if require?
 [sqrt] = [Math.sqrt]
 
 (module ? {}).exports = class Sprite
-  @getView: (game, position) ->
-    return unless game and position
-
-    limit = [game.width, game.height]
-    view = Util.toroidalDelta position, game.viewOffset, limit
-    @collisions = []
-    # view[0] *= game.zoom
-    # view[1] *= game.zoom
-    view[2] = position[2]
-    view
-
   flags:
     isVisible: false
     isRigid: true
@@ -71,9 +60,15 @@ if require?
     @game.c? and (@view[0] >= -w) and (@view[1] >= -h) and
       (@view[0] <= cw + w) and (@view[1] <= ch + h)
 
+  getCurrentView: ->
+    limit = [@game.width, @game.height]
+    view = Util.toroidalDelta @position, @game.viewOffset, limit
+    view[2] = @position[2]
+    view
+
   updateView: ->
-    return unless @game.c?
-    @view = Sprite.getView(@game, @position)
+    @view = @getCurrentView()
+
     if @flags.isVisible = @isInView()
       @game.visibleSprites.push @
 
