@@ -1,6 +1,8 @@
 if require?
   Util = require './util'
 
+[sqrt] = [Math.sqrt]
+
 (module ? {}).exports = class Sprite
   @getView: (game, position) ->
     return unless game and position
@@ -18,7 +20,9 @@ if require?
     @position ?= @game.randomPosition()
     @color ?= Util.randomColorString()
     @velocity = [0, 0]
+    @magnitude = 0
     @visible = false
+    @rigid = true
     @halfWidth = @width / 2
     @halfHeight = @height / 2
     @mouse =
@@ -32,11 +36,15 @@ if require?
 
     @updateView()
 
-  filterCollided: (sprites = @game.visibleSprites) ->
-    return [] unless sprites
-    sprites.filter((sprite) => @isCollidedWith sprite)
+  detectCollisions: (sprites = @game.visibleSprites, maxIndex) ->
+    # primitive, and inefficient collision detection
+    # TODO Consider adding a quadtree implementation to handle big
+    # collections such as stars, and bullets, etc.
+    # eg. if QuadTree.isQuad(sprites) sprites.detect(@) else ...
+    return [] unless sprites and @rigid
+    sprites.filter((sprite, i) => sprite.rigid and @intersects sprite)
 
-  isCollidedWith: (sprite) ->
+  intersects: (sprite) ->
     return false if @ is sprite or not sprite?.getViewBounds
     Util.areSquareBoundsOverlapped @getViewBounds(), sprite.getViewBounds()
 
@@ -66,13 +74,14 @@ if require?
   updateVelocity: ->
     @velocity[0] = Math.trunc(@velocity[0] * @game.frictionRate * 100) / 100
     @velocity[1] = Math.trunc(@velocity[1] * @game.frictionRate * 100) / 100
+    @magnitude = sqrt @velocity.reduce(((sum, v) -> sum + v * v), 0)
 
   updatePosition: ->
     @position[0] = (@position[0] + @velocity[0] + @game.width) % @game.width
     @position[1] = (@position[1] + @velocity[1] + @game.height) % @game.height
 
-  updateCollided: ->
-    @collided = @filterCollided()
+  updateCollisions: ->
+    @collided = @detectCollisions @game.visibleSprites
 
   update: ->
     @updateVelocity()

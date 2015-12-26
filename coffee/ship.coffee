@@ -2,10 +2,23 @@ if require?
   Sprite = require './sprite'
   Bullet = require './bullet'
 
+# Shorthands for commonly used / long-named functions
+[abs, floor, min, max, trunc, cos, sin] = [
+  Math.abs,
+  Math.floor
+  Math.min,
+  Math.max,
+  Math.trunc,
+  Math.cos,
+  Math.sin
+]
+
 (module ? {}).exports = class Ship extends Sprite
-  @BRAKE_RATE: 0.94
-  @DEFAULT_ACC_FACTOR: 2
-  @TURN_RATE: 0.06
+  @RATES:
+    ACC: 2
+    BRAKE: 0.96
+    TURN: 0.06
+
   @draw: (c, position, color) ->
     return unless c and position and color
     c.save()
@@ -24,35 +37,35 @@ if require?
   constructor: (@player, @position) ->
     return null unless @player
     super @player.game, @position, 20, 20
-    @accFactor = Ship.DEFAULT_ACC_FACTOR
+    @accFactor = Ship.RATES.ACC
     @gear = 0
 
   forward: ->
-    @velocity[0] += Math.cos(@position[2]) * @accFactor
-    @velocity[1] += Math.sin(@position[2]) * @accFactor
+    @velocity[0] += cos(@position[2]) * @accFactor
+    @velocity[1] += sin(@position[2]) * @accFactor
 
   reverse: ->
-    @velocity[0] -= Math.cos @position[2]
-    @velocity[1] -= Math.sin @position[2]
+    @velocity[0] -= cos @position[2]
+    @velocity[1] -= sin @position[2]
 
   left: ->
-    @position[2] -= Ship.TURN_RATE
+    @position[2] -= Ship.RATES.TURN
 
   right: ->
-    @position[2] += Ship.TURN_RATE
+    @position[2] += Ship.RATES.TURN
 
   brake: ->
-    @velocity[0] *= Ship.BRAKE_RATE
-    @velocity[1] *= Ship.BRAKE_RATE
+    return unless @magnitude
+    @velocity[0] *= Ship.RATES.BRAKE
+    @velocity[1] *= Ship.RATES.BRAKE
 
   fire: ->
     console.log 'firing'
     @game.sprites.push new Bullet(@)
-    false
 
   update: ->
     super()
-    @updateCollided()
+    @updateCollisions()
 
   draw: ->
     Ship.draw(@player.game.c, @view, @color)
