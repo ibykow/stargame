@@ -16,6 +16,7 @@ if require?
     @magnitude = 0
     @halfWidth = @width / 2
     @halfHeight = @height / 2
+    @bulletCollisions = []
     @mouse =
       hovering: false
       enter: ->
@@ -53,21 +54,16 @@ if require?
     @getBoundsFor('view')
 
   isInView: ->
-    w = @halfWidth * @game.zoom
-    h = @halfHeight * @game.zoom
+    w = @halfWidth
+    h = @halfHeight
     cw = @game.canvas.width
     ch = @game.canvas.height
     @game.c? and (@view[0] >= -w) and (@view[1] >= -h) and
       (@view[0] <= cw + w) and (@view[1] <= ch + h)
 
-  getCurrentView: ->
-    limit = [@game.width, @game.height]
-    view = Util.toroidalDelta @position, @game.viewOffset, limit
-    view[2] = @position[2]
-    view
-
   updateView: ->
-    @view = @getCurrentView()
+    @view = Util.toroidalDelta @position, @game.viewOffset, @game.toroidalLimit
+    @view[2] = @position[2]
 
     if @flags.isVisible = @isInView()
       @game.visibleSprites.push @
@@ -81,8 +77,8 @@ if require?
     @position[0] = (@position[0] + @velocity[0] + @game.width) % @game.width
     @position[1] = (@position[1] + @velocity[1] + @game.height) % @game.height
 
-  updateCollisions: ->
-    @collisions = @detectCollisions @game.visibleSprites
+  updateBulletCollisions: ->
+    @bulletCollisions = @detectCollisions @game.bullets
 
   update: ->
     @clearFlags()
@@ -109,9 +105,5 @@ if require?
   draw: ->
     return unless @flags.isVisible
     @game.c.fillStyle = @color
-    # @game.c.fillRect  (@view[0] - @width / 2) * @game.zoom,
-    #                   (@view[1] - @height / 2) * @game.zoom,
-    #                   @width * @game.zoom, @height * @game.zoom
-    @game.c.fillRect  @view[0] - @width * @game.zoom / 2,
-                      @view[1] - @height * @game.zoom / 2,
-                      @width * @game.zoom, @height * @game.zoom
+    @game.c.fillRect  @view[0] - @halfWidth, @view[1] - @halfHeight,
+                      @width, @height

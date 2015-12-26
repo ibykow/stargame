@@ -19,9 +19,6 @@ if require?
     @players = [@player]
     @shipState = null
     @ships = []
-    # @zoom = 0.2
-    @zoom = 1
-
     @inputLog = []
 
   interpolation:
@@ -44,7 +41,7 @@ if require?
 
     i = 0
 
-    # console.log 'correcting prediction'
+    console.log 'correcting prediction'
 
     # Match the input with the state
     for i in [0...@inputLog.length]
@@ -60,8 +57,8 @@ if require?
 
     # rewind and replay
     for entry in @inputLog
-      @game.player.inputs = entry.inputs
-      @game.player.update()
+      @player.inputs = entry.inputs
+      @player.update()
 
   processServerData: (data) ->
     inserted = false

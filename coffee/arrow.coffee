@@ -9,8 +9,7 @@ if require?
     @prevMagnitude = 0
 
   update: ->
-    limit = [@game.width, @game.height]
-    p = Util.toroidalDelta(@a.view, @b.view, limit)
+    p = Util.toroidalDelta(@a.view, @b.view, @game.toroidalLimit)
     p[2] = Math.atan2(p[0], p[1])
 
     @theta = Math.PI - p[2]

@@ -67,7 +67,7 @@ client = null
 
         @socket.emit 'join', @game.player.name
         @game.player.ship.setState(data.ship)
-        @game.player.ship.updateView = Ship.updateViewMaster
+        @game.player.ship.updateView = @game.player.ship.updateViewMaster
 
       join: (data) ->
         console.log 'player', data.id + ', ' + data.name, 'has joined'
@@ -126,10 +126,12 @@ client = null
       return unless inputs.length
 
       inputLogEntry =
-        count: @game.tick.count
+        tick: @game.tick
         inputs: inputs
         inputSequence: @game.player.inputSequence
         clientState: @game.player.ship.getState()
+
+      # console.log inputLogEntry.clientState
 
       @game.player.inputSequence++
       @game.inputLog.push inputLogEntry

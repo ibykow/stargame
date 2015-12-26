@@ -35,30 +35,26 @@ Sprite::updateView = ->
   generateShipStates: ->
     states = []
     for player in @players when player
+
       synced = not player.clientState or
         (player.clientState.position[0] == player.ship.position[0]) and
         (player.clientState.position[1] == player.ship.position[1]) and
         (player.clientState.position[2] == player.ship.position[2])
+
+      shipState = player.ship.getState()
+      # console.log 'id', player.id, shipState.position, player.clientState
+
       states.push
         id: player.id
         inputSequence: player.inputSequence
-        ship: player.ship.getState()
+        ship: shipState
         synced: synced
 
       player.clientState = null
 
     states
 
-  prepareInputs: ->
-    for player in @players when player and player.inputs.length
-      player.inputs.sort (a, b) -> a.inputSequence - b.inputSequence
-      newestData = player.inputs[player.inputs.length - 1]
-      player.inputSequence = newestData.inputSequence
-      player.clientState = newestData.clientState
-      player.inputs = (data.input for data in player.inputs)
-
   update: ->
-    # @prepareInputs()
     super()
     super()
     super()

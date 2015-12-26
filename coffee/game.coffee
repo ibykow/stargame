@@ -4,6 +4,7 @@ if require?
 
 (module ? {}).exports = class Game
   constructor: (@width = 1 << 8, @height = 1 << 8, @frictionRate = 0.96) ->
+    @toroidalLimit = [@width, @height]
     @players = []
     @stars = []
     @bullets = []

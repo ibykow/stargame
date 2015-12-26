@@ -88,26 +88,26 @@ if require?
   fire: ->
     @game.bullets.push new Bullet(@)
 
+  handleBulletCollisions: ->
+    @updateBulletCollisions()
+    console.log 'hit' for hit in @bulletCollisions
+
   update: ->
     super()
-    @updateCollisions()
+    @handleBulletCollisions()
 
   draw: ->
     Ship.draw(@player.game.c, @view, @color)
 
-  @drawMaster: ->
-    Ship.draw(@player.game.c,
-      [ @game.canvas.halfWidth + @velocity[0],
-        @game.canvas.halfHeight + @velocity[1],
-        @position[2]], @color)
+  updateViewMaster: ->
+    [x, y, r, vx, vy, halfw, halfh] =
+      [ @position[0], @position[1], @position[2],
+        @velocity[0], @velocity[1],
+        @game.canvas.halfWidth, @game.canvas.halfHeight ]
 
-  @updateViewMaster: ->
-    @view = [@game.canvas.halfWidth + @velocity[0],
-      @game.canvas.halfHeight + @velocity[1],
-      @position[2]]
-
-    @game.viewOffset = [@position[0] - @game.canvas.halfWidth,
-                        @position[1] - @game.canvas.halfHeight]
+    @view = [halfw + vx, halfh + vy, r]
+    # @game.viewOffset = [x - vx - halfw, y - vy - halfh]
+    @game.viewOffset = [x - halfw, y - halfh]
 
     # The current player's ship is always visible
     @flags.isVisible = true

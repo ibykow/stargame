@@ -83,8 +83,9 @@ module.exports = class Server
 
       input: (data) -> # a client has generated input
         return unless data.inputs
-        # console.log 'input received from', @id
         @inputs = data.inputs
+        @clientState = data.clientState
+        @inputSequence = data.inputSequence
         @update()
 
   frame:
