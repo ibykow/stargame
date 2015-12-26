@@ -125,7 +125,7 @@ if require?
 
     # Create new list of mouseSprites
     for sprite in @visibleSprites
-      continue unless @isMouseInBounds sprite.getBounds()
+      continue unless @isMouseInBounds sprite.getViewBounds()
       @mouseSprites.push(sprite)
       sprite.mouse.hovering = true
 

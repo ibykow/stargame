@@ -37,11 +37,17 @@ if require?
     sprites.filter((sprite) => @isCollidedWith sprite)
 
   isCollidedWith: (sprite) ->
-    return false if @ is sprite or not sprite?.getBounds
-    Util.areSquareBoundsOverlapped @getBounds(), sprite.getBounds()
+    return false if @ is sprite or not sprite?.getViewBounds
+    Util.areSquareBoundsOverlapped @getViewBounds(), sprite.getViewBounds()
+
+  getBoundsFor: (type = 'view') ->
+    [[@[type][0] - @halfWidth, @[type][1] - @halfHeight], [@width, @height]]
 
   getBounds: ->
-    [[@view[0] - @halfWidth, @view[1] - @halfHeight], [@width, @height]]
+    @getBoundsFor('position')
+
+  getViewBounds: ->
+    @getBoundsFor('view')
 
   isInView: ->
     w = @halfWidth * @game.zoom
