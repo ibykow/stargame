@@ -5,6 +5,7 @@ if require?
   Client = require './client'
 
 (module ? {}).exports = class ClientGame extends Game
+  @HISTORY_LENGTH
   constructor: (details, @canvas, @c, socket) ->
     return unless details
     super details.game.width, details.game.height, details.game.frictionRate
@@ -20,6 +21,7 @@ if require?
     @shipState = null
     @ships = []
     @inputLog = []
+    @stateLog = [] # logs the current player's ship states
 
   interpolation:
     reset: (dt) ->
