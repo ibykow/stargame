@@ -36,7 +36,7 @@ if require?
 
   step: (time) ->
     # increment the tick
-    @tick.count++
     @tick.dt = time - @tick.time
     @tick.time = time
+    @tick.count++
     @update()

@@ -22,7 +22,7 @@ if require?
     # @zoom = 0.2
     @zoom = 1
 
-    @inputs = []
+    @inputLog = []
 
   interpolation:
     reset: (dt) ->
@@ -35,40 +35,45 @@ if require?
 
   correctPrediction: () ->
     return unless @shipState?.inputSequence
+
     if @shipState.synced
-      if @inputs.length > 20
-        @inputs.splice(0, @inputs.length - 20)
+      if @inputLog.length > 20
+        @inputLog.splice(0, @inputLog.length - 20)
 
       return
+
+    i = 0
+
+    # console.log 'correcting prediction'
+
+    # Match the input with the state
+    for i in [0...@inputLog.length]
+      if not @inputLog[i].inputSequence?
+        console.log 'invalid inputEntry'
+      break if @inputLog[i].inputSequence >= @shipState.inputSequence
+
+    # Remove exired inputs
+    @inputLog.splice(0, i)
 
     # set the current ship state to the last known server state
     @player.ship.setState(@shipState.ship)
 
-    # Match the input with the state
-    i = 0
-    for i in [0...@inputs.length]
-      if not @inputs[i].inputSequence?
-        console.log 'invalid inputEntry'
-      break if @inputs[i].inputSequence >= @shipState.inputSequence
-
-    # Remove the old inputs
-    @inputs.splice(0, i)
-
-    if @inputs.length
-      temp = @inputs.map (e) -> e.input
-      if Array.isArray(@player.inputs[0]) or (@player.inputs.length is 0)
-        @player.inputs = temp.concat(@player.inputs)
-      else
-        @player.inputs = @player.inputs.push temp
+    # rewind and replay
+    for entry in @inputLog
+      @game.player.inputs = entry.inputs
+      @game.player.update()
 
   processServerData: (data) ->
     inserted = false
+
+    # console.log 'processing server state'
 
     [i, j] = [0, 0]
 
     # remove our ship from the pile
     for i in [0...data.ships.length]
       if data.ships[i].id == @player.id
+        # console.log 'found our ship'
         @shipState = data.ships.splice(i, 1)[0]
         break
 
@@ -170,13 +175,7 @@ if require?
     @c.fillStyle = Client.COLORS.BACKGROUND.DEFAULT
     @c.fillRect 0, 0, @canvas.width, @canvas.height
 
-  draw: ->
-    @clear()
-    sprite.draw() for sprite in @visibleSprites
-
-    @player.ship.draw()
-    arrow.draw() for arrow in @player.arrows
-
+  drawHUD: ->
     @c.fillStyle = "#fff"
     @c.font = "14px Courier New"
     @c.fillText 'x:' + @player.ship.position[0].toFixed(0), 0, 18
@@ -184,6 +183,12 @@ if require?
     @c.fillText 'r:' + @player.ship.position[2].toFixed(2), 160, 18
     @c.fillText 'vx:' + @player.ship.velocity[0].toFixed(0), 260, 18
     @c.fillText 'vy:' + @player.ship.velocity[1].toFixed(0), 340, 18
+
+  draw: ->
+    @clear()
+    sprite.draw() for sprite in @visibleSprites
+    @player.ship.draw()
+    arrow.draw() for arrow in @player.arrows
 
   step: (time) ->
     super time

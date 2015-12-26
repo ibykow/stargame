@@ -43,17 +43,17 @@ Sprite = require './sprite'
   prepareInputs: ->
     for player in @players when player and player.inputs.length
       player.inputs.sort (a, b) -> a.inputSequence - b.inputSequence
-      latestPlayer = player.inputs[player.inputs.length - 1]
-      player.inputSequence = latestPlayer.inputSequence
-      player.clientState = latestPlayer.clientState
-      temp = []
-      for data in player.inputs
-        temp.push data.input
-
-      player.inputs = temp
+      newestData = player.inputs[player.inputs.length - 1]
+      player.inputSequence = newestData.inputSequence
+      player.clientState = newestData.clientState
+      player.inputs = (data.input for data in player.inputs)
 
   update: ->
-    @prepareInputs()
+    # @prepareInputs()
+    super()
+    super()
+    super()
+    super()
     super()
 
   step: (time) ->

@@ -43,7 +43,7 @@ client = null
 
   keymap: new Array 0x100
 
-  generateInput: ->
+  getMappedInputs: ->
     for i in [0...@keymap.length] when @keys[i] and @keymap[i]
       @keymap[i]
 
@@ -118,22 +118,22 @@ client = null
 
   frame:
     run: (timestamp) ->
-      input = @generateInput()
-      @game.player.inputs.push(input)
-
+      @frame.request = window.requestAnimationFrame @frame.run.bind @
+      inputs = @getMappedInputs()
+      @game.player.inputs = inputs
       @game.step timestamp
+
+      return unless inputs.length
 
       inputLogEntry =
         count: @game.tick.count
-        input: input
+        inputs: inputs
         inputSequence: @game.player.inputSequence
         clientState: @game.player.ship.getState()
 
       @game.player.inputSequence++
-      @game.inputs.push inputLogEntry
+      @game.inputLog.push inputLogEntry
       @socket.emit 'input', inputLogEntry
-
-      @frame.request = window.requestAnimationFrame @frame.run.bind @
 
     stop: ->
       window.cancelAnimationFrame @frame.request
@@ -143,6 +143,7 @@ client = null
 window.onload = ->
   client = new Client(document.querySelector 'canvas')
 
+# Frame request code
 (->
   lastTime = 0
   vendors = ['webkit', 'moz']
@@ -158,7 +159,7 @@ window.onload = ->
       currTime = +new Date
       timeToCall = Math.max(0, Client.FRAME_MS - (currTime - lastTime))
       lastTime = currTime + timeToCall
-      window.setTimeout((-> callback(currTime + timeToCall)), timeToCall)
+      window.setTimeout((-> callback(lastTime)), timeToCall)
 
   window.cancelAnimationFrame ?= (id) -> clearTimeout(id)
 )()

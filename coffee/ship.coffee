@@ -48,6 +48,7 @@ if require?
   fire: ->
     console.log 'firing'
     @game.sprites.push new Bullet(@)
+    false
 
   update: ->
     super()

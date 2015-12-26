@@ -82,19 +82,10 @@ module.exports = class Server
         @game.server.pause() if not @game.players.length
 
       input: (data) -> # a client has generated input
-        # data =
-          # pressed: [pressed, key, ids]
-          # released: [released, key, ids]
-          # tick:
-            # count: clientCount
-            # time: clientTime
-
-        # push to local player object for handling in frame loop
-        # discard if tick count is lower than last server sent tick count
-
-        @inputs.push(data)
-        # unless @game.server.ticks.sent and
-        # data.tick.count < @game.server.ticks.sent.count
+        return unless data.inputs
+        # console.log 'input received from', @id
+        @inputs = data.inputs
+        @update()
 
   frame:
     run: (timestamp) ->

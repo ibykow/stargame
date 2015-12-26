@@ -7,7 +7,7 @@ if require?
     @ship = new Ship(@, position)
     @arrows = []
     @inputs = []
-    @inputSequence = 0
+    @inputSequence = 1
 
   actions:
     forward: ->
@@ -28,18 +28,12 @@ if require?
     fire: ->
       @ship.fire()
 
-  updateArrows: ->
-    arrow.update() for arrow in @arrows
+  updateArrows: -> arrow.update() for arrow in @arrows
 
   update: ->
-    @inputs = [@inputs] unless @inputs.length and Array.isArray @inputs[0]
-
-    for input in @inputs
-      for act in input when input.length and act?.length
-        @actions[act].bind(@)()
-
-      @ship.update()
+    for action in @inputs when action?.length
+      @actions[action].bind(@)()
 
     @inputs = []
-
+    @ship.update()
     @updateArrows()
