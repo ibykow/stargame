@@ -12,7 +12,7 @@ if require?
       Math.sin(@position[2]) * Bullet.SPEED
     ]
 
-    @life = 60 * 16 * 3
+    @life = 60 * 3
 
   updateVelocity: -> # the velocity doesn't change
 

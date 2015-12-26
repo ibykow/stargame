@@ -67,7 +67,9 @@ Sprite::updateView = ->
 
   step: (time) ->
     super time # it's the best kind
+    bulletStates = (bullet.getState() for bullet in @bullets)
     @server.io.emit 'state',
       ships: @generateShipStates()
+      bullets: bulletStates
       tick: @tick
       fromServer: true

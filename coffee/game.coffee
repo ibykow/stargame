@@ -6,9 +6,9 @@ if require?
   constructor: (@width = 1 << 8, @height = 1 << 8, @frictionRate = 0.96) ->
     @players = []
     @stars = []
-    @sprites = []
+    @bullets = []
     @paused = true
-    @viewOffset = [0, 0] # userd by sprites
+    @viewOffset = [0, 0] # used by sprites
     @tick =
       count: 0
       time: 0
@@ -29,9 +29,21 @@ if require?
     @players.length-- while @players.length and
     not @players[@players.length - 1]
 
+  updateBullets: ->
+    # update each bullet state and remove dead bullets
+
+    bullets = []
+    for bullet in @bullets
+      bullet.update()
+      #collect live bullets
+      bullets.push bullet if bullet.life > 0
+
+    # update bullet list to include only live ones
+    @bullets = bullets
+
   update: ->
     star.update() for star in @stars
-    sprite.update() for sprite in @sprites
+    @updateBullets()
     player.update() for player in @players when player
 
   step: (time) ->

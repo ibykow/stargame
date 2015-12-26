@@ -59,7 +59,7 @@ if require?
 
     # TODO create 'ship engine' class around brakePower and accFactor
     # Would allow for engines as upgrades/purchases
-    @brakePower = 1000
+    @brakePower = 550
     @accFactor = Ship.RATES.ACC
 
   forward: ->
@@ -86,8 +86,7 @@ if require?
     @velocity[1] *= rate
 
   fire: ->
-    console.log 'firing'
-    @game.sprites.push new Bullet(@)
+    @game.bullets.push new Bullet(@)
 
   update: ->
     super()
@@ -109,4 +108,6 @@ if require?
 
     @game.viewOffset = [@position[0] - @game.canvas.halfWidth,
                         @position[1] - @game.canvas.halfHeight]
+
+    # The current player's ship is always visible
     @flags.isVisible = true
