@@ -6,8 +6,8 @@ Sprite = require './sprite'
 # there's not a nicer way of ignoring its functionality without
 # subclassing into ClientSprite or breaking apart Sprite::update.
 # Another way is to have a conditional at the top of the function
-# which checks and exits if we're not on the client. However, having
-# a conditiona being checked every time seems like overkill.
+# which checks and exits if we're on the server. However, running
+# a conditional every time seems like overkill.
 Sprite::updateView = ->
 
 (module ? {}).exports = class ServerGame extends Game

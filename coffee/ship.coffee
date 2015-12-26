@@ -78,7 +78,7 @@ if require?
 
   brake: ->
     # 'Responsive' / 'variable rate' braking
-    # Provides a smooth braking experience that doesn't drag on at the end
+    # Provides a smooth braking experience that doesn't drag on at the end.
     return unless @magnitude
     @isBraking = true
     rate = min @magnitude * @magnitude / @brakePower, Ship.RATES.BRAKE
