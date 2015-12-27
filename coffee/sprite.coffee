@@ -1,7 +1,7 @@
 if require?
   Util = require './util'
 
-[sqrt] = [Math.sqrt]
+[abs, isarr, sqrt] = [Math.abs, Array.isArray, Math.sqrt]
 
 (module ? {}).exports = class Sprite
   flags:
@@ -37,12 +37,14 @@ if require?
     # TODO Consider adding a quadtree implementation to handle big
     # collections such as stars, and bullets, etc.
     # eg. if QuadTree.isQuad(sprites) sprites.detect(@) else ...
-    return [] unless sprites and @flags.isRigid
+    return [] unless isarr(sprites) and @flags.isRigid
     sprites.filter((sprite, i) => sprite.flags.isRigid and @intersects sprite)
 
   intersects: (sprite) ->
     return false if @ is sprite or not sprite?.getViewBounds
-    Util.areSquareBoundsOverlapped @getViewBounds(), sprite.getViewBounds()
+    [x, y] = [sprite.position[0], sprite.position[0]]
+    (abs(@position[0] - x) <= @halfWidth + sprite.halfWidth) and
+    (abs(@position[1] - y) <= @halfWidth + sprite.halfWidth)
 
   getBoundsFor: (type = 'view') ->
     [[@[type][0] - @halfWidth, @[type][1] - @halfHeight], [@width, @height]]

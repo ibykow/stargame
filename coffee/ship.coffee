@@ -52,7 +52,7 @@ if require?
 
   constructor: (@player, @position) ->
     return null unless @player
-    super @player.game, @position, 20, 20
+    super @player.game, @position, 10, 10
 
     @gear = 0
     @flags.isBraking = false
@@ -90,7 +90,7 @@ if require?
 
   handleBulletCollisions: ->
     @updateBulletCollisions()
-    console.log 'hit' for hit in @bulletCollisions
+    console.log hit for hit in @bulletCollisions
 
   update: ->
     super()

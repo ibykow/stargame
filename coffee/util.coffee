@@ -1,5 +1,6 @@
-[floor, isarr, min, max, rnd, trunc] =
-  [Math.floor, Array.isArray, Math.min, Math.max, Math.random, Math.trunc]
+[abs, floor, isarr, min, max, rnd, trunc] =
+  [ Math.abs, Math.floor, Array.isArray, Math.min,
+    Math.max, Math.random, Math.trunc ]
 
 (module ? {}).exports = Util =
   vectorDeltaExists: (a, b) ->
@@ -16,18 +17,6 @@
 
     # return false when no difference is found
     false
-
-  areSquareBoundsOverlapped: (a, b) ->
-    # check if square bounds are overlapped
-    return unless isarr(a) and isarr(b)
-
-    for i in [0...a[0].length]
-      if a[0][i] < b[0][i]
-        return false if b[0][i] - a[0][i] > a[1][i]
-      else
-        return false if a[0][i] - b[0][i] > a[1][i]
-
-    true
 
   isInSquareBounds: (point, bounds) ->
     return unless isarr(point) and isarr(bounds) and
