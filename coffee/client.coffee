@@ -55,7 +55,7 @@ client = null
       welcome: (data) ->
         context = @canvas.getContext('2d')
 
-        @game = new ClientGame(data, @canvas, context)
+        @game = new ClientGame(data, @canvas, context, @socket)
         @game.client = @
 
         @keymap[Client.KEY.UP] = 'forward'
@@ -83,9 +83,9 @@ client = null
       state: (data) ->
         # set the first state
         return unless data.ships
-
+        console.log 'received', data
         # set the tick, then set and process the new state
-        @game.tick = data.tick
+        # @game.tick = data.tick
         @game.processServerData.bind(@game)(data)
 
         # update the state event handler
@@ -119,21 +119,7 @@ client = null
   frame:
     run: (timestamp) ->
       @frame.request = window.requestAnimationFrame @frame.run.bind @
-      inputs = @getMappedInputs()
-      @game.player.inputs = inputs
       @game.step timestamp
-
-      return unless inputs.length
-
-      inputLogEntry =
-        tick: @game.tick
-        inputs: inputs
-        inputSequence: @game.player.inputSequence
-        clientState: @game.player.ship.getState()
-
-      @game.player.inputSequence++
-      @game.player.logs['input'].insert inputLogEntry
-      @socket.emit 'input', inputLogEntry
 
     stop: ->
       window.cancelAnimationFrame @frame.request

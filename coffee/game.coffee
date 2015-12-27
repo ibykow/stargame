@@ -42,9 +42,7 @@ if require?
     @bullets = bullets
 
   update: ->
-    star.update() for star in @stars
     @updateBullets()
-    player.update() for player in @players when player
 
   logPlayerStates: ->
     for player in @players when player
@@ -59,4 +57,4 @@ if require?
     @tick.time = time
     @tick.count++
     @update()
-    @logPlayerStates()
+    # @logPlayerStates()

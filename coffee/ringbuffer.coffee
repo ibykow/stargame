@@ -6,12 +6,35 @@ if require?
   constructor: (@max = RingBuffer.DEFAULT_MAX)->
     return if @max < 2
     @data = new Array @max
+    @reset()
+
+  reset: ->
     @head = 0
     @tail = 0
     @full = false
 
+  # purge elements while f returns true
+  # f takes the current element as an argument
+  purge: (f) ->
+    if typeof f is 'function'
+      while (o = @peek()) and f(o)
+        @remove()
+    else
+      @reset()
+
+  find: (f) ->
+    return unless typeof f is 'function'
+    
+    while o = @peek()
+      return o if f(o)
+
+    null
+
+  isEmpty: ->
+    @head is @tail and not @full
+
   toArray: ->
-    return [] if @head is @tail and not @full
+    return [] if @isEmpty()
 
     if @head > @tail
       @data.slice @tail, @head
@@ -19,6 +42,7 @@ if require?
       @data.slice(@tail, @max).concat @data.slice(0, @head)
 
   insert: (o) ->
+    return unless o
     # if we're full, move the tail up to make room
     @tail = (@tail + 1) % @max if @full
 
@@ -34,7 +58,7 @@ if require?
 
   remove: ->
     # return null if buffer is empty
-    return null if @head is @tail and not @full
+    return null if @isEmpty()
 
     # take the item
     item = @data[@tail]
@@ -50,4 +74,4 @@ if require?
 
   peek: ->
     # get the tail item without removing it
-    if @head is @tail and not @full then null else @data[@tail]
+    if @isEmpty() then null else @data[@tail]

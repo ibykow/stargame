@@ -49,7 +49,7 @@ module.exports = class Server
             height: @game.height
             frictionRate: @game.frictionRate
             tick: @game.tick
-            initStates: @game.initStates
+            starStates: @game.starStates
           id: player.id,
           ship: player.ship.getState())
 
@@ -82,10 +82,10 @@ module.exports = class Server
         @game.server.pause() if not @game.players.length
 
       input: (data) -> # a client has generated input
-        return unless data.inputs
+        return unless data.sequence
         @inputs = data.inputs
         @clientState = data.clientState
-        @inputSequence = data.inputSequence
+        @inputSequence = data.sequence
         @update()
 
   frame:

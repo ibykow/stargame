@@ -17,7 +17,7 @@ Sprite::updateView = ->
 
     @server = server
     @stars = @generateStars(numStars)
-    @initStates = @getStarStates()
+    @starStates = @getStarStates()
 
   generateStars: (n) ->
     for i in [0..n]
@@ -32,39 +32,20 @@ Sprite::updateView = ->
       height: star.height
       color: star.color
 
-  generateShipStates: ->
-    states = []
+  getShipStates: ->
     for player in @players when player
+      id: player.id
+      inputSequence: player.inputSequence
+      ship: player.ship.getState()
 
-      synced = not player.clientState or
-        (player.clientState.position[0] == player.ship.position[0]) and
-        (player.clientState.position[1] == player.ship.position[1]) and
-        (player.clientState.position[2] == player.ship.position[2])
-
-      shipState = player.ship.getState()
-
-      states.push
-        id: player.id
-        inputSequence: player.inputSequence
-        ship: shipState
-        synced: synced
-
-      player.clientState = null
-
-    states
-
-  update: ->
-    super()
-    super()
-    super()
-    super()
-    super()
+  updateClients: ->
+    shipStates = @getShipStates()
+    bulletStates = (bullet.getState() for bullet in @bullets)
+    @server.io.emit 'state',
+      ships: shipStates
+      bullets: bulletStates
+      tick: @tick
 
   step: (time) ->
     super time # it's the best kind
-    bulletStates = (bullet.getState() for bullet in @bullets)
-    @server.io.emit 'state',
-      ships: @generateShipStates()
-      bullets: bulletStates
-      tick: @tick
-      fromServer: true
+    @updateClients()

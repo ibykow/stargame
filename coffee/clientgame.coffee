@@ -4,58 +4,64 @@ if require?
   Game = require './game'
   Client = require './client'
 
+[floor, max] = [Math.floor, Math.max]
+
 (module ? {}).exports = class ClientGame extends Game
   constructor: (details, @canvas, @c, socket) ->
     return unless details
     super details.game.width, details.game.height, details.game.frictionRate
 
-    { @tick, @initStates } = details.game
+    { @tick, @starStates } = details.game
 
     @visibleSprites = []
     @mouseSprites = [] # sprites under the mouse
     @stars = @generateStars()
-    @player = new Player(@, details.id)
+    @player = new Player(@, details.id, socket)
     @player.name = 'Guest'
     @players = [@player]
-    @shipState = null
     @ships = []
+    @history = new RingBuffer ClientGame.HISTORY_LEN
+    @inputSequence = 1
+    @lastVerifiedInputSequence = 0
 
   interpolation:
     reset: (dt) ->
-      @interpolation.step = 0
-      @interpolation.rate = Client.FRAME_MS / dt
+      @step = 0
+      @rate = Client.FRAME_MS / dt
 
   generateStars: ->
-    for state in @initStates
+    for state in @starStates
       new Sprite(@, state.position, state.width, state.height, state.color)
 
-  correctPrediction: () ->
-    return unless @shipState?.inputSequence
+  correctPrediction: ->
+    inputLog = @player.logs['input']
+    serverInputSequence = @shipState?.inputSequence
 
-    i = 0
+    return unless serverInputSequence > @lastVerifiedInputSequence
+    @lastVerifiedInputSequence = serverInputSequence
 
-    console.log 'correcting prediction'
+    # Remove logged inputs prior to the server's input sequence
+    # We won't be using those for anything
+    inputLog.purge((entry) -> entry.sequence < serverInputSequence)
 
-    log = @player.logs['input']
+    # do the correction only if we're out of sync with the server
+    clientState = inputLog.remove()?.ship.position
+    serverState = @shipState.ship.position
+    return unless Util.vectorDeltaExists(clientState, serverState)
 
-    # Match the input with the state
-    while (log.peek()?.sequence ? @shipState.sequence) < @shipState.sequence
-      log.remove()
+    # set the current ship state to the last known (good) server state
+    @player.ship.setState(serverState)
 
-    # set the current ship state to the last known server state
-    @player.ship.setState(@shipState.ship)
+    inputLog.remove()
 
     # rewind and replay
-    for entry in log.toArray()
+    for entry in inputLog.toArray()
       @player.inputs = entry.inputs
       @player.update()
 
   processServerData: (data) ->
-    inserted = false
-
     # console.log 'processing server state'
-
-    [i, j] = [0, 0]
+    [inserted, i, j, stateLog] = [false, 0, 0, @player.logs['state']]
 
     # remove our ship from the pile
     for i in [0...data.ships.length]
@@ -64,6 +70,7 @@ if require?
         @shipState = data.ships.splice(i, 1)[0]
         break
 
+    # reset the index (ie. leave this here)
     i = 0
 
     # associate each ship state with its previous state
@@ -82,11 +89,12 @@ if require?
       i++
       j++
 
+    # remove disconnected ships
     if j > i
-      # remove disconnected ships
       @ships.length = i
+
+    # or insert new ships
     else
-      # insert new ships
       for j in [i...data.ships.length]
         state = data.ships[j]
         @ships.push new InterpolatedShip(@player, state.id, state.ship)
@@ -98,10 +106,14 @@ if require?
         arrow = new Arrow @, @player.ship, ship, "#00f", 0.8, 2, ship.id
         @player.arrows.push arrow
 
-    # sort our list of ships by id
+    # if a new player has entered, sort our list of ships by id
     (@ships.sort (a, b) -> a.id - b.id) if inserted
+
+    # remove old states from the log
+    stateLog.purge((entry) -> entry.sequence < data.tick.count)
+
     @correctPrediction()
-    @interpolation.reset.bind(@)(data.tick.dt)
+    @interpolation.reset(data.tick.dt)
 
   isMouseInBounds: (bounds) ->
     Util.isInSquareBounds([@client.mouse.x, @client.mouse.y], bounds)
@@ -155,7 +167,10 @@ if require?
     ship.update() for ship in @ships
     @interpolation.step++
     @updateMouse()
+    star.update() for star in @stars
     super()
+    @player.update()
+    @player.updateArrows()
 
   clear: ->
     @c.globalAlpha = 1
@@ -176,7 +191,21 @@ if require?
     sprite.draw() for sprite in @visibleSprites
     @player.ship.draw()
     arrow.draw() for arrow in @player.arrows
+    @drawHUD()
+
+  updateServer: (inputs) ->
+    entry =
+      sequence: @inputSequence
+      ship: @player.ship.getState()
+      inputs: inputs
+
+    @player.logs['input'].insert entry
+    @player.socket.emit 'input', entry
+    @inputSequence++
 
   step: (time) ->
+    inputs = @client.getMappedInputs()
+    @player.inputs = inputs
     super time
+    @updateServer(inputs)
     @draw()
