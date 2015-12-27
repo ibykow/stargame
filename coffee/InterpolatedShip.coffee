@@ -3,7 +3,7 @@ if require?
   Sprite = require './ship'
 
 (module ? {}).exports = class InterpolatedShip extends Ship
-  constructor: (@player, @id, state) ->
+  constructor: (@player, state) ->
     return null unless @player and state.position
     super @player, state.position
     @velocity = state.velocity

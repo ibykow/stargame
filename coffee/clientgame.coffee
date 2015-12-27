@@ -77,13 +77,16 @@ if require?
     while i < data.ships.length and j < @ships.length
       state = data.ships[i]
       ship = @ships[j]
-      if state.id is ship.id
+      if state.id is ship.player.id
         ship.setState state.ship
-      else if state.id > ship.id
+      else if state.id > ship.player.id
         @ships.splice(j, 1)
         continue
       else
-        @ships.push new InterpolatedShip(@player, state.id, state.ship)
+        p =
+          id: state.id
+          game: @
+        @ships.push new InterpolatedShip(p, state.ship)
         inserted = true
 
       i++
@@ -97,13 +100,16 @@ if require?
     else
       for j in [i...data.ships.length]
         state = data.ships[j]
-        @ships.push new InterpolatedShip(@player, state.id, state.ship)
+        p =
+          id: state.id
+          game: @
+        @ships.push new InterpolatedShip(p, state.ship)
 
       # add an arrow to the first ship
       if i is 0 and j > 0
         ship = @ships[0]
         console.log 'arrow to', ship
-        arrow = new Arrow @, @player.ship, ship, "#00f", 0.8, 2, ship.id
+        arrow = new Arrow @, @player.ship, ship, "#00f", 0.8, 2, ship.player.id
         @player.arrows.push arrow
 
     # if a new player has entered, sort our list of ships by id
@@ -164,13 +170,13 @@ if require?
 
   update: ->
     @visibleSprites = []
+    super()
+    star.update() for star in @stars
     ship.update() for ship in @ships
     @interpolation.step++
-    @updateMouse()
-    star.update() for star in @stars
-    super()
     @player.update()
     @player.updateArrows()
+    @updateMouse()
 
   clear: ->
     @c.globalAlpha = 1
@@ -193,7 +199,7 @@ if require?
     arrow.draw() for arrow in @player.arrows
     @drawHUD()
 
-  updateServer: (inputs) ->
+  notifyServer: (inputs) ->
     entry =
       sequence: @inputSequence
       ship: @player.ship.getState()
@@ -206,6 +212,6 @@ if require?
   step: (time) ->
     inputs = @client.getMappedInputs()
     @player.inputs = inputs
-    super time
-    @updateServer(inputs)
+    super time # the best kind
+    @notifyServer inputs
     @draw()

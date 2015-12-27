@@ -46,6 +46,6 @@ Sprite::updateView = ->
       bullets: bulletStates
       tick: @tick
 
-  step: (time) ->
-    super time # it's the best kind
+  update: ->
+    super()
     @updateClients()

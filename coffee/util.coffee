@@ -31,7 +31,7 @@
     true
 
   toroidalDelta: (p0, p1, pLimit) ->
-    return unless p0 and p1 and pLimit
+    return unless isarr(p0) and isarr(p1) and isarr(pLimit)
     len = min(min(p0.length, p1.length), pLimit.length)
     return [] if len < 1
 
@@ -48,7 +48,7 @@
         delta
 
   findEmptySlot: (arr) ->
-    return unless arr and isarr arr
+    return unless isarr arr
     for slot in [0..arr.length]
       return slot if not arr[slot]
 

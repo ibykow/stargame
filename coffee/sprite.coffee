@@ -41,10 +41,10 @@ if require?
     sprites.filter((sprite, i) => sprite.flags.isRigid and @intersects sprite)
 
   intersects: (sprite) ->
-    return false if @ is sprite or not sprite?.getViewBounds
-    [x, y] = [sprite.position[0], sprite.position[0]]
-    (abs(@position[0] - x) <= @halfWidth + sprite.halfWidth) and
-    (abs(@position[1] - y) <= @halfWidth + sprite.halfWidth)
+    return false if @ is sprite or not sprite?.position
+    delta = Util.toroidalDelta(@position, sprite.position, @game.toroidalLimit)
+    (abs(delta[0]) <= @halfWidth + sprite.halfWidth) and
+    (abs(delta[1]) <= @halfHeight + sprite.halfHeight)
 
   getBoundsFor: (type = 'view') ->
     [[@[type][0] - @halfWidth, @[type][1] - @halfHeight], [@width, @height]]
