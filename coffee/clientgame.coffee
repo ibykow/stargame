@@ -5,7 +5,6 @@ if require?
   Client = require './client'
 
 (module ? {}).exports = class ClientGame extends Game
-  @HISTORY_LENGTH
   constructor: (details, @canvas, @c, socket) ->
     return unless details
     super details.game.width, details.game.height, details.game.frictionRate
@@ -20,8 +19,6 @@ if require?
     @players = [@player]
     @shipState = null
     @ships = []
-    @inputLog = []
-    @stateLog = [] # logs the current player's ship states
 
   interpolation:
     reset: (dt) ->
@@ -35,30 +32,21 @@ if require?
   correctPrediction: () ->
     return unless @shipState?.inputSequence
 
-    if @shipState.synced
-      if @inputLog.length > 20
-        @inputLog.splice(0, @inputLog.length - 20)
-
-      return
-
     i = 0
 
     console.log 'correcting prediction'
 
-    # Match the input with the state
-    for i in [0...@inputLog.length]
-      if not @inputLog[i].inputSequence?
-        console.log 'invalid inputEntry'
-      break if @inputLog[i].inputSequence >= @shipState.inputSequence
+    log = @player.logs['input']
 
-    # Remove exired inputs
-    @inputLog.splice(0, i)
+    # Match the input with the state
+    while (log.peek()?.sequence ? @shipState.sequence) < @shipState.sequence
+      log.remove()
 
     # set the current ship state to the last known server state
     @player.ship.setState(@shipState.ship)
 
     # rewind and replay
-    for entry in @inputLog
+    for entry in log.toArray()
       @player.inputs = entry.inputs
       @player.update()
 
@@ -166,8 +154,8 @@ if require?
     @visibleSprites = []
     ship.update() for ship in @ships
     @interpolation.step++
-    super()
     @updateMouse()
+    super()
 
   clear: ->
     @c.globalAlpha = 1

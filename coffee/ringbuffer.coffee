@@ -10,6 +10,14 @@ if require?
     @tail = 0
     @full = false
 
+  toArray: ->
+    return [] if @head is @tail and not @full
+
+    if @head > @tail
+      @data.slice @tail, @head
+    else
+      @data.slice(@tail, @max).concat @data.slice(0, @head)
+
   insert: (o) ->
     # if we're full, move the tail up to make room
     @tail = (@tail + 1) % @max if @full

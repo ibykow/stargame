@@ -131,10 +131,8 @@ client = null
         inputSequence: @game.player.inputSequence
         clientState: @game.player.ship.getState()
 
-      console.log inputLogEntry.clientState.position
-
       @game.player.inputSequence++
-      @game.inputLog.push inputLogEntry
+      @game.player.logs['input'].insert inputLogEntry
       @socket.emit 'input', inputLogEntry
 
     stop: ->

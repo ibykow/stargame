@@ -42,7 +42,6 @@ Sprite::updateView = ->
         (player.clientState.position[2] == player.ship.position[2])
 
       shipState = player.ship.getState()
-      console.log 'id', player.id, shipState.position, player.clientState?.poisition
 
       states.push
         id: player.id

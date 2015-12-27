@@ -32,7 +32,6 @@ if require?
 
   updateBullets: ->
     # update each bullet state and remove dead bullets
-
     bullets = []
     for bullet in @bullets
       bullet.update()
@@ -47,9 +46,17 @@ if require?
     @updateBullets()
     player.update() for player in @players when player
 
+  logPlayerStates: ->
+    for player in @players when player
+      player.logs['state'].insert
+        sequence: @tick.count
+        id: player.id
+        ship: player.ship.getState()
+
   step: (time) ->
     # increment the tick
     @tick.dt = time - @tick.time
     @tick.time = time
     @tick.count++
     @update()
+    @logPlayerStates()
