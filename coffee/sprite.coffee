@@ -43,6 +43,7 @@ if require?
   intersects: (sprite) ->
     return false if @ is sprite or not sprite?.position
     delta = Util.toroidalDelta(@position, sprite.position, @game.toroidalLimit)
+    # console.log 'delta', delta
     (abs(delta[0]) <= @halfWidth + sprite.halfWidth) and
     (abs(delta[1]) <= @halfHeight + sprite.halfHeight)
 

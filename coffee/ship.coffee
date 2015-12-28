@@ -87,12 +87,15 @@ if require?
     @velocity[1] *= rate
 
   fire: ->
-    @game.bullets.push(new Bullet @)
+    i = @game.bullets.push(new Bullet @) - 1
+    console.log 'fired', @game.bullets[i].position, 'from', @position, 'at', @player.inputSequence
 
   handleBulletCollisions: ->
+    # console.log 'updating collisions for', @player.id
     @updateBulletCollisions()
     for b in @bulletCollisions
       @health--
+      console.log 'player', b.gun.player.id, 'hit player', @player.id, @health
 
   getState: ->
     s = super()

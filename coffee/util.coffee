@@ -13,7 +13,8 @@
       if isarr b then return true else return false
 
     # look for a difference in the values
-    return true unless a[i] is b[i] for i in [0...a.length]
+    for i in [0...a.length]
+      return true unless a[i] is b[i]
 
     # return false when no difference is found
     false

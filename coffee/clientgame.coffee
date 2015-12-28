@@ -58,6 +58,7 @@ Player::die = -> # do nothing on the client side
     # do the correction only if we're out of sync with the server
     clientPosition = inputLog.remove()?.ship.position
     serverPosition = serverState.position
+    # console.log 'correct', serverPosition, 'vs', clientPosition
     return unless Util.vectorDeltaExists(clientPosition, serverPosition)
 
     # set the current ship state to the last known (good) server state

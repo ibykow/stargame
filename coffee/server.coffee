@@ -83,6 +83,7 @@ module.exports = class Server
         # @clientState = data.ship # not currently used
         @logs['input'].insert data.inputs
         @inputSequence = max data.sequence, @inputSequence
+        # console.log 'received', data.inputs, data.ship.position 
 
   frame:
     run: (timestamp) ->

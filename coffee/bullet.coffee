@@ -19,9 +19,9 @@ if require?
     @velocity = [xdir * Bullet.SPEED, ydir * Bullet.SPEED]
     @position[0] += xdir * (@gun.width + 2)
     @position[1] += ydir * (@gun.height + 2)
-
-    @life = 60 * 3
+    @life = 10 * 1
     @update()
+    # console.log 'new bullet at', @position
 
   updateVelocity: -> # the velocity doesn't change
 
