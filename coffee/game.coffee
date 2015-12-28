@@ -19,17 +19,12 @@ if require?
   randomPosition: ->
     [Util.randomInt(0, @width), Util.randomInt(0, @height), 0]
 
-  newPlayer: (socket, position) ->
-    i = Util.findEmptySlot @players
-    @players[i] = new Player(@, i + 1, socket, position)
-
   removePlayer: (p) ->
     return unless p and p.id
-    @players[p.id - 1] = null
-
-    # remove empty slots from end of @players list
-    @players.length-- while @players.length and
-    not @players[@players.length - 1]
+    for i in [0...@players.length]
+      if @players[i].id is p.id
+        @players.splice(i, 1)
+        return
 
   updateBullets: ->
     # update each bullet state and remove dead bullets

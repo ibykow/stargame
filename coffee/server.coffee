@@ -12,6 +12,7 @@ module.exports = class Server
     # create a new game
     @game = new ServerGame(@, Server.MAP_SIZE, Server.MAP_SIZE, 4000, 0.99)
     @frameInterval = Server.FRAMES_PER_STEP * Game.FRAME_MS
+    @nextPlayerID = 0
     console.log 'Server frame interval:', @frameInterval + 'ms'
 
     # initialize io event handlers
@@ -30,16 +31,9 @@ module.exports = class Server
     io:
       connection: (socket) -> # a client connects
         # create a player object around the socket
-        player = null
-        # if Server.startPosition
-        #   player = @game.newPlayer(socket, [
-        #     Server.startPosition[0],
-        #     Server.startPosition[1],
-        #     0])
-        # else
-        player = @game.newPlayer(socket)
-
-        Server.startPosition ?= player.ship.position
+        player = new Player @game, @nextPlayerID, socket
+        @game.players.push player
+        @nextPlayerID++
 
         # associate event handler
         socket.on(event, cb.bind(player)) for event, cb of @events.socket

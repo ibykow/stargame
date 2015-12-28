@@ -5,7 +5,7 @@ if require?
 (module ? {}).exports = class Player
   @LOGLEN: 1 << 8
   constructor: (@game, @id, @socket, position) ->
-    return null unless @game and @id
+    return null unless @game
     @ship = new Ship(@, position)
     @arrows = []
     @inputs = []

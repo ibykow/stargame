@@ -72,6 +72,7 @@ client = null
         console.log 'player', data.id + ', ' + data.name, 'has joined'
 
       leave: (id) ->
+        @game.removeShip(id)
         console.log 'player', id, 'has left'
 
       disconnect: ->

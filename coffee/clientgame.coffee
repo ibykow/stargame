@@ -35,6 +35,12 @@ Player::die = -> # do nothing on the client side
     for state in @starStates
       new Sprite(@, state.position, state.width, state.height, state.color)
 
+  removeShip: (id) ->
+    for i in [0...@ships.length]
+      if @ships[i].player.id == id
+        @ships.splice i, 1
+        break
+
   correctPrediction: ->
     inputLog = @player.logs['input']
     serverInputSequence = @shipState?.inputSequence
