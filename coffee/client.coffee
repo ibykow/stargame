@@ -1,3 +1,6 @@
+if require?
+  Config = require './config'
+
 client = null
 
 # Make Client exportable to support tests
@@ -84,13 +87,15 @@ client = null
         # set the first state
         return unless data.ships
         console.log 'received', data
-        # set the tick, then set and process the new state
-        # @game.tick = data.tick
-        @game.processServerData.bind(@game)(data)
 
         # update the state event handler
+        callback = @game.processServerData.bind @game
         @socket.removeAllListeners('state')
-        @socket.on('state', @game.processServerData.bind @game)
+        @socket.on('state', callback)
+
+        # set the tick, then set and process the new state
+        # @game.tick = data.tick
+        callback data
 
         # start the game
         @frame.run.bind(@) @game.tick.time
@@ -144,7 +149,7 @@ window.onload = ->
   if not window.requestAnimationFrame
     window.requestAnimationFrame = (callback, element) ->
       currTime = +new Date
-      timeToCall = Math.max(0, Game.FRAME_MS - (currTime - lastTime))
+      timeToCall = Math.max(0, Config.common.msPerFrame - (currTime - lastTime))
       lastTime = currTime + timeToCall
       window.setTimeout((-> callback(lastTime)), timeToCall)
 

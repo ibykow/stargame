@@ -9,6 +9,8 @@ if require?
     @ship = new Ship(@, position)
     @arrows = []
     @inputs = []
+    @minInputSequence = 1 # used by the server
+    @inputSequence = 1
     @logs =
       state: new RingBuffer Player.LOGLEN
       input: new RingBuffer Player.LOGLEN
@@ -38,7 +40,7 @@ if require?
   updateArrows: -> arrow.update() for arrow in @arrows
 
   update: ->
-    @die() if @ship?.health < 1
+    return @die() if @ship?.health < 1
 
     for action in @inputs when action?.length
       @actions[action].bind(@)()

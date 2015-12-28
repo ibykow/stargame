@@ -1,3 +1,4 @@
+Config = require './config'
 Util = require './util'
 Server = require './server'
 Game = require './game'
@@ -38,12 +39,12 @@ Sprite::updateView = ->
       color: star.color
 
   getShipStates: ->
-    for player in @players when player
+    for player in @players
       id: player.id
       inputSequence: player.inputSequence
       ship: player.ship.getState()
 
-  updateClients: ->
+  sendState: ->
     shipStates = @getShipStates()
     bulletStates = (bullet.getState() for bullet in @bullets)
     @server.io.emit 'state',
@@ -52,5 +53,10 @@ Sprite::updateView = ->
       tick: @tick
 
   update: ->
-    super()
-    @updateClients()
+    for i in [1..Config.server.framesPerStep]
+      super()
+      for player in @players
+        player.inputs = player.logs['input'].remove() or []
+        player.update()
+
+    @sendState()

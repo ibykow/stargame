@@ -3,8 +3,7 @@ var app = require('express')(),
     io = require('socket.io')(http),
     Server = require('./lib/server'),
     game = new Server(io),
-    port = 3000,
-    log = console.log;
+    port = 3000;
 
 http.listen(port, function (err) {
     if (err) {
@@ -12,7 +11,7 @@ http.listen(port, function (err) {
         return;
     }
 
-    log('http server running on port', port);
+    console.log('http server running on port', port);
 });
 
 app.get('/', function (req, res) {

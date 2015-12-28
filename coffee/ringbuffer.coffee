@@ -24,7 +24,7 @@ if require?
 
   find: (f) ->
     return unless typeof f is 'function'
-    
+
     while o = @peek()
       return o if f(o)
 

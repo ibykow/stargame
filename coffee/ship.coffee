@@ -90,7 +90,6 @@ if require?
     @game.bullets.push(new Bullet @)
 
   handleBulletCollisions: ->
-    # console.log 'bchandle', @player.id
     @updateBulletCollisions()
     for b in @bulletCollisions
       @health--

@@ -1,17 +1,18 @@
-log = console.log
+Config = require './config'
 Player = require './player'
 Game = require './game'
 ServerGame = require './servergame'
 
+[max, min] = [Math.max, Math.min]
+
 module.exports = class Server
-  @FRAMES_PER_STEP: 5
   @MAP_SIZE: (1 << 15) + 1
   @startPosition: null
   constructor: (@io) ->
     return unless @io
     # create a new game
     @game = new ServerGame(@, Server.MAP_SIZE, Server.MAP_SIZE, 4000, 0.99)
-    @frameInterval = Server.FRAMES_PER_STEP * Game.FRAME_MS
+    @frameInterval = Config.server.framesPerStep * Config.common.msPerFrame
     @nextPlayerID = 0
     console.log 'Server frame interval:', @frameInterval + 'ms'
 
@@ -19,11 +20,11 @@ module.exports = class Server
     @io.on(event, cb.bind(@)) for event, cb of @events.io
 
   pause: ->
-    log 'The game is empty. Pausing.'
+    console.log 'The game is empty. Pausing.'
     @frame.stop.bind(@)()
 
   unpause: ->
-    log 'unpausing'
+    console.log 'Unpausing'
     @frame.run.bind(@) +new Date
 
   events:
@@ -49,12 +50,12 @@ module.exports = class Server
           id: player.id,
           ship: player.ship.getState())
 
-        log 'Player', player.id, 'has joined'
+        console.log 'Player', player.id, 'has joined'
 
     # @ is the player instance
     socket:
       join: (name) -> # a connected client sends his/her name
-        log 'Player', @id, 'is called', name
+        console.log 'Player', @id, 'is called', name
 
         # set the player's name
         @name = name
@@ -66,7 +67,7 @@ module.exports = class Server
         @game.server.unpause() if @game.players.length is 1
 
       disconnect: -> # a client has disconnected
-        log 'Player', @id, 'has left'
+        console.log 'Player', @id, 'has left'
 
         # notify other players that the player has left
         @game.server.io.emit 'leave', @id
@@ -79,10 +80,9 @@ module.exports = class Server
 
       input: (data) -> # a client has generated input
         return unless data.sequence
-        @inputs = data.inputs
-        @clientState = data.ship
-        @inputSequence = data.sequence
-        @update()
+        # @clientState = data.ship # not currently used
+        @logs['input'].insert data.inputs
+        @inputSequence = max data.sequence, @inputSequence
 
   frame:
     run: (timestamp) ->

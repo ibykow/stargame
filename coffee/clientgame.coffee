@@ -23,13 +23,12 @@ Player::die = -> # do nothing on the client side
     @player.name = 'Guest'
     @players = [@player]
     @ships = []
-    @inputSequence = 1
     @lastVerifiedInputSequence = 0
 
   interpolation:
     reset: (dt) ->
       @step = 0
-      @rate = Game.FRAME_MS / dt
+      @rate = Config.common.msPerFrame / dt
 
   generateStars: ->
     for state in @starStates
@@ -47,6 +46,7 @@ Player::die = -> # do nothing on the client side
     serverState = @shipState.ship
 
     return unless serverInputSequence > @lastVerifiedInputSequence
+
     @lastVerifiedInputSequence = serverInputSequence
 
     @player.ship.health = serverState.health or @player.ship.health
@@ -71,13 +71,12 @@ Player::die = -> # do nothing on the client side
       @player.update()
 
   processServerData: (data) ->
-    # console.log 'processing server state'
     [inserted, i, j, stateLog] = [false, 0, 0, @player.logs['state']]
 
     # remove our ship from the pile
     for i in [0...data.ships.length]
       if data.ships[i].id == @player.id
-        # console.log 'found our ship'
+        # splicing sucks
         @shipState = data.ships.splice(i, 1)[0]
         break
 
@@ -223,13 +222,13 @@ Player::die = -> # do nothing on the client side
 
   notifyServer: (inputs) ->
     entry =
-      sequence: @inputSequence
+      sequence: @player.inputSequence
       ship: @player.ship.getState()
       inputs: inputs
 
     @player.logs['input'].insert entry
     @player.socket.emit 'input', entry
-    @inputSequence++
+    @player.inputSequence++
 
   step: (time) ->
     inputs = @client.getMappedInputs()
