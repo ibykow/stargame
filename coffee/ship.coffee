@@ -54,6 +54,7 @@ if require?
     return null unless @player
     super @player.game, @position, 10, 10
 
+    @health = 100
     @gear = 0
     @flags.isBraking = false
 
@@ -92,7 +93,17 @@ if require?
     # console.log 'bchandle', @player.id
     @updateBulletCollisions()
     for b in @bulletCollisions
+      @health--
       console.log 'player', b.gun.player.id, 'hit player', @player.id
+
+  getState: ->
+    s = super()
+    s.health = @health
+    s
+
+  setState: (s) ->
+    super(s)
+    {@health} = s
 
   update: ->
     super()

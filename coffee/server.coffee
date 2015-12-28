@@ -84,7 +84,7 @@ module.exports = class Server
       input: (data) -> # a client has generated input
         return unless data.sequence
         @inputs = data.inputs
-        @clientState = data.clientState
+        @clientState = data.ship
         @inputSequence = data.sequence
         @update()
 

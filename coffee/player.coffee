@@ -32,9 +32,14 @@ if require?
     fire: ->
       @ship.fire()
 
+  die: ->
+    @socket.disconnect()
+
   updateArrows: -> arrow.update() for arrow in @arrows
 
   update: ->
+    @die() if @ship?.health < 1
+
     for action in @inputs when action?.length
       @actions[action].bind(@)()
 
