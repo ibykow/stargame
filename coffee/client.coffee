@@ -122,6 +122,7 @@ client = null
       @game.step timestamp
 
     stop: ->
+      @game.gameOver()
       window.cancelAnimationFrame @frame.request
 
     request: null

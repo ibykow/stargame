@@ -199,6 +199,16 @@ if require?
     arrow.draw() for arrow in @player.arrows
     @drawHUD()
 
+  gameOver: ->
+    @c.fillStyle = "#fff"
+    @c.font = '30px Helvetica'
+    @c.fillText 'Game Over!', @canvas.halfWidth - 80, @canvas.halfHeight
+    @c.font = '14px Courier New'
+    @c.fillText "Alright, that's it! I'm sick of it!",
+      @canvas.halfWidth - 135, @canvas.halfHeight + 20
+    @c.fillText "Shut the fuck up, I've got a gun!",
+      @canvas.halfWidth - 130, @canvas.halfHeight + 38
+
   notifyServer: (inputs) ->
     entry =
       sequence: @inputSequence
