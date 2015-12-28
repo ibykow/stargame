@@ -94,7 +94,6 @@ if require?
     @updateBulletCollisions()
     for b in @bulletCollisions
       @health--
-      console.log 'player', b.gun.player.id, 'hit player', @player.id
 
   getState: ->
     s = super()

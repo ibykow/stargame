@@ -4,7 +4,6 @@ client = null
 (module ? {}).exports = class Client
   @INNER_WIDTH_OFFSET: 0
   @INNER_HEIGHT_OFFSET: 0
-  @FRAME_MS: 16
   @URI: 'http://192.168.0.101:3000'
   @COLORS:
     BACKGROUND:
@@ -144,7 +143,7 @@ window.onload = ->
   if not window.requestAnimationFrame
     window.requestAnimationFrame = (callback, element) ->
       currTime = +new Date
-      timeToCall = Math.max(0, Client.FRAME_MS - (currTime - lastTime))
+      timeToCall = Math.max(0, Game.FRAME_MS - (currTime - lastTime))
       lastTime = currTime + timeToCall
       window.setTimeout((-> callback(lastTime)), timeToCall)
 

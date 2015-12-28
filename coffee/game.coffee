@@ -3,6 +3,7 @@ if require?
   Player = require './player'
 
 (module ? {}).exports = class Game
+  @FRAME_MS: 16
   constructor: (@width = 1 << 8, @height = 1 << 8, @frictionRate = 0.96) ->
     @toroidalLimit = [@width, @height]
     @players = []

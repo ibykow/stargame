@@ -1,5 +1,7 @@
 Util = require './util'
+Server = require './server'
 Game = require './game'
+Player = require './player'
 Sprite = require './sprite'
 
 # Sprite::updateView gets called during the update stage, so
@@ -18,6 +20,9 @@ Sprite::updateView = ->
     @server = server
     @stars = @generateStars(numStars)
     @starStates = @getStarStates()
+
+    # On the server-side, players keep only the inputs necessary to do updates.
+    Player.LOGLEN = Server.FRAMES_PER_STEP
 
   generateStars: (n) ->
     for i in [0..n]

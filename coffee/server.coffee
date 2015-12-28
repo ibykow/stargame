@@ -1,16 +1,18 @@
 log = console.log
 Player = require './player'
-Game = require './servergame'
+Game = require './game'
+ServerGame = require './servergame'
 
 module.exports = class Server
-  @FRAME_INTERVAL: 80
+  @FRAMES_PER_STEP: 5
   @MAP_SIZE: (1 << 15) + 1
   @startPosition: null
   constructor: (@io) ->
     return unless @io
-
     # create a new game
-    @game = new Game(@, Server.MAP_SIZE, Server.MAP_SIZE, 4000, 0.99)
+    @game = new ServerGame(@, Server.MAP_SIZE, Server.MAP_SIZE, 4000, 0.99)
+    @frameInterval = Server.FRAMES_PER_STEP * Game.FRAME_MS
+    console.log 'Server frame interval:', @frameInterval + 'ms'
 
     # initialize io event handlers
     @io.on(event, cb.bind(@)) for event, cb of @events.io
@@ -93,7 +95,7 @@ module.exports = class Server
       dt = +new Date
       @game.step timestamp
       dt = +new Date - dt
-      ms = Server.FRAME_INTERVAL - dt
+      ms = @frameInterval - dt
 
       if ms < 10
         ms = 10

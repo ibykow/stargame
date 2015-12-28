@@ -2,9 +2,12 @@ if require?
   Sprite = require './sprite'
   Ship = require './ship'
   Game = require './game'
+  Player = require './player'
   Client = require './client'
 
 [floor, max] = [Math.floor, Math.max]
+
+Player::die = -> # do nothing on the client side
 
 (module ? {}).exports = class ClientGame extends Game
   constructor: (details, @canvas, @c, socket) ->
@@ -20,14 +23,13 @@ if require?
     @player.name = 'Guest'
     @players = [@player]
     @ships = []
-    @history = new RingBuffer ClientGame.HISTORY_LEN
     @inputSequence = 1
     @lastVerifiedInputSequence = 0
 
   interpolation:
     reset: (dt) ->
       @step = 0
-      @rate = Client.FRAME_MS / dt
+      @rate = Game.FRAME_MS / dt
 
   generateStars: ->
     for state in @starStates
@@ -36,18 +38,21 @@ if require?
   correctPrediction: ->
     inputLog = @player.logs['input']
     serverInputSequence = @shipState?.inputSequence
+    serverState = @shipState.ship
 
     return unless serverInputSequence > @lastVerifiedInputSequence
     @lastVerifiedInputSequence = serverInputSequence
+
+    @player.ship.health = serverState.health or @player.ship.health
 
     # Remove logged inputs prior to the server's input sequence
     # We won't be using those for anything
     inputLog.purge((entry) -> entry.sequence < serverInputSequence)
 
     # do the correction only if we're out of sync with the server
-    clientState = inputLog.remove()?.ship.position
-    serverState = @shipState.ship.position
-    return unless Util.vectorDeltaExists(clientState, serverState)
+    clientPosition = inputLog.remove()?.ship.position
+    serverPosition = serverState.position
+    return unless Util.vectorDeltaExists(clientPosition, serverPosition)
 
     # set the current ship state to the last known (good) server state
     @player.ship.setState(serverState)
@@ -191,6 +196,7 @@ if require?
     @c.fillText 'r:' + @player.ship.position[2].toFixed(2), 160, 18
     @c.fillText 'vx:' + @player.ship.velocity[0].toFixed(0), 260, 18
     @c.fillText 'vy:' + @player.ship.velocity[1].toFixed(0), 340, 18
+    @c.fillText 'hp:' + @player.ship.health, 420, 18
 
   draw: ->
     @clear()
@@ -202,12 +208,12 @@ if require?
   gameOver: ->
     @c.fillStyle = "#fff"
     @c.font = '30px Helvetica'
-    @c.fillText 'Game Over!', @canvas.halfWidth - 80, @canvas.halfHeight
+    @c.fillText 'Game Over!', @canvas.halfWidth - 80, @canvas.halfHeight - 80
     @c.font = '14px Courier New'
     @c.fillText "Alright, that's it! I'm sick of it!",
-      @canvas.halfWidth - 135, @canvas.halfHeight + 20
+      @canvas.halfWidth - 135, @canvas.halfHeight - 60
     @c.fillText "Shut the fuck up, I've got a gun!",
-      @canvas.halfWidth - 130, @canvas.halfHeight + 38
+      @canvas.halfWidth - 130, @canvas.halfHeight - 42
 
   notifyServer: (inputs) ->
     entry =
