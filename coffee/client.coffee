@@ -109,8 +109,8 @@ client = null
 
   frame:
     run: (timestamp) ->
-      @frame.request = window.requestAnimationFrame @frame.run.bind @
       @game.step timestamp
+      @frame.request = window.requestAnimationFrame @frame.run.bind @
 
     stop: ->
       @game.gameOver()

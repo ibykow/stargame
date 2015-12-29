@@ -24,10 +24,11 @@
     msPerFrame: 16
     mapSize: (1 << 15) + 1
     bullet:
-      life: 60
+      life: 60 * 3
       speed: 10
     ship:
       rates:
         acceleration: 2
         brake: 0.96
+        fire: 4
         turn: 0.06

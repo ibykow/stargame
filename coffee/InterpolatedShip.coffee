@@ -11,7 +11,7 @@ if require?
     @prev = state
     @next = state
 
-  updateVelocity: ->
+  updateVelocity: -> # InterpolatedShip positions don't count on velocity
   updatePosition: ->
     rate = @game.interpolation.rate * @game.interpolation.step
     @position = Util.lerp(@prev.position, @next.position, rate)
@@ -22,4 +22,5 @@ if require?
       width: @next.velocity
       height: @next.height
       color: @next.color
+
     @next = state

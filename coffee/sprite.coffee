@@ -72,13 +72,18 @@ if require?
       @game.visibleSprites.push @
 
   updateVelocity: ->
+    # @velocity[0] = Math.trunc(@velocity[0] * @game.frictionRate * 100) / 100
+    # @velocity[1] = Math.trunc(@velocity[1] * @game.frictionRate * 100) / 100
     @velocity[0] = Math.trunc(@velocity[0] * @game.frictionRate * 100) / 100
     @velocity[1] = Math.trunc(@velocity[1] * @game.frictionRate * 100) / 100
     @magnitude = sqrt @velocity.reduce(((sum, v) -> sum + v * v), 0)
 
   updatePosition: ->
-    @position[0] = (@position[0] + @velocity[0] + @game.width) % @game.width
-    @position[1] = (@position[1] + @velocity[1] + @game.height) % @game.height
+    x = Math.round (@position[0] + @velocity[0] + @game.width) % @game.width
+    y = Math.round (@position[1] + @velocity[1] + @game.height) % @game.height
+
+    @position[0] = x
+    @position[1] = y
 
   updateBulletCollisions: ->
     @bulletCollisions = @detectCollisions @game.bullets

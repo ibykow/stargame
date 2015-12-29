@@ -32,10 +32,9 @@ if require?
   updateBullets: ->
     # update each bullet state and remove dead bullets
     bullets = []
-    for bullet in @bullets
+    for bullet in @bullets when bullet.life > 0
       bullet.update()
-      #collect live bullets
-      bullets.push bullet if bullet.life > 0
+      bullets.push bullet
 
     # update bullet list to include only live ones
     @bullets = bullets

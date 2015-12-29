@@ -30,6 +30,9 @@ Player::die = -> # do nothing on the client side
       @step = 0
       @rate = Config.common.msPerFrame / dt
 
+  insertBullet: ->
+    # Let the server decide what bullets to draw
+
   generateStars: ->
     for state in @starStates
       new Sprite(@, state.position, state.width, state.height, state.color)
@@ -61,6 +64,8 @@ Player::die = -> # do nothing on the client side
     # console.log 'correct', serverPosition, 'vs', clientPosition
     return unless Util.vectorDeltaExists(clientPosition, serverPosition)
 
+    console.log 'correcting ship state'
+
     # set the current ship state to the last known (good) server state
     @player.ship.setState(serverState)
 
@@ -74,7 +79,8 @@ Player::die = -> # do nothing on the client side
   processServerData: (data) ->
     [inserted, i, j, stateLog] = [false, 0, 0, @player.logs['state']]
 
-    @bullets.push(Bullet.fromState @, bullet) for bullet in data.bullets
+    for bullet in data.bullets
+      @bullets.push(Bullet.fromState @, bullet)
 
     # remove our ship from the pile
     for i in [0...data.ships.length]
@@ -105,12 +111,9 @@ Player::die = -> # do nothing on the client side
       i++
       j++
 
-    # remove disconnected ships
-    if j > i
+    if j > i # remove disconnected ships
       @ships.length = i
-
-    # or insert new ships
-    else
+    else # or insert new ships
       for j in [i...data.ships.length]
         state = data.ships[j]
         p =

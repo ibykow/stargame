@@ -14,7 +14,7 @@ if require?
   Math.sin
 ]
 
-{acceleration, brake, turn} = Config.common.ship.rates
+shipRates = Config.common.ship.rates
 
 (module ? {}).exports = class Ship extends Sprite
   @glideBrake: ->
@@ -23,15 +23,13 @@ if require?
     # results in the ship gliding smoothly to a stop.
     # This behavior annoys me to no end, so I opted for the current
     # default found below (aka responsive braking).
-    # If you want to play around with this drop it into a ship instance via:
-    # `myShip.brake = Ship.glideBrake`
-    # or, to change it for all instances:
+    # If you want to play around with this, replace the Ship's brake function
+    # before you create any server-side ship instances:
     # 'Ship::brake = Ship.glideBrake'
-    # and of course there's always the copy / paste option.
     return unless @magnitude
     @isBraking = true
-    @velocity[0] *= brake
-    @velocity[1] *= brake
+    @velocity[0] *= shipRate.brake
+    @velocity[1] *= shipRates.brake
 
   @draw: (c, position, color) ->
     return unless c and position and color
@@ -55,11 +53,15 @@ if require?
     @health = 100
     @gear = 0
     @flags.isBraking = false
+    @lastFireInputSequence = 0
+
+    # how many input sequences to skip before next fire
+    @fireRate = shipRates.fire
 
     # TODO create 'ship engine' class around brakePower and accFactor
     # Would allow for engines as upgrades/purchases
     @brakePower = 550
-    @accFactor = acceleration
+    @accFactor = shipRates.acceleration
 
   forward: ->
     @velocity[0] += cos(@position[2]) * @accFactor
@@ -70,21 +72,24 @@ if require?
     @velocity[1] -= sin @position[2]
 
   left: ->
-    @position[2] -= turn
+    @position[2] -= shipRates.turn
 
   right: ->
-    @position[2] += turn
+    @position[2] += shipRates.turn
 
   brake: ->
     # 'Responsive' / 'variable rate' braking
     # Provides a smooth braking experience that doesn't drag on at the end.
     return unless @magnitude
     @isBraking = true
-    rate = min @magnitude * @magnitude / @brakePower, brake
+    rate = min @magnitude * @magnitude / @brakePower, shipRates.brake
     @velocity[0] *= rate
     @velocity[1] *= rate
 
   fire: ->
+    return unless @lastFireInputSequence < @player.inputSequence - @fireRate
+    # console.log 'fire', @lastFireInputSequence, @player.inputSequence
+    @lastFireInputSequence = @player.inputSequence
     @game.insertBullet(new Bullet @)
 
   handleBulletCollisions: ->
@@ -97,11 +102,13 @@ if require?
   getState: ->
     s = super()
     s.health = @health
+    s.lastFireInputSequence = @lastFireInputSequence
+    s.fireRate = @fireRate
     s
 
   setState: (s) ->
     super(s)
-    {@health} = s
+    {@health, @lastFireInputSequence, @fireRate} = s
 
   update: ->
     super()
