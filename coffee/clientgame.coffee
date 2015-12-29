@@ -49,7 +49,7 @@ Player::die = -> # do nothing on the client side
 
     @lastVerifiedInputSequence = serverInputSequence
 
-    @player.ship.health = serverState.health or @player.ship.health
+    @player.ship.health = serverState.health
 
     # Remove logged inputs prior to the server's input sequence
     # We won't be using those for anything
@@ -73,6 +73,8 @@ Player::die = -> # do nothing on the client side
 
   processServerData: (data) ->
     [inserted, i, j, stateLog] = [false, 0, 0, @player.logs['state']]
+
+    @bullets.push(Bullet.fromState @, bullet) for bullet in data.bullets
 
     # remove our ship from the pile
     for i in [0...data.ships.length]

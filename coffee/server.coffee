@@ -81,7 +81,7 @@ module.exports = class Server
       input: (data) -> # a client has generated input
         return unless data.sequence
         # @clientState = data.ship # not currently used
-        @logs['input'].insert data.inputs
+        @logs['input'].insert data.inputs if data.inputs?.length
         @inputSequence = max data.sequence, @inputSequence
         # console.log 'received', data.inputs, data.ship.position
 

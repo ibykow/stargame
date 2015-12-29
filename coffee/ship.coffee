@@ -14,11 +14,7 @@ if require?
   Math.sin
 ]
 
-[accelerationRate, brakeRate, turnRate] = [
-  Config.common.ship.rates.acceleration
-  Config.common.ship.rates.brake
-  Config.common.ship.rates.turn
-]
+{acceleration, brake, turn} = Config.common.ship.rates
 
 (module ? {}).exports = class Ship extends Sprite
   @glideBrake: ->
@@ -34,8 +30,8 @@ if require?
     # and of course there's always the copy / paste option.
     return unless @magnitude
     @isBraking = true
-    @velocity[0] *= brakeRate
-    @velocity[1] *= brakeRate
+    @velocity[0] *= brake
+    @velocity[1] *= brake
 
   @draw: (c, position, color) ->
     return unless c and position and color
@@ -63,7 +59,7 @@ if require?
     # TODO create 'ship engine' class around brakePower and accFactor
     # Would allow for engines as upgrades/purchases
     @brakePower = 550
-    @accFactor = accelerationRate
+    @accFactor = acceleration
 
   forward: ->
     @velocity[0] += cos(@position[2]) * @accFactor
@@ -74,22 +70,22 @@ if require?
     @velocity[1] -= sin @position[2]
 
   left: ->
-    @position[2] -= turnRate
+    @position[2] -= turn
 
   right: ->
-    @position[2] += turnRate
+    @position[2] += turn
 
   brake: ->
     # 'Responsive' / 'variable rate' braking
     # Provides a smooth braking experience that doesn't drag on at the end.
     return unless @magnitude
     @isBraking = true
-    rate = min @magnitude * @magnitude / @brakePower, brakeRate
+    rate = min @magnitude * @magnitude / @brakePower, brake
     @velocity[0] *= rate
     @velocity[1] *= rate
 
   fire: ->
-    @game.bullets.push(new Bullet @) - 1
+    @game.insertBullet(new Bullet @)
 
   handleBulletCollisions: ->
     # console.log 'updating collisions for', @player.id

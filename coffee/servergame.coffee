@@ -21,9 +21,15 @@ Sprite::updateView = ->
     @server = server
     @stars = @generateStars(numStars)
     @starStates = @getStarStates()
+    @newBullets = []
 
     # On the server-side, players keep only the inputs necessary to do updates.
     Player.LOGLEN = Server.FRAMES_PER_STEP
+
+  insertBullet: (b) ->
+    return unless b
+    super()
+    @newBullets.push b
 
   generateStars: (n) ->
     for i in [0..n]
@@ -46,13 +52,14 @@ Sprite::updateView = ->
 
   sendState: ->
     shipStates = @getShipStates()
-    bulletStates = (bullet.getState() for bullet in @bullets)
+    bulletStates = (bullet.getState() for bullet in @newBullets)
     @server.io.emit 'state',
       ships: shipStates
       bullets: bulletStates
       tick: @tick
 
   update: ->
+    @newBullets = []
     for i in [1..Config.server.updatesPerStep]
       super()
       # player updates can remove themselves from the players list

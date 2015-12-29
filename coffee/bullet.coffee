@@ -1,11 +1,20 @@
 if require?
+  Config = require './config'
   Util = require './util'
   Sprite = require './sprite'
 
 [ceil, cos, sin] = [ Math.ceil, Math.cos, Math.sin]
 
+{speed, life} = Config.common.bullet
+
 (module ? {}).exports = class Bullet extends Sprite
-  @SPEED: 10
+  @fromState: (game, state) ->
+    return unless game and state
+    state.gun.game = game
+    b = new Bullet(state.gun)
+    b.setState state
+    b
+
   constructor: (@gun) ->
     return unless @gun
     super @gun.game, @gun.position.slice(), 2, 2, "#ffd"
@@ -16,12 +25,26 @@ if require?
     ydir = sin @position[2]
     xnorm = ceil xdir
     ynorm = ceil ydir
-    @velocity = [xdir * Bullet.SPEED, ydir * Bullet.SPEED]
+    @velocity = [xdir * speed, ydir * speed]
     @position[0] += xdir * (@gun.width + 2)
     @position[1] += ydir * (@gun.height + 2)
-    @life = 60 * 1
+    @life = life
     @update()
     # console.log 'new bullet at', @position
+
+  getState: ->
+    state = super()
+    state.life = @life
+    state.gun = @gun.getState()
+    state.gun.player =
+      id: @gun.player.id
+    state
+
+  setState: (state) ->
+    super state
+    @life = state.life ? @life
+    @gun.player =
+      is: state.gun.player.id ? @gun.player.id
 
   updateVelocity: -> # the velocity doesn't change
 

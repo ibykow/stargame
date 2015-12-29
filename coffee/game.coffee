@@ -25,6 +25,10 @@ if require?
         @players.splice(i, 1)
         break
 
+  insertBullet: (b) ->
+    return unless b
+    @bullets.push b
+
   updateBullets: ->
     # update each bullet state and remove dead bullets
     bullets = []
