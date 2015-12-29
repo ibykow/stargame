@@ -53,10 +53,16 @@ Sprite::updateView = ->
       tick: @tick
 
   update: ->
-    for i in [1..Config.server.framesPerStep]
+    for i in [1..Config.server.updatesPerStep]
       super()
-      for player in @players
+      # player updates can remove themselves from the players list
+      # to avoid problems, we iterate over a copy of the players list
+      players = @players.slice()
+      for player in players
         player.inputs = player.logs['input'].remove() or []
         player.update()
+
+      if players.length is not @players.length
+        console.log 'Had', players.length, 'players. Now', @players.length
 
     @sendState()

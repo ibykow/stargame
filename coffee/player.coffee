@@ -1,9 +1,10 @@
 if require?
+  Config = require './config'
   RingBuffer = require './ringbuffer'
   Ship = require './ship'
 
 (module ? {}).exports = class Player
-  @LOGLEN: 1 << 8
+  @LOGLEN: Config.client.player.loglen
   constructor: (@game, @id, @socket, position) ->
     return null unless @game
     @ship = new Ship(@, position)

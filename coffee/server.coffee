@@ -5,14 +5,14 @@ ServerGame = require './servergame'
 
 [max, min] = [Math.max, Math.min]
 
+mapSize = Config.common.mapSize
+
 module.exports = class Server
-  @MAP_SIZE: (1 << 15) + 1
-  @startPosition: null
   constructor: (@io) ->
     return unless @io
     # create a new game
-    @game = new ServerGame(@, Server.MAP_SIZE, Server.MAP_SIZE, 4000, 0.99)
-    @frameInterval = Config.server.framesPerStep * Config.common.msPerFrame
+    @game = new ServerGame(@, mapSize, mapSize, 4000, 0.99)
+    @frameInterval = Config.server.updatesPerStep * Config.common.msPerFrame
     @nextPlayerID = 0
     console.log 'Server frame interval:', @frameInterval + 'ms'
 
@@ -76,14 +76,14 @@ module.exports = class Server
         @game.removePlayer(@)
 
         # if this was the last player, pause the game
-        @game.server.pause() if not @game.players.length
+        @game.server.pause() if @game.players.length is 0
 
       input: (data) -> # a client has generated input
         return unless data.sequence
         # @clientState = data.ship # not currently used
         @logs['input'].insert data.inputs
         @inputSequence = max data.sequence, @inputSequence
-        # console.log 'received', data.inputs, data.ship.position 
+        # console.log 'received', data.inputs, data.ship.position
 
   frame:
     run: (timestamp) ->

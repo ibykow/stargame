@@ -19,11 +19,11 @@ if require?
     [Util.randomInt(0, @width), Util.randomInt(0, @height), 0]
 
   removePlayer: (p) ->
-    return unless p and p.id
+    return unless p
     for i in [0...@players.length]
       if @players[i].id is p.id
         @players.splice(i, 1)
-        return
+        break
 
   updateBullets: ->
     # update each bullet state and remove dead bullets

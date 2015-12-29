@@ -1,4 +1,5 @@
 if require?
+  Config = require './config'
   Sprite = require './sprite'
   Bullet = require './bullet'
 
@@ -13,12 +14,13 @@ if require?
   Math.sin
 ]
 
-(module ? {}).exports = class Ship extends Sprite
-  @RATES:
-    ACC: 2
-    BRAKE: 0.96
-    TURN: 0.06
+[accelerationRate, brakeRate, turnRate] = [
+  Config.common.ship.rates.acceleration
+  Config.common.ship.rates.brake
+  Config.common.ship.rates.turn
+]
 
+(module ? {}).exports = class Ship extends Sprite
   @glideBrake: ->
     # glideBrake: A drop-in replacement for the 'brake' instance function.
     # A constant rate of friction means that holding the brake button
@@ -32,8 +34,8 @@ if require?
     # and of course there's always the copy / paste option.
     return unless @magnitude
     @isBraking = true
-    @velocity[0] *= Ship.RATES.BRAKE
-    @velocity[1] *= Ship.RATES.BRAKE
+    @velocity[0] *= brakeRate
+    @velocity[1] *= brakeRate
 
   @draw: (c, position, color) ->
     return unless c and position and color
@@ -61,7 +63,7 @@ if require?
     # TODO create 'ship engine' class around brakePower and accFactor
     # Would allow for engines as upgrades/purchases
     @brakePower = 550
-    @accFactor = Ship.RATES.ACC
+    @accFactor = accelerationRate
 
   forward: ->
     @velocity[0] += cos(@position[2]) * @accFactor
@@ -72,30 +74,29 @@ if require?
     @velocity[1] -= sin @position[2]
 
   left: ->
-    @position[2] -= Ship.RATES.TURN
+    @position[2] -= turnRate
 
   right: ->
-    @position[2] += Ship.RATES.TURN
+    @position[2] += turnRate
 
   brake: ->
     # 'Responsive' / 'variable rate' braking
     # Provides a smooth braking experience that doesn't drag on at the end.
     return unless @magnitude
     @isBraking = true
-    rate = min @magnitude * @magnitude / @brakePower, Ship.RATES.BRAKE
+    rate = min @magnitude * @magnitude / @brakePower, brakeRate
     @velocity[0] *= rate
     @velocity[1] *= rate
 
   fire: ->
-    i = @game.bullets.push(new Bullet @) - 1
-    console.log 'fired', @game.bullets[i].position, 'from', @position, 'at', @player.inputSequence
+    @game.bullets.push(new Bullet @) - 1
 
   handleBulletCollisions: ->
     # console.log 'updating collisions for', @player.id
     @updateBulletCollisions()
     for b in @bulletCollisions
       @health--
-      console.log 'player', b.gun.player.id, 'hit player', @player.id, @health
+      # console.log 'player', b.gun.player.id, 'hit player', @player.id, @health
 
   getState: ->
     s = super()

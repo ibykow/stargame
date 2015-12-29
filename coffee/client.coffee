@@ -5,20 +5,6 @@ client = null
 
 # Make Client exportable to support tests
 (module ? {}).exports = class Client
-  @INNER_WIDTH_OFFSET: 0
-  @INNER_HEIGHT_OFFSET: 0
-  @URI: 'http://192.168.0.101:3000'
-  @COLORS:
-    BACKGROUND:
-      DEFAULT: "#000"
-  @KEY:
-    SPACE: 32
-    LEFT: 37
-    RIGHT: 39
-    UP: 38
-    DOWN: 40
-    F: 'F'.charCodeAt(0)
-
   constructor: (@canvas) ->
     return unless @canvas
 
@@ -28,7 +14,7 @@ client = null
     # @canvas.style.left = 0 + 'px'
 
     # connect to server
-    @socket = io.connect(Client.URI)
+    @socket = io.connect(Config.common.uri)
 
     # initialize event listeners
     @socket.on(event, cb.bind(@)) for event, cb of @events.socket
@@ -60,12 +46,12 @@ client = null
         @game = new ClientGame(data, @canvas, context, @socket)
         @game.client = @
 
-        @keymap[Client.KEY.UP] = 'forward'
-        @keymap[Client.KEY.DOWN] = 'reverse'
-        @keymap[Client.KEY.LEFT] = 'left'
-        @keymap[Client.KEY.RIGHT] = 'right'
-        @keymap[Client.KEY.SPACE] = 'brake'
-        @keymap[Client.KEY.F] = 'fire'
+        @keymap[Config.client.keyCodes.up] = 'forward'
+        @keymap[Config.client.keyCodes.down] = 'reverse'
+        @keymap[Config.client.keyCodes.left] = 'left'
+        @keymap[Config.client.keyCodes.right] = 'right'
+        @keymap[Config.client.keyCodes.space] = 'brake'
+        @keymap[Config.client.keyCodes.f] = 'fire'
 
         @socket.emit 'join', @game.player.name
         @game.player.ship.setState(data.ship)
@@ -115,8 +101,8 @@ client = null
         @mouse.x = e.clientX - canvas.boundingRect.left
         @mouse.y = e.clientY - canvas.boundingRect.top
       resize: (e) ->
-        @canvas.width = window.innerWidth - Client.INNER_WIDTH_OFFSET
-        @canvas.height = window.innerHeight - Client.INNER_HEIGHT_OFFSET
+        @canvas.width = window.innerWidth - Config.client.innerWidthOffset
+        @canvas.height = window.innerHeight - Config.client.innerHeightOffset
         @canvas.halfWidth = @canvas.width >> 1
         @canvas.halfHeight = @canvas.height >> 1
         @canvas.boundingRect = @canvas.getBoundingClientRect()

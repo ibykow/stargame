@@ -191,7 +191,7 @@ Player::die = -> # do nothing on the client side
 
   clear: ->
     @c.globalAlpha = 1
-    @c.fillStyle = Client.COLORS.BACKGROUND.DEFAULT
+    @c.fillStyle = Config.client.colors.background.default
     @c.fillRect 0, 0, @canvas.width, @canvas.height
 
   drawHUD: ->
