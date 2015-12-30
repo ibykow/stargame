@@ -63,13 +63,20 @@ shipRates = Config.common.ship.rates
     @brakePower = 550
     @accFactor = shipRates.acceleration
 
+    @fuel = 1000
+    @fuelCapacity = 1000
+
   forward: ->
+    return unless @fuel > 0
     @velocity[0] += cos(@position[2]) * @accFactor
     @velocity[1] += sin(@position[2]) * @accFactor
+    @fuel -= @accFactor
 
   reverse: ->
+    return unless @fuel > 0
     @velocity[0] -= cos @position[2]
     @velocity[1] -= sin @position[2]
+    @fuel--
 
   left: ->
     @position[2] -= shipRates.turn
@@ -101,11 +108,13 @@ shipRates = Config.common.ship.rates
     s.health = @health
     s.lastFireInputSequence = @lastFireInputSequence
     s.fireRate = @fireRate
+    s.fuel = @fuel
+    s.fuelCapacity = @fuelCapacity
     s
 
   setState: (s) ->
     super(s)
-    {@health, @lastFireInputSequence, @fireRate} = s
+    {@health, @lastFireInputSequence, @fireRate, @fuel, @fuelCapacity} = s
 
   draw: ->
     Ship.draw(@player.game.c, @view, @color)

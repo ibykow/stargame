@@ -212,6 +212,23 @@ Player::die = ->
     @c.fillStyle = Config.client.colors.background.default
     @c.fillRect 0, 0, @canvas.width, @canvas.height
 
+  drawFuel: (x, y) ->
+    if not @player.ship.fuel
+      @c.fillStyle = "#f00"
+      @c.font = "Bold 12px Courier"
+      @c.fillText "NO GAS", x, y + 10
+      return
+
+    remain = @player.ship.fuel / @player.ship.fuelCapacity
+    redness = floor remain * 0xFF
+
+    @c.fillStyle = "rgba(" + (0xFF - redness) + "," + redness + "," + 0 + ",1)"
+
+    @c.strokeStyle = "#fff"
+    @c.lineWidth = 2
+    @c.fillRect x, y, floor(remain * 30), 9
+    @c.strokeRect x, y, 30, 9
+
   drawHUD: ->
     @c.fillStyle = "#fff"
     @c.font = "14px Courier New"
@@ -221,7 +238,8 @@ Player::die = ->
     @c.fillText 'vx:' + @player.ship.velocity[0].toFixed(0), 260, 18
     @c.fillText 'vy:' + @player.ship.velocity[1].toFixed(0), 340, 18
     @c.fillText 'hp:' + @player.ship.health, 420, 18
-    @c.fillText 'cash:' + pesoChar + @player.cash.toFixed(2), 480, 18
+    @c.fillText 'cash:' + pesoChar + @player.cash.toFixed(2), 540, 18
+    @drawFuel 480, 8
 
   draw: ->
     @clear()
