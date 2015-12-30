@@ -7,9 +7,10 @@ if require?
 
 [isarr, floor, max] = [Array.isArray, Math.floor, Math.max]
 
-# Death and firing are initiated stricly by the server
-Player::die = ->
 Player::fire = ->
+Player::die = ->
+  @ship.isDeleted = true
+
 
 (module ? {}).exports = class ClientGame extends Game
   constructor: (details, @canvas, @c, socket) ->
@@ -42,6 +43,7 @@ Player::fire = ->
   removeShip: (id) ->
     for i in [0...@ships.length]
       if @ships[i].player.id == id
+        @ships[i].flags.isDeleted = true
         @ships.splice i, 1
         break
 
@@ -230,6 +232,9 @@ Player::fire = ->
     @drawHUD()
 
   gameOver: ->
+    console.log 'Game over!'
+    @player.ship.isDeleted = true
+
     @c.fillStyle = "#fff"
     @c.font = '30px Helvetica'
     @c.fillText 'Game Over!', @canvas.halfWidth - 80, @canvas.halfHeight - 80

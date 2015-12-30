@@ -1,6 +1,6 @@
-[abs, floor, isarr, min, max, rnd, trunc] =
-  [ Math.abs, Math.floor, Array.isArray, Math.min,
-    Math.max, Math.random, Math.trunc ]
+[abs, floor, isarr, max, min, rnd, sqrt, trunc] =
+  [ Math.abs, Math.floor, Array.isArray, Math.max,
+    Math.min, Math.random, Math.sqrt, Math.trunc ]
 
 (module ? {}).exports = Util =
   vectorDeltaExists: (a, b) ->
@@ -47,6 +47,10 @@
         (pLimit[i] - adelta) * sign
       else
         delta
+
+  magnitude: (v) ->
+    return 0 unless isarr v
+    sqrt v.reduce((p, n) -> p + n * n)
 
   findEmptySlot: (arr) ->
     return unless isarr arr

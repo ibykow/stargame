@@ -8,6 +8,7 @@ if require?
   flags:
     isVisible: false
     isRigid: true
+    isDeleted: false
 
   constructor: (@game, @position, @width = 10, @height = 10, @color) ->
     return null unless @game
@@ -102,13 +103,15 @@ if require?
     width: @width
     height: @height
     color: @color
+    flags: @flags
 
   setState: (state) ->
-    @position = state.position ? @position
-    @velocity = state.velocity ? @velocity
-    @width = state.width ? @width
-    @height = state.height ? @height
-    @color = state.color ? @color
+    @position = state.position
+    @velocity = state.velocity
+    @width = state.width
+    @height = state.height
+    @color = state.color
+    flags: state.flags
 
   draw: ->
     return unless @flags.isVisible

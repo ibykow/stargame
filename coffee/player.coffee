@@ -38,11 +38,15 @@ if require?
   die: ->
     @socket.disconnect()
 
-  updateArrows: -> arrow.update() for arrow in @arrows
+  updateArrows: ->
+    arrows = @arrows.slice()
+    for arrow, i in arrows
+      if arrow.b.flags.isDeleted
+        @arrows.splice i, 1
+      else
+        arrow.update()
 
   updateInputLog: ->
-    # console.log 'latest', @latestInputLogEntry?.sequence,
-      # @latestInputLogEntry?.ship.position
     entry =
       sequence: @inputSequence
       ship: @ship.getState()
