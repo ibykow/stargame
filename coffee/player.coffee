@@ -41,19 +41,17 @@ if require?
   updateArrows: -> arrow.update() for arrow in @arrows
 
   updateInputLog: ->
-    if @inputs.length
-      console.log 'latest', @latestInputLogEntry?.sequence,
-        @latestInputLogEntry?.ship.position
-
+    # console.log 'latest', @latestInputLogEntry?.sequence,
+      # @latestInputLogEntry?.ship.position
     entry =
       sequence: @inputSequence
       ship: @ship.getState()
       inputs: @inputs.slice()
 
     @logs['input'].insert entry
-    console.log entry.ship.position if entry.inputs.length
+    # console.log 'new entry', entry.sequence, entry.ship.position
+
     @latestInputLogEntry = entry
-    @inputs = []
     @inputSequence++
 
   update: ->
@@ -63,4 +61,4 @@ if require?
       @actions[action].bind(@)()
 
     @ship.update()
-    @updateInputLog()
+    @inputs = []

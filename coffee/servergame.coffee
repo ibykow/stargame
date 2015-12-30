@@ -13,10 +13,12 @@ Sprite = require './sprite'
 # a conditional every time seems like overkill.
 Sprite::updateView = ->
 
-Player::updateInputLog = ->
-  if @inputs.length
-    console.log 'input', @inputSequence, @ship.position, @inputs
-  @inputs = []
+# Player::updateInputLog = ->
+  # if @inputs.length
+    # console.log 'updated ship', @inputSequence, @ship.position, @inputs
+
+# On the server-side, players keep only the inputs necessary to do updates.
+Player.LOGLEN = Config.server.updatesPerStep + 10
 
 (module ? {}).exports = class ServerGame extends Game
   constructor: (server, @width, @height, numStars = 10, @frictionRate) ->
@@ -27,9 +29,6 @@ Player::updateInputLog = ->
     @stars = @generateStars(numStars)
     @starStates = @getStarStates()
     @newBullets = []
-
-    # On the server-side, players keep only the inputs necessary to do updates.
-    Player.LOGLEN = Config.server.updatesPerStep + 10
 
   insertBullet: (b) ->
     return unless b
@@ -51,9 +50,11 @@ Player::updateInputLog = ->
 
   getShipStates: ->
     for player in @players
+      shipState = player.ship.getState()
+      console.log 'sending', player.inputSequence, shipState.position
       id: player.id
       inputSequence: player.inputSequence
-      ship: player.ship.getState()
+      ship: shipState
 
   sendState: ->
     shipStates = @getShipStates()
@@ -67,12 +68,15 @@ Player::updateInputLog = ->
     @newBullets = []
     for i in [1..Config.server.updatesPerStep]
       super()
-      # player updates can remove themselves from the players list
-      # to avoid problems, we iterate over a copy of the players list
+      # Player updates can remove themselves from the players list.
+      # To avoid problems, we iterate over a copy of that list.
       players = @players.slice()
       for player in players
-        player.inputs = player.logs['input'].remove() or []
+        logEntry = player.logs['input'].remove()
+        player.inputs = logEntry?.inputs or []
         player.update()
+        console.log 'updated player', player.id, logEntry?.sequence,
+          logEntry?.inputs, player.inputSequence, player.ship.position
 
       if players.length is not @players.length
         console.log 'Had', players.length, 'players. Now', @players.length

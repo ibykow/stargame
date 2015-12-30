@@ -56,7 +56,7 @@ Player::die = -> # do nothing on the client side
 
     # Remove logged inputs prior to the server's input sequence
     # We won't be using those for anything
-    inputLog.purge((entry) -> entry.sequence < serverInputSequence)
+    inputLog.purge((entry) -> entry.sequence <= serverInputSequence)
 
     # do the correction only if we're out of sync with the server
     logEntry = inputLog.remove()
@@ -74,14 +74,12 @@ Player::die = -> # do nothing on the client side
     # set the current ship state to the last known (good) server state
     @player.ship.setState(serverState)
 
-    # don't play the most recent move
-    console.log 'input log', inputLog.tail, inputLog.head,
-      inputLog.peek()?.sequence
-
     entries = inputLog.toArray().slice()
+    # console.log 'input log', inputLog.tail, inputLog.head, entries.length
     inputLog.reset()
     # rewind and replay
     for entry in entries
+      # console.log 'entry', entry
       @player.inputSequence = entry.sequence
       @player.inputs = entry.inputs
       @player.update()
@@ -237,13 +235,14 @@ Player::die = -> # do nothing on the client side
       @canvas.halfWidth - 130, @canvas.halfHeight - 42
 
   notifyServer: ->
+    @player.updateInputLog()
     entry = @player.latestInputLogEntry
-    return unless entry.inputs.length
+    # return unless entry.inputs.length
     console.log 'sending', entry.sequence, entry.ship.position, entry.inputs
     @player.socket.emit 'input', entry
 
   step: (time) ->
     @player.inputs = @client.getMappedInputs()
-    super time # the best kind
     @notifyServer()
+    super time # the best kind
     @draw()
