@@ -1,0 +1,33 @@
+Milestones
+  - player cash
+  - ship fuel
+  - gas stations with price per liter
+  - gas purchase button
+
+Interaction:
+  - fly through/shoot selection options instead of using the mouse
+    (eg. accept missions by flying through an orb next to the star)
+  - basic menu
+      - show nearest gas station (only if known?)
+      - show nearest distressed star
+      - show nearest player (costs money?)
+
+View
+ - star info pane
+ - mini-map with points of interest
+
+Gameplay
+ - star names
+ - ship fuel
+ - player cash
+ - gas stations (eg 1 in 100 stars)
+ - tophies/achievements
+ - upgrades for everything (gun type, fuel, cargo capacity, etc.)
+
+Missions
+  - add a scripting language for missions
+    describes star conditions, pass/fail outcomes/rewards, mission flow, etc
+
+Engine
+  - Use server game step in updates instead of relying strictly on
+    input sequences
