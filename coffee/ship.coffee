@@ -96,7 +96,6 @@ shipRates = Config.common.ship.rates
     # console.log 'updating collisions for', @player.id
     @updateBulletCollisions()
     for b in @bulletCollisions
-      console.log 'hit'
       @health--
       # console.log 'player', b.gun.player.id, 'hit player', @player.id, @health
 

@@ -7,7 +7,6 @@ if require?
 
 [isarr, floor, max] = [Array.isArray, Math.floor, Math.max]
 
-Player::fire = ->
 Player::die = ->
   @ship.isDeleted = true
 
@@ -32,9 +31,6 @@ Player::die = ->
     reset: (dt) ->
       @step = 0
       @rate = Config.common.msPerFrame / dt
-
-  insertBullet: ->
-    # Let the server decide what bullets to draw
 
   generateStars: ->
     for state in @starStates
@@ -94,7 +90,8 @@ Player::die = ->
   processServerData: (data) ->
     [inserted, i, j, stateLog] = [false, 0, 0, @player.logs['state']]
 
-    for bullet in data.bullets
+    console.log 'bullets', data.bullets
+    for bullet in data.bullets when not(bullet.gun.player.id is @player.id)
       @bullets.push(Bullet.fromState @, bullet)
 
     # remove our ship from the pile
