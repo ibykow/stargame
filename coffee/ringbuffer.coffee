@@ -17,7 +17,7 @@ if require?
   # f takes the current element as an argument
   purge: (f) ->
     if typeof f is 'function'
-      while (o = @peek()) and f(o)
+      while (o = @peek()) and (f(o) is true)
         @remove()
     else
       @reset()

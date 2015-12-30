@@ -13,6 +13,11 @@ Sprite = require './sprite'
 # a conditional every time seems like overkill.
 Sprite::updateView = ->
 
+Player::updateInputLog = ->
+  if @inputs.length
+    console.log 'input', @inputSequence, @ship.position, @inputs
+  @inputs = []
+
 (module ? {}).exports = class ServerGame extends Game
   constructor: (server, @width, @height, numStars = 10, @frictionRate) ->
     return unless server
@@ -24,7 +29,7 @@ Sprite::updateView = ->
     @newBullets = []
 
     # On the server-side, players keep only the inputs necessary to do updates.
-    Player.LOGLEN = Server.FRAMES_PER_STEP
+    Player.LOGLEN = Config.server.updatesPerStep + 10
 
   insertBullet: (b) ->
     return unless b

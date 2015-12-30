@@ -5,7 +5,7 @@ if require?
   Player = require './player'
   Client = require './client'
 
-[floor, max] = [Math.floor, Math.max]
+[isarr, floor, max] = [Array.isArray, Math.floor, Math.max]
 
 Player::die = -> # do nothing on the client side
 
@@ -59,20 +59,30 @@ Player::die = -> # do nothing on the client side
     inputLog.purge((entry) -> entry.sequence < serverInputSequence)
 
     # do the correction only if we're out of sync with the server
-    clientPosition = inputLog.remove()?.ship.position
+    logEntry = inputLog.remove()
+    clientPosition = logEntry?.ship.position
     serverPosition = serverState.position
     # console.log 'correct', serverPosition, 'vs', clientPosition
     return unless Util.vectorDeltaExists(clientPosition, serverPosition)
 
     console.log 'correcting ship state'
+    console.log logEntry?.sequence, clientPosition
+    console.log serverInputSequence, serverPosition
+    console.log Util.toroidalDelta clientPosition, serverPosition,
+      @toroidalLimit
 
     # set the current ship state to the last known (good) server state
     @player.ship.setState(serverState)
 
-    inputLog.remove()
+    # don't play the most recent move
+    console.log 'input log', inputLog.tail, inputLog.head,
+      inputLog.peek()?.sequence
 
+    entries = inputLog.toArray().slice()
+    inputLog.reset()
     # rewind and replay
-    for entry in inputLog.toArray()
+    for entry in entries
+      @player.inputSequence = entry.sequence
       @player.inputs = entry.inputs
       @player.update()
 
@@ -134,7 +144,6 @@ Player::die = -> # do nothing on the client side
     # remove old states from the log
     stateLog.purge((entry) -> entry.sequence < data.tick.count)
 
-    @correctPrediction()
     @interpolation.reset(data.tick.dt)
 
   isMouseInBounds: (bounds) ->
@@ -190,6 +199,7 @@ Player::die = -> # do nothing on the client side
     star.update() for star in @stars
     ship.update() for ship in @ships
     @interpolation.step++
+    @correctPrediction()
     @player.update()
     @player.updateArrows()
     @updateMouse()
@@ -226,19 +236,14 @@ Player::die = -> # do nothing on the client side
     @c.fillText "Shut the fuck up, I've got a gun!",
       @canvas.halfWidth - 130, @canvas.halfHeight - 42
 
-  notifyServer: (inputs) ->
-    entry =
-      sequence: @player.inputSequence
-      ship: @player.ship.getState()
-      inputs: inputs
-
-    @player.logs['input'].insert entry
+  notifyServer: ->
+    entry = @player.latestInputLogEntry
+    return unless entry.inputs.length
+    console.log 'sending', entry.sequence, entry.ship.position, entry.inputs
     @player.socket.emit 'input', entry
-    @player.inputSequence++
 
   step: (time) ->
-    inputs = @client.getMappedInputs()
-    @player.inputs = inputs
+    @player.inputs = @client.getMappedInputs()
     super time # the best kind
-    @notifyServer inputs
+    @notifyServer()
     @draw()

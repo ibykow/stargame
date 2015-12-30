@@ -1,7 +1,8 @@
 if require?
   Util = require './util'
 
-[abs, isarr, sqrt] = [Math.abs, Array.isArray, Math.sqrt]
+[abs, isarr, sqrt, round, trunc] = [Math.abs, Array.isArray, Math.sqrt,
+  Math.round, Math.trunc]
 
 (module ? {}).exports = class Sprite
   flags:
@@ -72,15 +73,13 @@ if require?
       @game.visibleSprites.push @
 
   updateVelocity: ->
-    # @velocity[0] = Math.trunc(@velocity[0] * @game.frictionRate * 100) / 100
-    # @velocity[1] = Math.trunc(@velocity[1] * @game.frictionRate * 100) / 100
-    @velocity[0] = Math.trunc(@velocity[0] * @game.frictionRate * 100) / 100
-    @velocity[1] = Math.trunc(@velocity[1] * @game.frictionRate * 100) / 100
+    @velocity[0] = trunc(@velocity[0] * @game.frictionRate * 100) / 100
+    @velocity[1] = trunc(@velocity[1] * @game.frictionRate * 100) / 100
     @magnitude = sqrt @velocity.reduce(((sum, v) -> sum + v * v), 0)
 
   updatePosition: ->
-    x = Math.round (@position[0] + @velocity[0] + @game.width) % @game.width
-    y = Math.round (@position[1] + @velocity[1] + @game.height) % @game.height
+    x = (@position[0] + @velocity[0] + @game.width) % @game.width
+    y = (@position[1] + @velocity[1] + @game.height) % @game.height
 
     @position[0] = x
     @position[1] = y
@@ -97,8 +96,8 @@ if require?
   getState: ->
     # We ignore @magnitude and flags.
     # ie. independent variables only
-    position: @position
-    velocity: @velocity
+    position: @position.slice()
+    velocity: @velocity.slice()
     width: @width
     height: @height
     color: @color
