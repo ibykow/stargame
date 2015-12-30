@@ -11,11 +11,11 @@ if require?
   @fromState: (game, state) ->
     return unless game and state
     state.gun.game = game
-    b = new Bullet(state.gun)
+    b = new Bullet state.gun
     b.setState state
     b
 
-  constructor: (@gun) ->
+  constructor: (@gun, @damage = 2) ->
     return unless @gun
     super @gun.game, @gun.position.slice(), 2, 2, "#ffd"
 
@@ -35,6 +35,7 @@ if require?
   getState: ->
     state = super()
     state.life = @life
+    state.damage = @damage
     state.gun = @gun.getState()
     state.gun.player =
       id: @gun.player.id
@@ -43,8 +44,9 @@ if require?
   setState: (state) ->
     super state
     @life = state.life ? @life
+    @damage = state.damage ? @damage
     @gun.player =
-      is: state.gun.player.id ? @gun.player.id
+      id: state.gun.player.id ? @gun.player.id
 
   updateVelocity: -> # the velocity doesn't change
 

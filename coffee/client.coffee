@@ -65,7 +65,6 @@ client = null
         console.log 'player', id, 'has left'
 
       disconnect: ->
-        console.log 'Game over!'
         @frame.stop.bind(@)()
         @socket.close()
 
