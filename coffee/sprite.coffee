@@ -13,6 +13,7 @@ if require?
     @magnitude = 0
     @halfWidth = @width / 2
     @halfHeight = @height / 2
+    @children = {}
     @bulletCollisions = []
     @mouse =
       hovering: false
@@ -30,9 +31,19 @@ if require?
 
     @updateView()
 
+  # (Re)places child and force updates child's parent
+  adopt: (child, name) ->
+    return unless child and name
+    @children[name] = child
+    child.parent = @
+
   clearFlags: ->
     for k of @flags
       @flags[k] = false
+
+  handleBulletImpact: (b) ->
+    return unless @flags.isRigid and b?.damage
+    b.life = 0
 
   detectCollisions: (sprites = @game.visibleSprites, maxIndex) ->
     # primitive, and inefficient collision detection
@@ -86,24 +97,31 @@ if require?
     @position[0] = x
     @position[1] = y
 
-  handleBulletImpact: (b) ->
-    return unless @flags.isRigid and b?.damage
-    b.life = 0
+  updateChildren: ->
+    for type, child of @children
+      child.update()
 
   update: ->
     @updateVelocity()
     @updatePosition()
     @updateView()
+    @updateChildren()
 
   getState: ->
-    # We ignore @magnitude and flags.
+    # We ignore @magnitude.
     # ie. independent variables only
+    childStates = {}
+    for type, child of @children
+      childStates[type] = child.getState()
+      console.log 'added', type, childStates[type]
+
     position: @position.slice()
     velocity: @velocity.slice()
     width: @width
     height: @height
     color: @color
     flags: @flags
+    children: childStates
 
   setState: (state) ->
     @position = state.position
@@ -112,9 +130,14 @@ if require?
     @height = state.height
     @color = state.color
     @flags = state.flags
+    @children = state.children
+    # child.parent = @ for type, child of @children
 
   draw: ->
     return unless @flags.isVisible
     @game.c.fillStyle = @color
     @game.c.fillRect  @view[0] - @halfWidth, @view[1] - @halfHeight,
                       @width, @height
+
+    for type, child of @children
+      child.draw(@view)

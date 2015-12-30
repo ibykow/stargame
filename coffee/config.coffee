@@ -23,6 +23,10 @@
     uri: 'http://localhost:3000'
     msPerFrame: 16
     mapSize: (1 << 15) + 1
+    fuel:
+      price:
+        min: 0.8
+        max: 1.9
     bullet:
       life: 60 * 3
       speed: 10

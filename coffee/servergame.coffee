@@ -4,6 +4,7 @@ Server = require './server'
 Game = require './game'
 Player = require './player'
 Sprite = require './sprite'
+GasStation = require './gasstation'
 
 # Sprite::updateView gets called during the update stage, so
 # there's not a nicer way of ignoring its functionality without
@@ -18,7 +19,10 @@ Sprite::updateView = ->
     # console.log 'updated ship', @inputSequence, @ship.position, @inputs
 
 # On the server-side, players keep only the inputs necessary to do updates.
-Player.LOGLEN = Config.server.updatesPerStep + 10
+Player.LOGLEN = Config.server.updatesPerStep + 1
+
+[abs, floor, isarr, sqrt, rnd, round, trunc] = [Math.abs, Math.floor,
+  Array.isArray, Math.sqrt, Math.random, Math.round, Math.trunc]
 
 (module ? {}).exports = class ServerGame extends Game
   constructor: (server, @width, @height, numStars = 10, @frictionRate) ->
@@ -26,21 +30,17 @@ Player.LOGLEN = Config.server.updatesPerStep + 10
     super @width, @height, @frictionRate
 
     @server = server
-    @stars = @generateStars(numStars)
-    @starStates = @getStarStates()
+    @stars = @generateStars numStars
+    @starStates = (star.getState() for star in @stars)
 
   generateStars: (n) ->
     for i in [0..n]
       width = Util.randomInt(5, 20)
       height = Util.randomInt(5, 20)
-      new Sprite(@, null, width, height)
-
-  getStarStates: ->
-    for star in @stars
-      position: star.position
-      width: star.width
-      height: star.height
-      color: star.color
+      star = new Sprite(@, null, width, height)
+      # console.log 'star', star
+      new GasStation star if rnd() < 0.1
+      star
 
   getShipStates: ->
     for player in @players
@@ -71,7 +71,6 @@ Player.LOGLEN = Config.server.updatesPerStep + 10
         player.die() unless player.ship.health > 0
         # console.log 'updated player', player.id, logEntry?.sequence,
         #   logEntry?.inputs, player.inputSequence, player.ship.position
-
 
       if players.length is not @players.length
         console.log 'Had', players.length, 'players. Now', @players.length

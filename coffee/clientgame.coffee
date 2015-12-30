@@ -1,5 +1,8 @@
+global = global or window
+
 if require?
   Sprite = require './sprite'
+  GasStation = require './gasstation'
   Ship = require './ship'
   Game = require './game'
   Player = require './player'
@@ -34,7 +37,12 @@ Player::die = ->
 
   generateStars: ->
     for state in @starStates
-      new Sprite(@, state.position, state.width, state.height, state.color)
+      s = new Sprite(@, state.position, state.width, state.height, state.color)
+      # console.log s.children
+      for type, child of state.children
+        console.log 'adding child', type
+        new global[type] s
+      s
 
   removeShip: (id) ->
     for i in [0...@ships.length]
