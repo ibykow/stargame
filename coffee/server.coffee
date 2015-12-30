@@ -83,7 +83,7 @@ module.exports = class Server
         # @clientState = data.ship # not currently used
         # @logs['input'].insert data.inputs if data.inputs?.length
         if data.inputs?.length
-          console.log 'received', data.sequence, data.inputs, data.ship.position
+          # console.log 'received', data.sequence, data.inputs, data.ship.position
           @logs['input'].insert data
           @inputSequence = data.sequence
         # console.log 'received', data.inputs, data.ship.position

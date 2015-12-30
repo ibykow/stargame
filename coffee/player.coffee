@@ -55,8 +55,6 @@ if require?
     @inputSequence++
 
   update: ->
-    return @die() if @ship?.health < 1
-
     for action in @inputs when action?.length
       @actions[action].bind(@)()
 

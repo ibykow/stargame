@@ -29,7 +29,7 @@ if require?
     @position[0] += xdir * (@gun.width + 2)
     @position[1] += ydir * (@gun.height + 2)
     @life = life
-    @update()
+    # @update()
     # console.log 'new bullet at', @position
 
   getState: ->

@@ -7,7 +7,9 @@ if require?
 
 [isarr, floor, max] = [Array.isArray, Math.floor, Math.max]
 
-Player::die = -> # do nothing on the client side
+# Death and firing are initiated stricly by the server
+Player::die = ->
+Player::fire = ->
 
 (module ? {}).exports = class ClientGame extends Game
   constructor: (details, @canvas, @c, socket) ->
@@ -62,14 +64,17 @@ Player::die = -> # do nothing on the client side
     logEntry = inputLog.remove()
     clientPosition = logEntry?.ship.position
     serverPosition = serverState.position
+
+    if serverState.health < logEntry?.ship.health
+      @player.ship.health = serverState.health
     # console.log 'correct', serverPosition, 'vs', clientPosition
     return unless Util.vectorDeltaExists(clientPosition, serverPosition)
 
-    console.log 'correcting ship state'
-    console.log logEntry?.sequence, clientPosition
-    console.log serverInputSequence, serverPosition
-    console.log Util.toroidalDelta clientPosition, serverPosition,
-      @toroidalLimit
+    # console.log 'correcting ship state'
+    # console.log logEntry?.sequence, clientPosition
+    # console.log serverInputSequence, serverPosition
+    # console.log Util.toroidalDelta clientPosition, serverPosition,
+    #   @toroidalLimit
 
     # set the current ship state to the last known (good) server state
     @player.ship.setState(serverState)
@@ -238,7 +243,7 @@ Player::die = -> # do nothing on the client side
     @player.updateInputLog()
     entry = @player.latestInputLogEntry
     # return unless entry.inputs.length
-    console.log 'sending', entry.sequence, entry.ship.position, entry.inputs
+    # console.log 'sending', entry.sequence, entry.ship.position, entry.inputs
     @player.socket.emit 'input', entry
 
   step: (time) ->
