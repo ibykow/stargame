@@ -6,10 +6,15 @@ if require?
   constructor: (@width = 1 << 8, @height = 1 << 8, @frictionRate = 0.96) ->
     @toroidalLimit = [@width, @height]
     @players = []
+    @ships = []
     @stars = []
     @bullets = []
     @paused = true
     @viewOffset = [0, 0] # used by sprites
+    @collisionSpriteLists =
+      stars: @stars
+      ships: @ships
+
     @tick =
       count: 0
       time: 0
@@ -29,12 +34,20 @@ if require?
     return unless b
     @bullets.push b
 
+  getShips: ->
+    @players.map((p)-> p.ship)
+
   updateBullets: ->
     # update each bullet state and remove dead bullets
     bullets = []
-    for bullet in @bullets when bullet.life > 0
-      bullet.update()
-      bullets.push bullet
+    for b in @bullets
+      b.update()
+      for type, spirte of @collisionSpriteLists
+        for sprite in b.detectCollisions sprite
+          sprite.handleBulletImpact b
+
+      if b.life > 0
+        bullets.push b
 
     # update bullet list to include only live ones
     @bullets = bullets

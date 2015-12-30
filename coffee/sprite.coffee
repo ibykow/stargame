@@ -5,11 +5,6 @@ if require?
   Math.round, Math.trunc]
 
 (module ? {}).exports = class Sprite
-  flags:
-    isVisible: false
-    isRigid: true
-    isDeleted: false
-
   constructor: (@game, @position, @width = 10, @height = 10, @color) ->
     return null unless @game
     @position ?= @game.randomPosition()
@@ -28,10 +23,15 @@ if require?
       click: ->
         console.log 'You clicked me!'
 
+    @flags =
+      isVisible: true
+      isRigid: true
+      isDeleted: false
+
     @updateView()
 
   clearFlags: ->
-    for k in @flags
+    for k of @flags
       @flags[k] = false
 
   detectCollisions: (sprites = @game.visibleSprites, maxIndex) ->
@@ -86,11 +86,11 @@ if require?
     @position[0] = x
     @position[1] = y
 
-  updateBulletCollisions: ->
-    @bulletCollisions = @detectCollisions @game.bullets
+  handleBulletImpact: (b) ->
+    return unless @flags.isRigid and b?.damage
+    b.life = 0
 
   update: ->
-    @clearFlags()
     @updateVelocity()
     @updatePosition()
     @updateView()
@@ -111,7 +111,7 @@ if require?
     @width = state.width
     @height = state.height
     @color = state.color
-    flags: state.flags
+    @flags = state.flags
 
   draw: ->
     return unless @flags.isVisible

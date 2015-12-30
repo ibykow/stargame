@@ -10,7 +10,6 @@ if require?
 Player::die = ->
   @ship.isDeleted = true
 
-
 (module ? {}).exports = class ClientGame extends Game
   constructor: (details, @canvas, @c, socket) ->
     return unless details
@@ -20,12 +19,12 @@ Player::die = ->
 
     @visibleSprites = []
     @mouseSprites = [] # sprites under the mouse
-    @stars = @generateStars()
+    @collisionSpriteLists.stars = @stars = @generateStars()
     @player = new Player(@, details.id, socket)
     @player.name = 'Guest'
     @players = [@player]
-    @ships = []
     @lastVerifiedInputSequence = 0
+    @collisionSpriteLists.myShip = [@player.ship]
 
   interpolation:
     reset: (dt) ->
@@ -90,9 +89,8 @@ Player::die = ->
   processServerData: (data) ->
     [inserted, i, j, stateLog] = [false, 0, 0, @player.logs['state']]
 
-    console.log 'bullets', data.bullets
-    for bullet in data.bullets when not(bullet.gun.player.id is @player.id)
-      @bullets.push(Bullet.fromState @, bullet)
+    # console.log 'bullets', data.bullets
+    @bullets = (Bullet.fromState @, bullet for bullet in data.bullets)
 
     # remove our ship from the pile
     for i in [0...data.ships.length]
@@ -118,6 +116,7 @@ Player::die = ->
           id: state.id
           game: @
         @ships.push new InterpolatedShip(p, state.ship)
+        @collisionSpriteLists.ships = @ships
         inserted = true
 
       i++
@@ -132,6 +131,7 @@ Player::die = ->
           id: state.id
           game: @
         @ships.push new InterpolatedShip(p, state.ship)
+        @collisionSpriteLists.ships = @ships
 
       # add an arrow to the first ship
       if i is 0 and j > 0
@@ -198,7 +198,7 @@ Player::die = ->
   update: ->
     @visibleSprites = []
     super()
-    star.update() for star in @stars
+    star.updateView() for star in @stars
     ship.update() for ship in @ships
     @interpolation.step++
     @correctPrediction()

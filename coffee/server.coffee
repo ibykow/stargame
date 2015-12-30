@@ -34,6 +34,7 @@ module.exports = class Server
         # create a player object around the socket
         player = new Player @game, @nextPlayerID, socket
         @game.players.push player
+        @game.ships.push player.ship
         @nextPlayerID++
 
         # associate event handler

@@ -92,12 +92,9 @@ shipRates = Config.common.ship.rates
     @lastFireInputSequence = @player.inputSequence
     @game.insertBullet(new Bullet @)
 
-  handleBulletCollisions: ->
-    # console.log 'updating collisions for', @player.id
-    @updateBulletCollisions()
-    for b in @bulletCollisions
-      @health -= b.damage
-      # console.log 'player', b.gun.player.id, 'hit player', @player.id, @health
+  handleBulletImpact: (b) ->
+    @health -= b.damage
+    super b
 
   getState: ->
     s = super()
@@ -109,10 +106,6 @@ shipRates = Config.common.ship.rates
   setState: (s) ->
     super(s)
     {@health, @lastFireInputSequence, @fireRate} = s
-
-  update: ->
-    super()
-    @handleBulletCollisions()
 
   draw: ->
     Ship.draw(@player.game.c, @view, @color)

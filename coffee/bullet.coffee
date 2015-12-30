@@ -48,7 +48,7 @@ if require?
     @gun.player =
       id: state.gun.player.id ? @gun.player.id
 
-  updateVelocity: -> # the velocity doesn't change
+  updateVelocity: -> # bullet velocity is constant
 
   update: ->
     super()

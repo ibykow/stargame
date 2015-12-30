@@ -28,12 +28,6 @@ Player.LOGLEN = Config.server.updatesPerStep + 10
     @server = server
     @stars = @generateStars(numStars)
     @starStates = @getStarStates()
-    @newBullets = []
-
-  insertBullet: (b) ->
-    return unless b
-    super b
-    @newBullets.push b
 
   generateStars: (n) ->
     for i in [0..n]
@@ -58,18 +52,17 @@ Player.LOGLEN = Config.server.updatesPerStep + 10
 
   sendState: ->
     shipStates = @getShipStates()
-    bulletStates = (bullet.getState() for bullet in @newBullets)
+    bulletStates = (bullet.getState() for bullet in @bullets)
     @server.io.emit 'state',
       ships: shipStates
       bullets: bulletStates
       tick: @tick
 
   update: ->
-    @newBullets = []
     for i in [1..Config.server.updatesPerStep]
-      super()
       # Player updates can remove players from the list.
       # To avoid problems, we iterate over a copy of @players.
+      super()
       players = @players.slice()
       for player in players
         logEntry = player.logs['input'].remove()
@@ -78,6 +71,7 @@ Player.LOGLEN = Config.server.updatesPerStep + 10
         player.die() unless player.ship.health > 0
         # console.log 'updated player', player.id, logEntry?.sequence,
         #   logEntry?.inputs, player.inputSequence, player.ship.position
+
 
       if players.length is not @players.length
         console.log 'Had', players.length, 'players. Now', @players.length
