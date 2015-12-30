@@ -12,6 +12,7 @@ GasStation = require './gasstation'
 # Another way is to have a conditional at the top of the function
 # which checks and exits if we're on the server. However, running
 # a conditional every time seems like overkill.
+Sprite::updateAlt = ->
 Sprite::updateView = ->
 
 # Player::updateInputLog = ->
@@ -39,7 +40,7 @@ Player.LOGLEN = Config.server.updatesPerStep + 1
       height = Util.randomInt(5, 20)
       star = new Sprite(@, null, width, height)
       # console.log 'star', star
-      new GasStation star if rnd() < 0.1
+      new GasStation star if rnd() < Config.common.rates.gasStations
       star
 
   getShipStates: ->

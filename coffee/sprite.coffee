@@ -33,7 +33,8 @@ if require?
 
   # (Re)places child and force updates child's parent
   adopt: (child, name) ->
-    return unless child and name
+    return unless child
+    name ?= child.constructor?.name or 'annie'
     @children[name] = child
     child.parent = @
 
@@ -98,8 +99,10 @@ if require?
     @position[1] = y
 
   updateChildren: ->
-    for type, child of @children
-      child.update()
+    child.update() for type, child of @children
+
+
+  updateAlt: ->
 
   update: ->
     @updateVelocity()
@@ -111,9 +114,7 @@ if require?
     # We ignore @magnitude.
     # ie. independent variables only
     childStates = {}
-    for type, child of @children
-      childStates[type] = child.getState()
-      console.log 'added', type, childStates[type]
+    childStates[type] = child.getState() for type, child of @children
 
     position: @position.slice()
     velocity: @velocity.slice()

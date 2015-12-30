@@ -23,6 +23,8 @@
     uri: 'http://localhost:3000'
     msPerFrame: 16
     mapSize: (1 << 15) + 1
+    rates:
+      gasStations: 0.3 # probability of a star having a gas station
     fuel:
       price:
         min: 0.8

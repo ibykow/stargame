@@ -9,11 +9,12 @@ if require?
 (module ? {}).exports = class GasStation extends Sprite
   constructor: (@parent, @fuelPrice) ->
     return unless @parent
-    super @parent.game
+    super @parent.game, @parent.position, 20, 20
     @fuelPrice ?= Config.common.fuel.price.min + rnd() *
       (Config.common.fuel.price.max - Config.common.fuel.price.min)
 
-    @parent.adopt @, 'GasStation'
+    @parent.adopt @
+    @position = @parent.position
 
   getState: ->
     state = super()
@@ -23,8 +24,7 @@ if require?
     super state
     @fuelPrice = state.fuelPrice ? @fuelPrice
 
-  update: -> # does nothing as it depends entirely on the parent
   draw: -> # we don't get called unless the parent is visible
     @game.c.fillStyle = "#0f0"
     @game.c.font = "14px Courier New"
-    @game.c.fillText 'G', @parent.view[0] + @parent.halfWidth, @parent.view[1]
+    @game.c.fillText 'G', @view[0] + @parent.halfWidth, @view[1]

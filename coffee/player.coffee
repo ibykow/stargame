@@ -39,6 +39,9 @@ if require?
   die: ->
     @socket.disconnect()
 
+  arrowTo: (sprite, id, color = '#00F') ->
+    @arrows.push(new Arrow @game, @ship, sprite, color, 0.8, 2, id)
+
   updateArrows: ->
     arrows = @arrows.slice()
     for arrow, i in arrows

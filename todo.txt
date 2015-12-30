@@ -15,14 +15,19 @@ Interaction:
 View
  - star info pane
  - mini-map with points of interest
+ - tweened animation for pop-ups etc
 
 Gameplay
  - star names
- - ship fuel
- - player cash
+ - ship fuel √
+ - player cash √
  - gas stations (eg 1 in 100 stars)
+    - generating √
+    - purchase fuel
  - tophies/achievements
  - upgrades for everything (gun type, fuel, cargo capacity, etc.)
+ - ship distress signal (eg. when out of fuel, for fun)
+ - collect bounties on fugitives (eg. attract pirates via distress signal)
 
 Missions
   - add a scripting language for missions

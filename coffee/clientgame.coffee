@@ -11,8 +11,9 @@ if require?
 [isarr, floor, max] = [Array.isArray, Math.floor, Math.max]
 pesoChar = '\u03df'
 
-Player::die = ->
-  @ship.isDeleted = true
+Player::die = -> @ship.isDeleted = true
+Sprite.updatePosition = ->
+Sprite.updateVelocity = ->
 
 (module ? {}).exports = class ClientGame extends Game
   constructor: (details, @canvas, @c, socket) ->
@@ -40,7 +41,7 @@ Player::die = ->
       s = new Sprite(@, state.position, state.width, state.height, state.color)
       # console.log s.children
       for type, child of state.children
-        console.log 'adding child', type
+        # console.log 'adding child', type
         new global[type] s
       s
 
@@ -146,8 +147,7 @@ Player::die = ->
       if i is 0 and j > 0
         ship = @ships[0]
         console.log 'arrow to', ship
-        arrow = new Arrow @, @player.ship, ship, "#00f", 0.8, 2, ship.player.id
-        @player.arrows.push arrow
+        @player.arrowTo ship, ship.player.id
 
     # if a new player has entered, sort our list of ships by id
     (@ships.sort (a, b) -> a.id - b.id) if inserted
@@ -207,7 +207,7 @@ Player::die = ->
   update: ->
     @visibleSprites = []
     super()
-    star.updateView() for star in @stars
+    star.update() for star in @stars
     ship.update() for ship in @ships
     @interpolation.step++
     @correctPrediction()
