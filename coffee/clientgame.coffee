@@ -6,6 +6,7 @@ if require?
   Client = require './client'
 
 [isarr, floor, max] = [Array.isArray, Math.floor, Math.max]
+pesoChar = '\u03df'
 
 Player::die = ->
   @ship.isDeleted = true
@@ -220,6 +221,7 @@ Player::die = ->
     @c.fillText 'vx:' + @player.ship.velocity[0].toFixed(0), 260, 18
     @c.fillText 'vy:' + @player.ship.velocity[1].toFixed(0), 340, 18
     @c.fillText 'hp:' + @player.ship.health, 420, 18
+    @c.fillText 'cash:' + pesoChar + @player.cash.toFixed(2), 480, 18
 
   draw: ->
     @clear()

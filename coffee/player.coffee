@@ -10,6 +10,7 @@ if require?
     @ship = new Ship(@, position)
     @arrows = []
     @inputs = []
+    @cash = 3000
     @minInputSequence = 1 # used by the server
     @inputSequence = 1
     @logs =
