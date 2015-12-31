@@ -86,3 +86,12 @@ describe 'RingBuffer', ->
 
       for i in [50..100]
         expect(buffer.remove()).toBe i
+
+  describe '.map', ->
+    it 'should apply a function to each entry and return the results', ->
+      buffer = new RingBuffer 50
+      buffer.insert i for i in [5..50]
+      results = buffer.map((n, i, arr) -> n *= n)
+
+      expect(results[i - 5]).toBe(i * i) for i in [5..50]
+      expect(buffer.remove()).toBe i for i in [5..50]

@@ -20,6 +20,12 @@ if require?
       time: 0
       dt: 0
 
+  framesToMs: (frames) ->
+    frames * Config.common.msPerFrame
+
+  msToFrames: (ms) ->
+    ms / Config.common.msPerFrame
+
   randomPosition: ->
     [Util.randomInt(0, @width), Util.randomInt(0, @height), 0]
 

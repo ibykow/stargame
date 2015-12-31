@@ -1,6 +1,8 @@
 if require?
   Util = require './util'
 
+[min] = [Math.min]
+
 (module ? {}).exports = class RingBuffer
   @DEFAULT_MAX: 50
   constructor: (@max = RingBuffer.DEFAULT_MAX)->
@@ -75,3 +77,11 @@ if require?
   peek: ->
     # get the tail item without removing it
     if @isEmpty() then null else @data[@tail]
+
+  map: (f) ->
+    return if @isEmpty() or (@head >= @max) or (@head < 0)
+    i = @tail
+    while not (i is @head)
+      ret = f @data[i], i, @
+      i = (i + 1) % @max
+      ret
