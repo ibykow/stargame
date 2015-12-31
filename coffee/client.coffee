@@ -31,7 +31,7 @@ client = null
 
   keymap: new Array 0x100
 
-  getMappedInputs: ->
+  getKeyboardInputs: ->
     for i in [0...@keymap.length] when @keys[i] and @keymap[i]
       @keymap[i]
 
@@ -78,12 +78,11 @@ client = null
         @socket.removeAllListeners('state')
         @socket.on('state', callback)
 
-        # set the tick, then set and process the new state
-        # @game.tick = data.tick
+        # process the new state
         callback data
 
         # start the game
-        @frame.run.bind(@) @game.tick.time
+        @frame.run.bind(@) +new Date
 
     window:
       keydown: (e) -> @keys[e.keyCode] = true

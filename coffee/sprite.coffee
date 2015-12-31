@@ -99,10 +99,9 @@ if require?
     @magnitude = sqrt @velocity.reduce(((sum, v) -> sum + v * v), 0)
 
   updatePosition: ->
-    # x = round((@position[0] + @velocity[0] + @game.width) % @game.width)
-    # y = round((@position[1] + @velocity[1] + @game.height) % @game.height)
     x = trunc((@position[0] + @velocity[0] + @game.width) * 100) / 100
     y = trunc((@position[1] + @velocity[1] + @game.height) * 100) / 100
+    z = trunc (((@position[2] + Util.TWO_PI) % Util.TWO_PI) * 100) / 100
     x %= @game.width
     y %= @game.height
 

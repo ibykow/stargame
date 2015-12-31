@@ -72,5 +72,3 @@ if require?
     # increment the tick
     @tick.dt = time - @tick.time
     @tick.time = time
-    @update()
-    # @logPlayerStates()

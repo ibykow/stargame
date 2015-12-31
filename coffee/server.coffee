@@ -83,14 +83,16 @@ module.exports = class Server
         return unless data.sequence
         # @clientState = data.ship # not currently used
         # @logs['input'].insert data.inputs if data.inputs?.length
-        if data.inputs?.length
-          @logs['input'].insert data
-          @inputSequence = data.sequence
-          @game.gasStationID = data.gasStationID
-        # console.log 'received', data.inputs, data.ship.position
+        @inputSequence = data.sequence
+        @inputs = data.inputs
+        @game.gasStationID = data.gasStationID
+        # console.log 'received', data.sequence, data.gameStep,
+        #   data.inputs, data.ship.position
+        @update()
 
   frame:
     run: (timestamp) ->
+      # console.log 'step'
       dt = +new Date
       @game.step timestamp
       dt = +new Date - dt

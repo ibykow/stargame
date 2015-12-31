@@ -21,23 +21,24 @@ Sprite.updateVelocity = ->
     return unless params
     super params.game.width, params.game.height, params.game.frictionRate
 
-    { @tick, @starStates } = params.game
+    @starStates = params.game.starStates
+    @serverTick = params.game.tick
 
     @visibleSprites = []
     @mouseSprites = [] # sprites under the mouse
+
     @collisionSpriteLists.stars = @stars = @generateStars()
-    @player = new Player(@, params.id, socket)
+    @player = new Player @, params.id, socket
     @player.name = 'Guest'
-    @players = [@player]
     @lastVerifiedInputSequence = 0
     @collisionSpriteLists.myShip = [@player.ship]
     @pager = new Pager @
     @page = @pager.page.bind @pager
 
   interpolation:
-    reset: (dt) ->
+    reset: ->
       @step = 0
-      @rate = Config.common.msPerFrame / dt
+      @rate = 1 / Config.server.updatesPerStep
 
   # quick and dirty
   testPager: ->
@@ -74,41 +75,44 @@ Sprite.updateVelocity = ->
 
     # Remove logged inputs prior to the server's input sequence
     # We won't be using those for anything
-    inputLog.purge((entry) -> entry.gameStep < (serverStep - 1))
+    inputLog.purge((entry) -> entry.sequence < serverInputSequence)
+
+    logEntry = inputLog.remove()
+
+    # Move to the server state if we don't have any inputs to go on
+    return @player.ship.setState serverState if not logEntry?
 
     # do the correction only if we're out of sync with the server
-    logEntry = inputLog.remove()
-    clientPosition = logEntry?.ship.position
+    clientPosition = logEntry.ship.position
     serverPosition = serverState.position
 
-    if serverState.health < logEntry?.ship.health
+    if serverState.health < logEntry.ship.health
       @player.ship.health = serverState.health
 
-    if serverState.fuel < logEntry?.ship.fuel
+    if serverState.fuel < logEntry.ship.fuel
       @player.ship.health = serverState.fuel
 
     # console.log 'correct', serverPosition, 'vs', clientPosition
     return unless Util.vectorDeltaExists clientPosition, serverPosition
 
-    console.log 'correcting ship state'
-    console.log logEntry?.sequence, logEntry?.gameStep, clientPosition
-    console.log serverInputSequence, serverStep, serverPosition
-    console.log Util.toroidalDelta clientPosition, serverPosition,
-      @toroidalLimit
+    # console.log 'correcting ship state'
+    # console.log logEntry.sequence, logEntry.gameStep, clientPosition
+    # console.log serverInputSequence, serverStep, serverPosition
+    # console.log Util.toroidalDelta clientPosition, serverPosition,
+    #   @toroidalLimit
 
     # set the current ship state to the last known (good) server state
     @player.ship.setState serverState
 
     # store the current entries
     entries = inputLog.toArray().slice()
-    # console.log 'input log', inputLog.tail, inputLog.head, entries.length
 
-    # dump the current log
+    # dump the input log so it can be rebuilt
     inputLog.reset()
 
     # rewind and replay
     count = @tick.count
-    @tick.count = serverStep
+    @tick.count = logEntry.gameStep
     for entry in entries
       console.log entry.sequence, entry.gameStep, entry.ship.position
 
@@ -117,7 +121,7 @@ Sprite.updateVelocity = ->
       @player.update()
       @player.updateInputLog()
       @tick.count++
-    @tick.count = count
+    # @tick.count = count
 
   processServerData: (data) ->
     [inserted, i, j, stateLog] = [false, 0, 0, @player.logs['state']]
@@ -126,9 +130,10 @@ Sprite.updateVelocity = ->
     @serverTick = data.tick
 
     # Make it so we don't fall behind the server game tick
-    if data.tick.count > @tick.count
-      console.log 'Falling behind server by ' + (data.tick.count - @tick.count)
-      @tick.count = data.tick.count + 5
+    if @serverTick.count > @tick.count
+      console.log 'Falling behind server by ' +
+        (@serverTick.count - @tick.count)
+      @tick.count = data.tick.count + 1
 
     # console.log 'bullets', data.bullets
     @bullets = (Bullet.fromState @, bullet for bullet in data.bullets)
@@ -185,8 +190,7 @@ Sprite.updateVelocity = ->
 
     # remove old states from the log
     stateLog.purge((entry) -> entry.sequence < data.tick.count)
-
-    @interpolation.reset(data.tick.dt)
+    @interpolation.reset()
 
   isMouseInBounds: (bounds) ->
     Util.isInSquareBounds([@client.mouse.x, @client.mouse.y], bounds)
@@ -243,7 +247,6 @@ Sprite.updateVelocity = ->
     @interpolation.step++
     @correctPrediction()
     @player.update()
-    # console.log 'position', @player.ship.position
     @player.updateArrows()
 
   clear: ->
@@ -308,14 +311,13 @@ Sprite.updateVelocity = ->
   notifyServer: ->
     @player.updateInputLog()
     entry = @player.latestInputLogEntry
-    # return unless entry.inputs.length
-    # console.log 'sending', entry.sequence, entry.ship.position, entry.inputs
     @player.socket.emit 'input', entry
 
   step: (time) ->
-    @player.inputs = @player.inputs.concat @client.getMappedInputs()
-    @updateMouse()
-    @notifyServer()
     super time # the best kind
+    @updateMouse()
+    @player.inputs = @player.inputs.concat @client.getKeyboardInputs()
+    @update()
+    @notifyServer()
     @draw()
     @player.inputs = []

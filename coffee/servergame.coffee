@@ -46,11 +46,13 @@ Player.LOGLEN = Config.server.updatesPerStep + 1
 
   getShipStates: ->
     for player in @players
-      shipState = player.ship.getState()
-      # console.log 'sending', player.inputSequence, shipState.position
+      state = player.ship.getState()
+
+      # console.log 'sending', player.inputSequence, @tick.count, state.position
+
       id: player.id
       inputSequence: player.inputSequence
-      ship: shipState
+      ship: state
 
   sendState: ->
     shipStates = @getShipStates()
@@ -63,25 +65,9 @@ Player.LOGLEN = Config.server.updatesPerStep + 1
   update: ->
     for i in [Config.server.updatesPerStep..1]
       super()
-      # Player updates can remove players from the list.
-      # To avoid problems, we iterate over a copy of @players.
-      players = @players.slice()
-      for player in players
-        inputLog = player.logs['input']
-
-        # Remove old inputs
-        inputLog.purge((e) => e.gameStep < @tick.count)
-
-        logEntry = inputLog.remove()
-        player.inputs = logEntry?.inputs or []
-
-        player.update()
-        player.die() unless player.ship.health > 0
-        # (console.log 'updated player', player.id, logEntry?.sequence,
-        #   logEntry?.inputs, player.inputSequence, player.ship.position,
-        #   logEntry?.gameStep, @tick.count) if logEntry
-
-      if players.length is not @players.length
-        console.log 'Had', players.length, 'players. Now', @players.length
 
     @sendState()
+
+  step: ->
+    super()
+    @update()

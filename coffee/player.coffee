@@ -69,9 +69,9 @@ pesoChar = Config.common.chars.peso
       @ship.fuel += fuelDelta
 
       # Inform
-      info = "You bought " + fuelDelta.toFixed(2) + "L of fuel for " +
-        pesoChar + price.toFixed(2) + " at " + pesoChar +
-        station.fuelPrice.toFixed(2)
+      info = 'You bought ' + fuelDelta.toFixed(2) + 'L of fuel for ' +
+        pesoChar + price.toFixed(2) + ' at ' + pesoChar +
+        station.fuelPrice.toFixed(2) + '/L'
 
       @game.page info
 
@@ -92,6 +92,7 @@ pesoChar = Config.common.chars.peso
     entry =
       sequence: @inputSequence
       gameStep: @game.tick.count
+      serverStep: @game.serverTick.count
       ship: @ship.getState()
       inputs: @inputs.slice()
       gasStationID: @game.gasStationID

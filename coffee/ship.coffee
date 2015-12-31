@@ -68,12 +68,16 @@ shipRates = Config.common.ship.rates
 
   forward: ->
     return unless @fuel > 0
+    # @velocity[0] += floor cos(@position[2]) * @accFactor
+    # @velocity[1] += floor sin(@position[2]) * @accFactor
     @velocity[0] += cos(@position[2]) * @accFactor
     @velocity[1] += sin(@position[2]) * @accFactor
     @fuel -= @accFactor
 
   reverse: ->
     return unless @fuel > 0
+    # @velocity[0] -= floor(cos @position[2])
+    # @velocity[1] -= floor(sin @position[2])
     @velocity[0] -= cos @position[2]
     @velocity[1] -= sin @position[2]
     @fuel--
@@ -90,12 +94,11 @@ shipRates = Config.common.ship.rates
     return unless @magnitude
     @isBraking = true
     rate = min @magnitude * @magnitude / @brakePower, shipRates.brake
-    @velocity[0] *= rate
-    @velocity[1] *= rate
+    @velocity[0] = @velocity[0] * rate
+    @velocity[1] = @velocity[1] * rate
 
   fire: ->
     return unless @lastFireInputSequence < @player.inputSequence - @fireRate
-    # console.log 'fire', @lastFireInputSequence, @player.inputSequence
     @lastFireInputSequence = @player.inputSequence
     @game.insertBullet(new Bullet @)
 

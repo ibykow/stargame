@@ -1,8 +1,10 @@
-[abs, floor, isarr, max, min, rnd, sqrt, trunc] =
+[abs, floor, isarr, max, min, pi, rnd, sqrt, trunc] =
   [ Math.abs, Math.floor, Array.isArray, Math.max,
-    Math.min, Math.random, Math.sqrt, Math.trunc ]
+    Math.min, Math.PI, Math.random, Math.sqrt, Math.trunc ]
 
 (module ? {}).exports = Util =
+  PI: pi
+  TWO_PI: pi * 2
   vectorDeltaExists: (a, b) ->
     # Returns true if only one is an array, or if the arrays are
     # of differnt lengths. Returns false if neither are arrays.
@@ -50,6 +52,7 @@
 
   magnitude: (v) ->
     return 0 unless isarr v
+    # sqrt v.reduce((p, n) -> p + n * n)
     sqrt v[0] * v[0] + v[1] + v[1]
 
   findEmptySlot: (arr) ->
