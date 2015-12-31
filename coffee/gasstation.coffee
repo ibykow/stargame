@@ -35,10 +35,12 @@ pesoChar = Config.common.chars.peso
     new GasStation parent, state.fuelPrice, state.button
 
   appendButton: (state) ->
-    # create the button
+    # Create the button. This only happens on the client side.
     @click = (b) =>
-      @game.page 'Fuel button pressed at ' + @constructor.name
+      return unless b.enabled
       b.enabled = false
+      @game.gasStationID = @parent.id
+      @game.player.inputs.push 'refuel'
 
     button = new Button @, 'fillUpButton', @click, state.text, state.params
 

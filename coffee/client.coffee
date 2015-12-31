@@ -43,7 +43,7 @@ client = null
       welcome: (data) ->
         context = @canvas.getContext('2d')
 
-        @game = new ClientGame(data, @canvas, context, @socket)
+        @game = new ClientGame(@canvas, context, @socket, data)
         @game.client = @
 
         @keymap[Config.client.keyCodes.up] = 'forward'
@@ -58,11 +58,11 @@ client = null
         @game.player.ship.updateView = @game.player.ship.updateViewMaster
 
       join: (data) ->
-        @game.page 'player', data.id + ', ' + data.name, 'has joined'
+        console.log 'player', data.id + ', ' + data.name, 'has joined'
 
       leave: (id) ->
         @game.removeShip(id)
-        @game.page 'player', id, 'has left'
+        console.log 'player', id, 'has left'
 
       disconnect: ->
         @frame.stop.bind(@)()

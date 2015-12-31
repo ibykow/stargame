@@ -23,7 +23,7 @@ Gameplay
  - player cash √
  - gas stations (eg 1 in 100 stars)
     - generating √
-    - purchase fuel
+    - purchase fuel √
  - tophies/achievements
  - upgrades for everything (gun type, fuel, cargo capacity, etc.)
  - ship distress signal (eg. when out of fuel, for fun)
@@ -38,3 +38,4 @@ Engine
     input sequences
   - range checking for certain actions (eg. must be near star to buy fuel)
   - add message/notification system
+  - add Font object which describes fonts, color, line height, char width, etc.

@@ -17,16 +17,16 @@ Sprite.updatePosition = ->
 Sprite.updateVelocity = ->
 
 (module ? {}).exports = class ClientGame extends Game
-  constructor: (details, @canvas, @c, socket) ->
-    return unless details
-    super details.game.width, details.game.height, details.game.frictionRate
+  constructor: (@canvas, @c, socket, params) ->
+    return unless params
+    super params.game.width, params.game.height, params.game.frictionRate
 
-    { @tick, @starStates } = details.game
+    { @tick, @starStates } = params.game
 
     @visibleSprites = []
     @mouseSprites = [] # sprites under the mouse
     @collisionSpriteLists.stars = @stars = @generateStars()
-    @player = new Player(@, details.id, socket)
+    @player = new Player(@, params.id, socket)
     @player.name = 'Guest'
     @players = [@player]
     @lastVerifiedInputSequence = 0
@@ -45,8 +45,9 @@ Sprite.updateVelocity = ->
     console.log @pager.buffer
 
   generateStars: ->
-    for state in @starStates
+    for state, i in @starStates
       s = new Sprite @, state.position, state.width, state.height, state.color
+      s.id = i
       # console.log s.children
       for type, childState of state.children
         # console.log 'adding child', global[type].name, childState
@@ -69,8 +70,6 @@ Sprite.updateVelocity = ->
 
     @lastVerifiedInputSequence = serverInputSequence
 
-    @player.ship.health = serverState.health
-
     # Remove logged inputs prior to the server's input sequence
     # We won't be using those for anything
     inputLog.purge((entry) -> entry.sequence <= serverInputSequence)
@@ -82,6 +81,10 @@ Sprite.updateVelocity = ->
 
     if serverState.health < logEntry?.ship.health
       @player.ship.health = serverState.health
+
+    if serverState.fuel < logEntry?.ship.fuel
+      @player.ship.health = serverState.fuel
+
     # console.log 'correct', serverPosition, 'vs', clientPosition
     return unless Util.vectorDeltaExists(clientPosition, serverPosition)
 
@@ -289,7 +292,7 @@ Sprite.updateVelocity = ->
     @player.socket.emit 'input', entry
 
   step: (time) ->
-    @player.inputs = @client.getMappedInputs()
+    @player.inputs = @player.inputs.concat @client.getMappedInputs()
     @updateMouse()
     @notifyServer()
     super time # the best kind

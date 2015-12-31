@@ -38,6 +38,13 @@ if require?
     @children[name] = child
     child.parent = @
 
+  distanceTo: (sprite) ->
+    Util.magnitude @positionDelta(sprite)
+
+  positionDelta: (sprite) ->
+    return unless sprite and sprite.position
+    Util.toroidalDelta(@position, sprite.position, @game.toroidalLimit)
+
   clearFlags: ->
     for k of @flags
       @flags[k] = false
@@ -56,7 +63,7 @@ if require?
 
   intersects: (sprite) ->
     return false if @ is sprite or not sprite?.position
-    delta = Util.toroidalDelta(@position, sprite.position, @game.toroidalLimit)
+    delta = @positionDelta sprite
     # console.log 'delta', delta
     # console.log 'delta', delta
     (abs(delta[0]) <= @halfWidth + sprite.halfWidth) and
@@ -101,9 +108,6 @@ if require?
   updateChildren: ->
     child.update() for type, child of @children
 
-
-  updateAlt: ->
-
   update: ->
     @updateVelocity()
     @updatePosition()
@@ -140,5 +144,4 @@ if require?
     @game.c.fillRect  @view[0] - @halfWidth, @view[1] - @halfHeight,
                       @width, @height
 
-    for type, child of @children
-      child.draw(@view)
+    child.draw(@view) for type, child of @children

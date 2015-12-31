@@ -40,6 +40,9 @@ cfg = Config.common.button
     else
       @color = @params.colors.background
 
+  isInView: ->
+    @enabled and super()
+
   draw: -> # we don't get called unless the parent is visible
     return unless @enabled
     xoff = -@halfWidth

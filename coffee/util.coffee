@@ -23,7 +23,7 @@
     return unless isarr(point) and isarr(bounds) and
       bounds.length is 2
 
-    len = min(min(bounds[0].length, bounds[1].length), point.length)
+    len = min min(bounds[0].length, bounds[1].length), point.length
 
     for i in [0...len]
       delta = point[i] - bounds[0][i]
@@ -50,7 +50,7 @@
 
   magnitude: (v) ->
     return 0 unless isarr v
-    sqrt v.reduce((p, n) -> p + n * n)
+    sqrt v[0] * v[0] + v[1] + v[1]
 
   findEmptySlot: (arr) ->
     return unless isarr arr

@@ -20,7 +20,7 @@
       fade: 30
       font: '12px Courier New'
       maxlines: 20
-      ttl: 60 * 3
+      ttl: 60 * 5
       xoffset: 10
       yoffset: 12
 
@@ -36,6 +36,7 @@
     rates:
       gasStations: 0.3 # probability of a star having a gas station
     fuel:
+      distance: 500 # max refueling distance
       price:
         min: 0.8
         max: 1.9

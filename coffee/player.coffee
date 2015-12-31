@@ -1,7 +1,10 @@
 if require?
   Config = require './config'
+  Util = require './util'
   RingBuffer = require './ringbuffer'
   Ship = require './ship'
+
+pesoChar = Config.common.chars.peso
 
 (module ? {}).exports = class Player
   @LOGLEN: Config.client.player.loglen
@@ -36,6 +39,41 @@ if require?
     fire: ->
       @ship.fire()
 
+    refuel: ->
+      # There must be a valid gas station for this to work
+      return unless Util.isNumeric @game.gasStationID
+      station = @game.stars[@game.gasStationID].children['GasStation']
+      return @game.page "Gas station out of order. Sorry." unless station
+
+      # Avoid filter cheating by requiring player-station proximity
+      if @ship.distanceTo(station) > Config.common.fuel.distance
+        return @game.page 'Sorry. The gas station is too far away.'
+
+      # No money :(
+      return @game.page "Sorry, you're broke." unless @cash > 0
+
+      # Calculate the fuel and cost
+      fuelDelta = @ship.fuelCapacity - @ship.fuel
+
+      return @game.page "You're full!" unless fuelDelta > 0
+
+      price = fuelDelta * station.fuelPrice
+
+      # Buy as much as we can afford
+      if price > @cash
+        fuelDelta = @cash / station.fuelPrice
+        price = @cash
+
+      # Transact
+      @cash -= price
+      @ship.fuel += fuelDelta
+
+      # Inform
+      info = "You bought " + fuelDelta + "L of fuel for " + pesoChar +
+        price.toFixed(2) + " at " + pesoChar + station.fuelPrice.toFixed(2)
+
+      @game.page info
+
   die: ->
     @socket.disconnect()
 
@@ -55,6 +93,7 @@ if require?
       sequence: @inputSequence
       ship: @ship.getState()
       inputs: @inputs.slice()
+      gasStationID: @game.gasStationID
 
     @logs['input'].insert entry
     # console.log 'new entry', entry.sequence, entry.ship.position
