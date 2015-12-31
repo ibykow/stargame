@@ -1,11 +1,11 @@
 if require?
+  Config = require './config'
   Util = require './util'
 
 [min] = [Math.min]
 
 (module ? {}).exports = class RingBuffer
-  @DEFAULT_MAX: 50
-  constructor: (@max = RingBuffer.DEFAULT_MAX)->
+  constructor: (@max = Config.common.ringbuffer.max)->
     return if @max < 2
     @data = new Array @max
     @reset()
@@ -79,9 +79,16 @@ if require?
     if @isEmpty() then null else @data[@tail]
 
   map: (f) ->
-    return if @isEmpty() or (@head >= @max) or (@head < 0)
+    return [] if @isEmpty() or not @isSane()
     i = @tail
+    index = 0
     while not (i is @head)
-      ret = f @data[i], i, @
+      ret = f @data[i], index, @
       i = (i + 1) % @max
+      index++
       ret
+
+  isSane: ->
+    (@tail >= 0) and (@tail < @max) and
+    (@head >= 0) and (@head < @max) and
+    ((@full and (@tail is @head)) or true)

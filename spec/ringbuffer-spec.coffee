@@ -1,3 +1,4 @@
+Config = require '../coffee/config'
 RingBuffer = require '../coffee/ringbuffer'
 
 describe 'RingBuffer', ->
@@ -10,7 +11,7 @@ describe 'RingBuffer', ->
       expect(buffer.max).toBe 3
 
       buffer = new RingBuffer
-      expect(buffer.max).toBe RingBuffer.DEFAULT_MAX
+      expect(buffer.max).toBe Config.common.ringbuffer.max
 
       buffer = new RingBuffer 0
       expect(buffer.max).toBe 0
@@ -95,3 +96,78 @@ describe 'RingBuffer', ->
 
       expect(results[i - 5]).toBe(i * i) for i in [5..50]
       expect(buffer.remove()).toBe i for i in [5..50]
+
+    it 'should return an empty array when dealing with an empty buffer', ->
+      buffer = new RingBuffer 50
+      expect(buffer.map((o) -> 1)).toEqual []
+
+    it 'should return an empty array when dealing with an insane buffer', ->
+      buffer = new RingBuffer 50
+      buffer.insert i for i in [0..55]
+      buffer.head = 90
+      expect(buffer.map((o) -> 1)).toEqual []
+
+  describe '.isSane', ->
+    it 'should return true if empty and head and tail are between 0 and max', ->
+      buffer = new RingBuffer 20
+
+      expect(buffer.tail).toBe 0
+      expect(buffer.head).toBe 0
+
+      expect(buffer.isSane()).toBe true
+
+      buffer.tail = -1
+      expect(buffer.isSane()).toBe false
+
+      buffer.tail = 0
+      expect(buffer.isSane()).toBe true
+
+      buffer.tail = 50
+      expect(buffer.isSane()).toBe false
+
+      buffer.tail = 0
+      expect(buffer.isSane()).toBe true
+
+      buffer.head = -1
+      expect(buffer.isSane()).toBe false
+
+      buffer.head = 0
+      expect(buffer.isSane()).toBe true
+
+      buffer.head = 50
+      expect(buffer.isSane()).toBe false
+
+      buffer.head = 0
+      expect(buffer.isSane()).toBe true
+
+      buffer.tail = -1
+      buffer.head = 50
+      expect(buffer.isSane()).toBe false
+
+      buffer.tail = 0
+      buffer.head = 0
+      expect(buffer.isSane()).toBe true
+
+      buffer.tail = 50
+      buffer.head = -1
+      expect(buffer.isSane()).toBe false
+
+    it 'should return true if full, and head equals tail between 0 and max', ->
+      buffer = new RingBuffer 20
+      buffer.insert i for i in [0..20]
+
+      expect(buffer.full).toBe true
+      expect(buffer.head).toBe buffer.tail
+      expect(buffer.isSane()).toBe true
+
+      buffer.tail = -1
+      buffer.head = 50
+      expect(buffer.isSane()).toBe false
+
+      buffer.tail = 0
+      buffer.head = 0
+      expect(buffer.isSane()).toBe true
+
+      buffer.tail = 50
+      buffer.head = -1
+      expect(buffer.isSane()).toBe false
