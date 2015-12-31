@@ -67,4 +67,3 @@ if require?
       @actions[action].bind(@)()
 
     @ship.update()
-    @inputs = []

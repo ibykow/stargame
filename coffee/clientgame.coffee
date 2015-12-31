@@ -9,7 +9,7 @@ if require?
   Client = require './client'
 
 [isarr, floor, max] = [Array.isArray, Math.floor, Math.max]
-pesoChar = '\u03df'
+pesoChar = Config.common.chars.peso
 
 Player::die = -> @ship.isDeleted = true
 Sprite.updatePosition = ->
@@ -38,11 +38,11 @@ Sprite.updateVelocity = ->
 
   generateStars: ->
     for state in @starStates
-      s = new Sprite(@, state.position, state.width, state.height, state.color)
+      s = new Sprite @, state.position, state.width, state.height, state.color
       # console.log s.children
-      for type, child of state.children
-        # console.log 'adding child', type
-        new global[type] s
+      for type, childState of state.children
+        # console.log 'adding child', global[type].name, childState
+        global[type].fromState s, childState
       s
 
   removeShip: (id) ->
@@ -213,7 +213,6 @@ Sprite.updateVelocity = ->
     @correctPrediction()
     @player.update()
     @player.updateArrows()
-    @updateMouse()
 
   clear: ->
     @c.globalAlpha = 1
@@ -240,14 +239,18 @@ Sprite.updateVelocity = ->
   drawHUD: ->
     @c.fillStyle = "#fff"
     @c.font = "14px Courier New"
-    @c.fillText 'x:' + @player.ship.position[0].toFixed(0), 0, 18
-    @c.fillText 'y:' + @player.ship.position[1].toFixed(0), 80, 18
-    @c.fillText 'r:' + @player.ship.position[2].toFixed(2), 160, 18
-    @c.fillText 'vx:' + @player.ship.velocity[0].toFixed(0), 260, 18
-    @c.fillText 'vy:' + @player.ship.velocity[1].toFixed(0), 340, 18
-    @c.fillText 'hp:' + @player.ship.health, 420, 18
-    @c.fillText 'cash:' + pesoChar + @player.cash.toFixed(2), 540, 18
-    @drawFuel 480, 8
+    @c.fillText 'x:' + @player.ship.position[0].toFixed(0), 0, 10
+    @c.fillText 'y:' + @player.ship.position[1].toFixed(0), 80, 10
+    @c.fillText 'x:' + @player.ship.view[0].toFixed(0), 0, 20
+    @c.fillText 'y:' + @player.ship.view[1].toFixed(0), 80, 20
+    @c.fillText 'x:' + @client.mouse.x.toFixed(0), 0, 30
+    @c.fillText 'y:' + @client.mouse.y.toFixed(0), 80, 30
+    @c.fillText 'r:' + @player.ship.position[2].toFixed(2), 160, 10
+    @c.fillText 'vx:' + @player.ship.velocity[0].toFixed(0), 260, 10
+    @c.fillText 'vy:' + @player.ship.velocity[1].toFixed(0), 340, 10
+    @c.fillText 'hp:' + @player.ship.health, 420, 10
+    @c.fillText 'cash:' + pesoChar + @player.cash.toFixed(2), 540, 10
+    @drawFuel 480, 2
 
   draw: ->
     @clear()
@@ -278,6 +281,8 @@ Sprite.updateVelocity = ->
 
   step: (time) ->
     @player.inputs = @client.getMappedInputs()
+    @updateMouse()
     @notifyServer()
     super time # the best kind
     @draw()
+    @player.inputs = []

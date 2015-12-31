@@ -36,3 +36,4 @@ Missions
 Engine
   - Use server game step in updates instead of relying strictly on
     input sequences
+  - range checking for certain actions (eg. must be near star to buy fuel)

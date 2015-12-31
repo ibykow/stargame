@@ -23,6 +23,8 @@
     uri: 'http://localhost:3000'
     msPerFrame: 16
     mapSize: (1 << 15) + 1
+    chars:
+      peso: '\u03df'
     rates:
       gasStations: 0.3 # probability of a star having a gas station
     fuel:
@@ -32,6 +34,20 @@
     bullet:
       life: 60 * 3
       speed: 10
+    button:
+      width: 50
+      height: 50
+      offset: [0, -8, 0]
+      colors:
+        background: '#666'
+        hover: '#888'
+        click: '#444'
+        text: '#fff'
+      font:
+        string: '12px Courier New'
+        offset: [10, 4, 0]
+      default:
+        enabled: true
     ship:
       rates:
         acceleration: 2
