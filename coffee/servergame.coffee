@@ -61,13 +61,14 @@ Player.LOGLEN = Config.server.updatesPerStep + 1
       tick: @tick
 
   update: ->
-    for i in [1..Config.server.updatesPerStep]
+    for i in [Config.server.updatesPerStep..1]
+      super()
       # Player updates can remove players from the list.
       # To avoid problems, we iterate over a copy of @players.
-      super()
       players = @players.slice()
       for player in players
-        logEntry = player.logs['input'].remove()
+        inputLog = player.logs['input']
+        logEntry = inputLog.remove()
         player.inputs = logEntry?.inputs or []
         player.update()
         player.die() unless player.ship.health > 0

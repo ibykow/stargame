@@ -70,9 +70,11 @@ Sprite.updateVelocity = ->
 
     @lastVerifiedInputSequence = serverInputSequence
 
+    # serverStep = @serverTick.count
+
     # Remove logged inputs prior to the server's input sequence
     # We won't be using those for anything
-    inputLog.purge((entry) -> entry.sequence <= serverInputSequence)
+    inputLog.purge((entry) -> entry.gameStep <= serverInputSequence)
 
     # do the correction only if we're out of sync with the server
     logEntry = inputLog.remove()
@@ -86,7 +88,7 @@ Sprite.updateVelocity = ->
       @player.ship.health = serverState.fuel
 
     # console.log 'correct', serverPosition, 'vs', clientPosition
-    return unless Util.vectorDeltaExists(clientPosition, serverPosition)
+    return unless Util.vectorDeltaExists clientPosition, serverPosition
 
     # console.log 'correcting ship state'
     # console.log logEntry?.sequence, clientPosition
@@ -95,7 +97,7 @@ Sprite.updateVelocity = ->
     #   @toroidalLimit
 
     # set the current ship state to the last known (good) server state
-    @player.ship.setState(serverState)
+    @player.ship.setState serverState
 
     entries = inputLog.toArray().slice()
     # console.log 'input log', inputLog.tail, inputLog.head, entries.length
@@ -109,6 +111,12 @@ Sprite.updateVelocity = ->
 
   processServerData: (data) ->
     [inserted, i, j, stateLog] = [false, 0, 0, @player.logs['state']]
+
+    # Store the most recent server tick data
+    @serverTick = data.tick
+
+    # Make it so we don't fall behind the server game tick
+    @tick.count = data.tick.count if data.tick.count > @tick.count
 
     # console.log 'bullets', data.bullets
     @bullets = (Bullet.fromState @, bullet for bullet in data.bullets)

@@ -91,6 +91,7 @@ pesoChar = Config.common.chars.peso
   updateInputLog: ->
     entry =
       sequence: @inputSequence
+      gameStep: @game.tick.count 
       ship: @ship.getState()
       inputs: @inputs.slice()
       gasStationID: @game.gasStationID
