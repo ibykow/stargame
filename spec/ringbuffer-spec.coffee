@@ -101,6 +101,12 @@ describe 'RingBuffer', ->
       buffer = new RingBuffer 50
       expect(buffer.map((o) -> 1)).toEqual []
 
+    it 'should return an full array when dealing with a full buffer', ->
+      buffer = new RingBuffer 10
+      buffer.insert i + 5 for i in [1..10]
+
+      expect(buffer.map((n) -> n - 3)).toEqual [3,4,5,6,7,8,9,10,11,12]
+
     it 'should return an empty array when dealing with an insane buffer', ->
       buffer = new RingBuffer 50
       buffer.insert i for i in [0..55]

@@ -15,6 +15,14 @@
       f: 'F'.charCodeAt 0
     player:
       loglen: 1 << 8
+    pager:
+      color: '#0f0'
+      fade: 30
+      font: '12px Courier New'
+      maxlines: 20
+      ttl: 60 * 3
+      xoffset: 10
+      yoffset: 12
 
   server:
     updatesPerStep: 5
@@ -48,6 +56,8 @@
         offset: [10, 4, 0]
       default:
         enabled: true
+    ringbuffer:
+      max: 50
     ship:
       rates:
         acceleration: 2

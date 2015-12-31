@@ -58,11 +58,11 @@ client = null
         @game.player.ship.updateView = @game.player.ship.updateViewMaster
 
       join: (data) ->
-        console.log 'player', data.id + ', ' + data.name, 'has joined'
+        @game.page 'player', data.id + ', ' + data.name, 'has joined'
 
       leave: (id) ->
         @game.removeShip(id)
-        console.log 'player', id, 'has left'
+        @game.page 'player', id, 'has left'
 
       disconnect: ->
         @frame.stop.bind(@)()

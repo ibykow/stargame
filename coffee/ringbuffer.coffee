@@ -14,6 +14,7 @@ if require?
     @head = 0
     @tail = 0
     @full = false
+    @length = 0
 
   # purge elements while f returns true
   # f takes the current element as an argument
@@ -33,7 +34,7 @@ if require?
     null
 
   isEmpty: ->
-    @head is @tail and not @full
+    @length is 0 # @head is @tail and not @full
 
   toArray: ->
     return [] if @isEmpty()
@@ -58,6 +59,8 @@ if require?
     # so if @head equals @tail after insertion, the buffer must be full
     @full = @head is @tail
 
+    @length++
+
   remove: ->
     # return null if buffer is empty
     return null if @isEmpty()
@@ -70,7 +73,7 @@ if require?
 
     # the buffer can't be full since we've removed an item
     @full = false
-
+    @length--
     # return the item
     item
 
@@ -82,7 +85,7 @@ if require?
     return [] if @isEmpty() or not @isSane()
     i = @tail
     index = 0
-    while not (i is @head)
+    while not (index is @length)
       ret = f @data[i], index, @
       i = (i + 1) % @max
       index++

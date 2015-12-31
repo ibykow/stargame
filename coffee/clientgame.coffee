@@ -7,6 +7,7 @@ if require?
   Game = require './game'
   Player = require './player'
   Client = require './client'
+  Pager = require './pager'
 
 [isarr, floor, max] = [Array.isArray, Math.floor, Math.max]
 pesoChar = Config.common.chars.peso
@@ -30,11 +31,18 @@ Sprite.updateVelocity = ->
     @players = [@player]
     @lastVerifiedInputSequence = 0
     @collisionSpriteLists.myShip = [@player.ship]
+    @pager = new Pager @
+    @page = @pager.page.bind @pager
 
   interpolation:
     reset: (dt) ->
       @step = 0
       @rate = Config.common.msPerFrame / dt
+
+  # quick and dirty
+  testPager: ->
+    @pager.page('Hello, World Number ' + i) for i in [1..20]
+    console.log @pager.buffer
 
   generateStars: ->
     for state in @starStates
@@ -258,6 +266,7 @@ Sprite.updateVelocity = ->
     @player.ship.draw()
     arrow.draw() for arrow in @player.arrows
     @drawHUD()
+    @pager.draw()
 
   gameOver: ->
     console.log 'Game over!'

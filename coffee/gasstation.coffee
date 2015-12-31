@@ -37,7 +37,7 @@ pesoChar = Config.common.chars.peso
   appendButton: (state) ->
     # create the button
     @click = (b) =>
-      console.log 'Fuel button pressed at', @constructor.name
+      @game.page 'Fuel button pressed at ' + @constructor.name
       b.enabled = false
 
     button = new Button @, 'fillUpButton', @click, state.text, state.params
