@@ -34,7 +34,7 @@
     chars:
       peso: '\u03df'
     rates:
-      gasStations: 0.3 # probability of a star having a gas station
+      gasStations: 0.1 # probability of a star having a gas station
     fuel:
       distance: 500 # max refueling distance
       price:

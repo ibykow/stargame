@@ -70,11 +70,11 @@ Sprite.updateVelocity = ->
 
     @lastVerifiedInputSequence = serverInputSequence
 
-    # serverStep = @serverTick.count
+    serverStep = @serverTick.count
 
     # Remove logged inputs prior to the server's input sequence
     # We won't be using those for anything
-    inputLog.purge((entry) -> entry.gameStep <= serverInputSequence)
+    inputLog.purge((entry) -> entry.gameStep < (serverStep - 1))
 
     # do the correction only if we're out of sync with the server
     logEntry = inputLog.remove()
@@ -90,24 +90,34 @@ Sprite.updateVelocity = ->
     # console.log 'correct', serverPosition, 'vs', clientPosition
     return unless Util.vectorDeltaExists clientPosition, serverPosition
 
-    # console.log 'correcting ship state'
-    # console.log logEntry?.sequence, clientPosition
-    # console.log serverInputSequence, serverPosition
-    # console.log Util.toroidalDelta clientPosition, serverPosition,
-    #   @toroidalLimit
+    console.log 'correcting ship state'
+    console.log logEntry?.sequence, logEntry?.gameStep, clientPosition
+    console.log serverInputSequence, serverStep, serverPosition
+    console.log Util.toroidalDelta clientPosition, serverPosition,
+      @toroidalLimit
 
     # set the current ship state to the last known (good) server state
     @player.ship.setState serverState
 
+    # store the current entries
     entries = inputLog.toArray().slice()
     # console.log 'input log', inputLog.tail, inputLog.head, entries.length
+
+    # dump the current log
     inputLog.reset()
+
     # rewind and replay
+    count = @tick.count
+    @tick.count = serverStep
     for entry in entries
-      # console.log 'entry', entry
+      console.log entry.sequence, entry.gameStep, entry.ship.position
+
       @player.inputSequence = entry.sequence
       @player.inputs = entry.inputs
       @player.update()
+      @player.updateInputLog()
+      @tick.count++
+    @tick.count = count
 
   processServerData: (data) ->
     [inserted, i, j, stateLog] = [false, 0, 0, @player.logs['state']]
@@ -116,7 +126,9 @@ Sprite.updateVelocity = ->
     @serverTick = data.tick
 
     # Make it so we don't fall behind the server game tick
-    @tick.count = data.tick.count if data.tick.count > @tick.count
+    if data.tick.count > @tick.count
+      console.log 'Falling behind server by ' + (data.tick.count - @tick.count)
+      @tick.count = data.tick.count + 5
 
     # console.log 'bullets', data.bullets
     @bullets = (Bullet.fromState @, bullet for bullet in data.bullets)
@@ -231,6 +243,7 @@ Sprite.updateVelocity = ->
     @interpolation.step++
     @correctPrediction()
     @player.update()
+    # console.log 'position', @player.ship.position
     @player.updateArrows()
 
   clear: ->

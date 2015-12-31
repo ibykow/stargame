@@ -14,7 +14,6 @@ if require?
     @collisionSpriteLists =
       stars: @stars
       ships: @ships
-
     @tick =
       count: 0
       time: 0
@@ -59,6 +58,7 @@ if require?
     @bullets = bullets
 
   update: ->
+    @tick.count++
     @updateBullets()
 
   logPlayerStates: ->
@@ -72,6 +72,5 @@ if require?
     # increment the tick
     @tick.dt = time - @tick.time
     @tick.time = time
-    @tick.count++
     @update()
     # @logPlayerStates()

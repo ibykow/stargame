@@ -69,13 +69,13 @@ pesoChar = Config.common.chars.peso
       @ship.fuel += fuelDelta
 
       # Inform
-      info = "You bought " + fuelDelta + "L of fuel for " + pesoChar +
-        price.toFixed(2) + " at " + pesoChar + station.fuelPrice.toFixed(2)
+      info = "You bought " + fuelDelta.toFixed(2) + "L of fuel for " +
+        pesoChar + price.toFixed(2) + " at " + pesoChar +
+        station.fuelPrice.toFixed(2)
 
       @game.page info
 
-  die: ->
-    @socket.disconnect()
+  die: -> @socket.disconnect()
 
   arrowTo: (sprite, id, color = '#00F') ->
     @arrows.push(new Arrow @game, @ship, sprite, color, 0.8, 2, id)
@@ -91,7 +91,7 @@ pesoChar = Config.common.chars.peso
   updateInputLog: ->
     entry =
       sequence: @inputSequence
-      gameStep: @game.tick.count 
+      gameStep: @game.tick.count
       ship: @ship.getState()
       inputs: @inputs.slice()
       gasStationID: @game.gasStationID

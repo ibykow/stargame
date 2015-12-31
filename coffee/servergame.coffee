@@ -32,7 +32,7 @@ Player.LOGLEN = Config.server.updatesPerStep + 1
     @server = server
     @stars = @generateStars numStars
     @starStates = (star.getState() for star in @stars)
-    @page = -> # do nothing
+    @page = console.log
 
   generateStars: (n) ->
     for i in [0..n]
@@ -68,12 +68,18 @@ Player.LOGLEN = Config.server.updatesPerStep + 1
       players = @players.slice()
       for player in players
         inputLog = player.logs['input']
+
+        # Remove old inputs
+        inputLog.purge((e) => e.gameStep < @tick.count)
+
         logEntry = inputLog.remove()
         player.inputs = logEntry?.inputs or []
+
         player.update()
         player.die() unless player.ship.health > 0
-        # console.log 'updated player', player.id, logEntry?.sequence,
-        #   logEntry?.inputs, player.inputSequence, player.ship.position
+        # (console.log 'updated player', player.id, logEntry?.sequence,
+        #   logEntry?.inputs, player.inputSequence, player.ship.position,
+        #   logEntry?.gameStep, @tick.count) if logEntry
 
       if players.length is not @players.length
         console.log 'Had', players.length, 'players. Now', @players.length
