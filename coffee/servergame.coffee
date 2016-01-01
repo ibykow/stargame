@@ -34,6 +34,7 @@ Player.LOGLEN = Config.server.updatesPerStep + 1
     @starStates = (star.getState() for star in @stars)
     @page = console.log
     @newBullets = []
+    @deadBulletIDs = []
 
   insertBullet: (b) ->
     return unless super b
@@ -68,6 +69,7 @@ Player.LOGLEN = Config.server.updatesPerStep + 1
     # send the id and game information back to the client
     player.socket.emit('welcome',
       id: player.id,
+      deadBulletIDs: []
       bullets: bulletStates
       ships: shipStates
       game:
@@ -83,12 +85,14 @@ Player.LOGLEN = Config.server.updatesPerStep + 1
     @server.io.emit 'state',
       ships: shipStates
       bullets: bulletStates
+      deadBulletIDs: @deadBulletIDs
       game:
         tick: @tick
 
   updateCollisions: ->
     # update each bullet state and remove dead bullets
     bullets = []
+    @deadBulletIDs = []
     for b in @bullets
       for type, sprites of @collisionSpriteLists
         for sprite in b.detectCollisions sprites
@@ -96,6 +100,8 @@ Player.LOGLEN = Config.server.updatesPerStep + 1
 
       if b.life > 0
         bullets.push b
+      else
+        @deadBulletIDs.push b.id
 
     # update bullet list to include only live ones
     @bullets = bullets
@@ -105,9 +111,7 @@ Player.LOGLEN = Config.server.updatesPerStep + 1
       super()
       @updateCollisions()
 
+  step: (time) ->
+    super time
     @sendState()
     @newBullets = []
-
-  step: ->
-    super()
-    @update()

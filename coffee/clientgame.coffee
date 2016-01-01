@@ -124,6 +124,16 @@ Sprite.updateVelocity = ->
       @tick.count++
     # @tick.count = count
 
+  processBulletData: (data) ->
+    # Remove dead bullets
+    @bullets =  @bullets.filter((b) -> data.deadBulletIDs.indexOf(b.id) is -1)
+
+    # Add new bullets
+    @bullets = @bullets.concat (for bullet in data.bullets
+      id = bullet.gun.player.id
+      continue if id is @player.id
+      Bullet.fromState @, bullet)
+
   processServerData: (data) ->
     [inserted, i, j, stateLog] = [false, 0, 0, @player.logs['state']]
 
@@ -136,11 +146,7 @@ Sprite.updateVelocity = ->
       #   (@serverTick.count - @tick.count)
       @tick.count = @serverTick.count + 1
 
-    # console.log 'bullets', data.bullets
-    @bullets = @bullets.concat (for bullet in data.bullets
-      id = bullet.gun.player.id
-      continue if id is @player.id
-      Bullet.fromState @, bullet)
+    @processBulletData data
 
     # remove our ship from the pile
     for i in [0...data.ships.length]
@@ -244,7 +250,11 @@ Sprite.updateVelocity = ->
     @client.mouse.released = false
 
   update: ->
-    @visibleSprites = []
+    # Set up inputs
+    @updateMouse()
+    @player.inputs = @player.inputs.concat @client.getKeyboardInputs()
+
+    # Update
     super()
     star.update() for star in @stars
     ship.update() for ship in @ships
@@ -299,9 +309,7 @@ Sprite.updateVelocity = ->
 
   step: (time) ->
     super time # the best kind
-    @updateMouse()
-    @player.inputs = @player.inputs.concat @client.getKeyboardInputs()
-    @update()
     @notifyServer()
     @draw()
     @player.inputs = []
+    @visibleSprites = []
