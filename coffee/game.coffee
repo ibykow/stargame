@@ -42,24 +42,9 @@ if require?
   getShips: ->
     @players.map((p)-> p.ship)
 
-  updateBullets: ->
-    # update each bullet state and remove dead bullets
-    bullets = []
-    for b in @bullets
-      b.update()
-      for type, sprites of @collisionSpriteLists
-        for sprite in b.detectCollisions sprites
-          sprite.handleBulletImpact b
-
-      if b.life > 0
-        bullets.push b
-
-    # update bullet list to include only live ones
-    @bullets = bullets
-
   update: ->
     @tick.count++
-    @updateBullets()
+    b.update() for b in @bullets
 
   logPlayerStates: ->
     for player in @players when player

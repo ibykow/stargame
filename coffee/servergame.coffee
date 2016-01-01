@@ -86,9 +86,24 @@ Player.LOGLEN = Config.server.updatesPerStep + 1
       game:
         tick: @tick
 
+  updateCollisions: ->
+    # update each bullet state and remove dead bullets
+    bullets = []
+    for b in @bullets
+      for type, sprites of @collisionSpriteLists
+        for sprite in b.detectCollisions sprites
+          sprite.handleBulletImpact b
+
+      if b.life > 0
+        bullets.push b
+
+    # update bullet list to include only live ones
+    @bullets = bullets
+
   update: ->
     for i in [Config.server.updatesPerStep..1]
       super()
+      @updateCollisions()
 
     @sendState()
     @newBullets = []
