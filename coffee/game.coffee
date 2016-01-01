@@ -47,8 +47,8 @@ if require?
     bullets = []
     for b in @bullets
       b.update()
-      for type, spirte of @collisionSpriteLists
-        for sprite in b.detectCollisions sprite
+      for type, sprites of @collisionSpriteLists
+        for sprite in b.detectCollisions sprites
           sprite.handleBulletImpact b
 
       if b.life > 0
