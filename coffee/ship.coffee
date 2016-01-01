@@ -51,6 +51,7 @@ shipRates = Config.common.ship.rates
     super @player.game, @position, 10, 10
 
     @health = 100
+    @maxHealth = 100
     @gear = 0
     @flags.isBraking = false
     @lastFireInputSequence = 0
@@ -118,6 +119,48 @@ shipRates = Config.common.ship.rates
   setState: (s) ->
     super(s)
     {@health, @lastFireInputSequence, @fireRate, @fuel, @fuelCapacity} = s
+
+  drawFuel: (x, y) ->
+    c = @game.c
+    if @fuel
+      c.font = "10px Helvetica"
+      remain = @fuel / @fuelCapacity
+      rate = floor remain * 0xD0
+      c.fillStyle = "rgba(" + (0xFF - rate) + "," + rate + "," + 0 + ",1)"
+      c.fillRect x, y, floor(remain * 60), 16
+      c.fillStyle = "#fff"
+      c.fillText 'FUEL', x + 17, y + 12
+    else
+      c.font = "Bold 10px Helvetica"
+      c.fillStyle = "#f00"
+      c.fillText 'EMPTY', x + 12, y + 12
+
+    c.strokeStyle = "#fff"
+    c.lineWidth = 2
+    c.strokeRect x, y, 60, 16
+
+  drawHealth: (x, y) ->
+    c = @game.c
+    if @health
+      remain = @health / @maxHealth
+      rate = floor remain * 0xD0
+      c.fillStyle = "rgba(" + (0xFF - rate) + "," + rate + "," + 0 + ",1)"
+      c.fillRect x, y, floor(remain * 60), 16
+      c.fillStyle = "#fff"
+      c.font = "10px Helvetica"
+      c.fillText 'HEALTH', x + 10, y + 12
+    else
+      c.font = "Bold 10px Helvetica"
+      c.fillStyle = "#f00"
+      c.fillText 'DEAD', x + 16, y + 12
+
+    c.strokeStyle = "#fff"
+    c.lineWidth = 2
+    c.strokeRect x, y, 60, 16
+
+  drawHUD: (x = 260, y = 2) ->
+    @drawHealth x, y
+    @drawFuel x, y + 20
 
   draw: ->
     Ship.draw(@player.game.c, @view, @color)

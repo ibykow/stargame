@@ -254,38 +254,18 @@ Sprite.updateVelocity = ->
     @c.fillStyle = Config.client.colors.background.default
     @c.fillRect 0, 0, @canvas.width, @canvas.height
 
-  drawFuel: (x, y) ->
-    if not @player.ship.fuel
-      @c.fillStyle = "#f00"
-      @c.font = "Bold 12px Courier"
-      @c.fillText "NO GAS", x, y + 10
-      return
-
-    remain = @player.ship.fuel / @player.ship.fuelCapacity
-    redness = floor remain * 0xFF
-
-    @c.fillStyle = "rgba(" + (0xFF - redness) + "," + redness + "," + 0 + ",1)"
-
-    @c.strokeStyle = "#fff"
-    @c.lineWidth = 2
-    @c.fillRect x, y, floor(remain * 30), 9
-    @c.strokeRect x, y, 30, 9
-
   drawHUD: ->
     @c.fillStyle = "#fff"
     @c.font = "14px Courier New"
-    @c.fillText 'x:' + @player.ship.position[0].toFixed(0), 0, 10
-    @c.fillText 'y:' + @player.ship.position[1].toFixed(0), 80, 10
-    @c.fillText 'x:' + @player.ship.view[0].toFixed(0), 0, 20
-    @c.fillText 'y:' + @player.ship.view[1].toFixed(0), 80, 20
-    @c.fillText 'x:' + @client.mouse.x.toFixed(0), 0, 30
-    @c.fillText 'y:' + @client.mouse.y.toFixed(0), 80, 30
-    @c.fillText 'r:' + @player.ship.position[2].toFixed(2), 160, 10
-    @c.fillText 'vx:' + @player.ship.velocity[0].toFixed(0), 260, 10
-    @c.fillText 'vy:' + @player.ship.velocity[1].toFixed(0), 340, 10
-    @c.fillText 'hp:' + @player.ship.health, 420, 10
-    @c.fillText 'cash:' + pesoChar + @player.cash.toFixed(2), 540, 10
-    @drawFuel 480, 2
+    @c.fillText @player.ship.position[0].toFixed(0), 0, 10
+    @c.fillText @player.ship.position[1].toFixed(0), 60, 10
+    @c.fillText @client.mouse.x.toFixed(0), 0, 20
+    @c.fillText @client.mouse.y.toFixed(0), 60, 20
+    @c.fillText @player.ship.position[2].toFixed(2), 120, 10
+    @c.fillText @player.ship.velocity[0].toFixed(0), 180, 10
+    @c.fillText @player.ship.velocity[1].toFixed(0), 220, 10
+    @c.fillText pesoChar + @player.cash.toFixed(2), 260, 10
+    @player.ship.drawHUD 0, 24
 
   draw: ->
     @clear()
