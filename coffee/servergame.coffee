@@ -36,8 +36,7 @@ Player.LOGLEN = Config.server.updatesPerStep + 1
     @newBullets = []
 
   insertBullet: (b) ->
-    return unless b
-    super b
+    return unless super b
     @newBullets.push b
 
   generateStars: (n) ->
@@ -92,6 +91,7 @@ Player.LOGLEN = Config.server.updatesPerStep + 1
       super()
 
     @sendState()
+    @newBullets = []
 
   step: ->
     super()

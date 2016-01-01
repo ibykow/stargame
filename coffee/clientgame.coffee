@@ -137,7 +137,10 @@ Sprite.updateVelocity = ->
       @tick.count = @serverTick.count + 1
 
     # console.log 'bullets', data.bullets
-    @bullets = (Bullet.fromState @, bullet for bullet in data.bullets)
+    @bullets = @bullets.concat (for bullet in data.bullets
+      id = bullet.gun.player.id
+      continue if id is @player.id
+      Bullet.fromState @, bullet)
 
     # remove our ship from the pile
     for i in [0...data.ships.length]
