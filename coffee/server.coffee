@@ -71,13 +71,9 @@ module.exports = class Server
 
       input: (data) -> # a client has generated input
         return unless data.sequence
-        # @clientState = data.ship # not currently used
-        # @logs['input'].insert data.inputs if data.inputs?.length
         @inputSequence = data.sequence
         @inputs = data.inputs
         @game.gasStationID = data.gasStationID
-        # console.log 'received', data.sequence, data.gameStep,
-        #   data.inputs, data.ship.position
         @update()
 
   frame:

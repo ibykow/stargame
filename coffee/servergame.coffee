@@ -67,15 +67,15 @@ Player.LOGLEN = Config.server.updatesPerStep + 1
 
     # send the id and game information back to the client
     player.socket.emit('welcome',
+      id: player.id,
+      bullets: bulletStates
+      ships: shipStates
       game:
         width: @width
         height: @height
         frictionRate: @frictionRate
         tick: @tick
-        starStates: @starStates
-      id: player.id,
-      bullets: bulletStates
-      ships: shipStates)
+        starStates: @starStates)
 
   sendState: ->
     shipStates = @getShipStates()

@@ -141,7 +141,7 @@ shipRates = Config.common.ship.rates
 
   drawHealth: (x, y) ->
     c = @game.c
-    if @health
+    if @health > 0
       remain = @health / @maxHealth
       rate = floor remain * 0xD0
       c.fillStyle = "rgba(" + (0xFF - rate) + "," + rate + "," + 0 + ",1)"

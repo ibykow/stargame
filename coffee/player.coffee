@@ -75,7 +75,9 @@ pesoChar = Config.common.chars.peso
 
       @game.page info
 
-  die: -> @socket.disconnect()
+  die: ->
+    console.log "I'm dead", @id
+    @socket.disconnect()
 
   arrowTo: (sprite, id, color = '#00F') ->
     @arrows.push(new Arrow @game, @ship, sprite, color, 0.8, 2, id)
@@ -108,3 +110,4 @@ pesoChar = Config.common.chars.peso
       @actions[action].bind(@)()
 
     @ship.update()
+    @die() if @ship.health < 0
