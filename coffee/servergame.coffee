@@ -41,7 +41,7 @@ Player.LOGLEN = Config.server.updatesPerStep + 1
       star = new Sprite(@, null, width, height)
       star.id = i
       # console.log 'star', star
-      new GasStation star if rnd() < Config.common.rates.gasStations
+      new GasStation star if rnd() < Config.common.rates.gasStation
       star
 
   getShipStates: ->

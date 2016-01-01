@@ -23,10 +23,8 @@
       ttl: 60 * 5
       xoffset: 10
       yoffset: 12
-
   server:
     updatesPerStep: 5
-
   common:
     uri: 'http://localhost:3000'
     msPerFrame: 16
@@ -34,9 +32,9 @@
     chars:
       peso: '\u03df'
     rates:
-      gasStations: 0.1 # probability of a star having a gas station
+      gasStation: 0.1 # probability of a star having a gas station
     fuel:
-      distance: 500 # max refueling distance
+      distance: 50 # max refueling distance
       price:
         min: 0.8
         max: 1.9

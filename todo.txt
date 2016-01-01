@@ -1,8 +1,9 @@
 Milestones
-  - player cash
-  - ship fuel
-  - gas stations with price per liter
-  - gas purchase button
+  - player cash √
+  - ship fuel √
+  - gas stations with price per liter √
+  - gas purchase button √
+  - simple mission (delivery)
 
 Interaction:
   - fly through/shoot selection options instead of using the mouse
@@ -16,6 +17,7 @@ View
  - star info pane
  - mini-map with points of interest
  - tweened animation for pop-ups etc
+ - clean up HUD
 
 Gameplay
  - star names
@@ -24,7 +26,7 @@ Gameplay
  - gas stations (eg 1 in 100 stars)
     - generating √
     - purchase fuel √
- - tophies/achievements
+ - trophies/achievements
  - upgrades for everything (gun type, fuel, cargo capacity, etc.)
  - ship distress signal (eg. when out of fuel, for fun)
  - collect bounties on fugitives (eg. attract pirates via distress signal)
@@ -34,9 +36,11 @@ Missions
     describes star conditions, pass/fail outcomes/rewards, mission flow, etc
 
 Engine
-  - Use server game step in updates instead of relying strictly on
-    input sequences √
-  - process inputs as soon as they come in on both client and server
   - range checking for certain actions (eg. must be near star to buy fuel) √
-  - add message/notification system
+  - add message/notification system √
   - add Font object which describes fonts, color, line height, char width, etc.
+  - fix bullet-collisions
+  - add more ship gears/speeds: craw, normal, fast, turbo
+  - add hyperspace/jump to location option (for price)
+  - add ai/bots (pirates, friendlies, roadside/spaceside)
+  - add ship auto-pilot (pruchasable)
