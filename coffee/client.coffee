@@ -23,13 +23,15 @@ client = null
     # resize the canvas for the first time
     @events.window.resize.call @
 
+    # intialize the keymap
+    @keymap = new Array 0xFF
+    @keymap[info.code] = info.action for key, info of Config.client.keys
+
     @keys = (false for [0..0xFF])
     @mouse =
       x: 0
       y: 0
       buttons: [false, false, false]
-
-  keymap: new Array 0x100
 
   getKeyboardInputs: ->
     for i in [0...@keymap.length] when @keys[i] and @keymap[i]
@@ -43,19 +45,22 @@ client = null
       welcome: (data) ->
         context = @canvas.getContext('2d')
 
+        console.log 'received', data
+
         @game = new ClientGame(@canvas, context, @socket, data)
         @game.client = @
-
-        @keymap[Config.client.keyCodes.up] = 'forward'
-        @keymap[Config.client.keyCodes.down] = 'reverse'
-        @keymap[Config.client.keyCodes.left] = 'left'
-        @keymap[Config.client.keyCodes.right] = 'right'
-        @keymap[Config.client.keyCodes.space] = 'brake'
-        @keymap[Config.client.keyCodes.f] = 'fire'
-
         @socket.emit 'join', @game.player.name
-        @game.player.ship.setState(data.ship)
         @game.player.ship.updateView = @game.player.ship.updateViewMaster
+
+        # update the state event handler
+        callback = @game.processServerData.bind @game
+        @socket.on('state', callback)
+
+        # process the new state
+        callback data
+
+        # start the game
+        @frame.run.bind(@) +new Date
 
       join: (data) ->
         console.log 'player', data.id + ', ' + data.name, 'has joined'
@@ -67,22 +72,6 @@ client = null
       disconnect: ->
         @frame.stop.bind(@)()
         @socket.close()
-
-      state: (data) ->
-        # set the first state
-        return unless data.ships
-        console.log 'received', data
-
-        # update the state event handler
-        callback = @game.processServerData.bind @game
-        @socket.removeAllListeners('state')
-        @socket.on('state', callback)
-
-        # process the new state
-        callback data
-
-        # start the game
-        @frame.run.bind(@) +new Date
 
     window:
       keydown: (e) -> @keys[e.keyCode] = true

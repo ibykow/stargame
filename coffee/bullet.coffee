@@ -30,7 +30,7 @@ if require?
     @position[1] += ydir * (@gun.height + 2)
     @life = life
     # @update()
-    # console.log 'new bullet at', @position
+    # console.log 'new bullet at', @position, @gun.player.id
 
   getState: ->
     state = super()

@@ -127,13 +127,13 @@ Sprite.updateVelocity = ->
     [inserted, i, j, stateLog] = [false, 0, 0, @player.logs['state']]
 
     # Store the most recent server tick data
-    @serverTick = data.tick
+    @serverTick = data.game.tick
 
     # Make it so we don't fall behind the server game tick
     if @serverTick.count > @tick.count
-      console.log 'Falling behind server by ' +
-        (@serverTick.count - @tick.count)
-      @tick.count = data.tick.count + 1
+      # console.log 'Falling behind server by ' +
+      #   (@serverTick.count - @tick.count)
+      @tick.count = @serverTick.count + 1
 
     # console.log 'bullets', data.bullets
     @bullets = (Bullet.fromState @, bullet for bullet in data.bullets)
@@ -189,7 +189,7 @@ Sprite.updateVelocity = ->
     (@ships.sort (a, b) -> a.id - b.id) if inserted
 
     # remove old states from the log
-    stateLog.purge((entry) -> entry.sequence < data.tick.count)
+    # stateLog.purge((entry) -> entry.sequence < @serverTick.count)
     @interpolation.reset()
 
   isMouseInBounds: (bounds) ->

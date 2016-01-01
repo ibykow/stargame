@@ -33,6 +33,12 @@ Player.LOGLEN = Config.server.updatesPerStep + 1
     @stars = @generateStars numStars
     @starStates = (star.getState() for star in @stars)
     @page = console.log
+    @newBullets = []
+
+  insertBullet: (b) ->
+    return unless b
+    super b
+    @newBullets.push b
 
   generateStars: (n) ->
     for i in [0..n]
@@ -54,13 +60,32 @@ Player.LOGLEN = Config.server.updatesPerStep + 1
       inputSequence: player.inputSequence
       ship: state
 
-  sendState: ->
+  sendInitialState: (player) ->
+    return unless player
+
     shipStates = @getShipStates()
     bulletStates = (bullet.getState() for bullet in @bullets)
+
+    # send the id and game information back to the client
+    player.socket.emit('welcome',
+      game:
+        width: @width
+        height: @height
+        frictionRate: @frictionRate
+        tick: @tick
+        starStates: @starStates
+      id: player.id,
+      bullets: bulletStates
+      ships: shipStates)
+
+  sendState: ->
+    shipStates = @getShipStates()
+    bulletStates = (bullet.getState() for bullet in @newBullets)
     @server.io.emit 'state',
       ships: shipStates
       bullets: bulletStates
-      tick: @tick
+      game:
+        tick: @tick
 
   update: ->
     for i in [Config.server.updatesPerStep..1]

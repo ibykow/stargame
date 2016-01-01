@@ -37,20 +37,10 @@ module.exports = class Server
         @game.ships.push player.ship
         @nextPlayerID++
 
-        # associate event handler
-        socket.on(event, cb.bind(player)) for event, cb of @events.socket
+        # associate event handlers
+        socket.on(event, cb.bind player) for event, cb of @events.socket
 
-        # send the id and game information back to the client
-        socket.emit('welcome',
-          game:
-            width: @game.width
-            height: @game.height
-            frictionRate: @game.frictionRate
-            tick: @game.tick
-            starStates: @game.starStates
-          id: player.id,
-          ship: player.ship.getState())
-
+        @game.sendInitialState player
         console.log 'Player', player.id, 'has joined'
 
     # @ is the player instance
