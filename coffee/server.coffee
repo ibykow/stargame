@@ -87,7 +87,7 @@ module.exports = class Server
       if ms < 10
         ms = 10
 
-      @frame.request = setTimeout((=> @frame.run.bind(@)(+new Date)), ms)
+      @frame.request = setTimeout (=> @frame.run.bind(@)(+new Date)), ms
 
     stop: ->
       clearTimeout(@frame.request)

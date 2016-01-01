@@ -76,7 +76,7 @@ Sprite.updateVelocity = ->
 
     # Remove logged inputs prior to the server's input sequence
     # We won't be using those for anything
-    inputLog.purge((entry) -> entry.sequence < serverInputSequence)
+    inputLog.purge (entry) -> entry.sequence < serverInputSequence
 
     logEntry = inputLog.remove()
 
@@ -126,13 +126,13 @@ Sprite.updateVelocity = ->
 
   processBulletData: (data) ->
     # Remove dead bullets
-    @bullets =  @bullets.filter((b) -> data.deadBulletIDs.indexOf(b.id) is -1)
-
-    # Add new bullets
-    @bullets = @bullets.concat (for bullet in data.bullets
-      id = bullet.gun.player.id
-      continue if id is @player.id
-      Bullet.fromState @, bullet)
+    @bullets =
+      (@bullets.filter (b) -> data.deadBulletIDs.indexOf(b.id) is -1)
+      # Add new bullets
+      .concat (for bullet in data.bullets
+        id = bullet.gun.player.id
+        continue if id is @player.id
+        Bullet.fromState @, bullet)
 
   processServerData: (data) ->
     [inserted, i, j, stateLog] = [false, 0, 0, @player.logs['state']]
@@ -199,7 +199,7 @@ Sprite.updateVelocity = ->
     (@ships.sort (a, b) -> a.id - b.id) if inserted
 
     # remove old states from the log
-    # stateLog.purge((entry) -> entry.sequence < @serverTick.count)
+    # stateLog.purge (entry) -> entry.sequence < @serverTick.count
     @interpolation.reset()
 
   isMouseInBounds: (bounds) ->
@@ -229,35 +229,32 @@ Sprite.updateVelocity = ->
   updateMouse: ->
     # update mouseSprites list
     @moveMouse() if @client.mouse.moved
+    @client.mouse.moved = false
 
     # process click, press and release events
     if @client.mouse.clicked
       for sprite in @mouseSprites when sprite.mouse.click?
-        sprite.mouse.click.bind(sprite)(@client.mouse.buttons)
+        sprite.mouse.click.bind(sprite) @client.mouse.buttons
 
     if @client.mouse.pressed
       for sprite in @mouseSprites when sprite.mouse.press?
-        sprite.mouse.press.bind(sprite)(@client.mouse.buttons)
+        sprite.mouse.press.bind(sprite) @client.mouse.buttons
 
     if @client.mouse.released
       for sprite in @mouseSprites when sprite.mouse.release?
-        sprite.mouse.release.bind(sprite)(@client.mouse.buttons)
+        sprite.mouse.release.bind(sprite) @client.mouse.buttons
 
     # clear mouse related flags
-    @client.mouse.moved = false
     @client.mouse.clicked = false
     @client.mouse.pressed = false
     @client.mouse.released = false
 
   update: ->
-    # Set up inputs
-    @updateMouse()
-    @player.inputs = @player.inputs.concat @client.getKeyboardInputs()
-
-    # Update
+    @player.inputs = @client.getKeyboardInputs()
     super()
     star.update() for star in @stars
     ship.update() for ship in @ships
+    @updateMouse()
     @interpolation.step++
     @correctPrediction()
     @player.update()

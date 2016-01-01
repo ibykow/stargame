@@ -59,7 +59,7 @@ if require?
     # collections such as stars, and bullets, etc.
     # eg. if QuadTree.isQuad(sprites) sprites.detect(@) else ...
     return [] unless isarr(sprites) and @flags.isRigid
-    sprites.filter((sprite, i) => sprite.flags.isRigid and @intersects sprite)
+    sprites.filter (sprite, i) => sprite.flags.isRigid and @intersects sprite
 
   intersects: (sprite) ->
     return false if @ is sprite or not sprite?.position
@@ -96,7 +96,7 @@ if require?
   updateVelocity: ->
     @velocity[0] = trunc(@velocity[0] * @game.frictionRate * 100) / 100
     @velocity[1] = trunc(@velocity[1] * @game.frictionRate * 100) / 100
-    @magnitude = sqrt @velocity.reduce(((sum, v) -> sum + v * v), 0)
+    @magnitude = sqrt @velocity.reduce ((sum, v) -> sum + v * v), 0
 
   updatePosition: ->
     x = trunc((@position[0] + @velocity[0] + @game.width) * 100) / 100

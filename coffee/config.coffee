@@ -32,7 +32,7 @@
       fade: 30
       font: '12px Courier New'
       maxlines: 20
-      ttl: 60 * 5
+      ttl: 60 * 8
       xoffset: 10
       yoffset: 12
   server:

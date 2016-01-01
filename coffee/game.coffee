@@ -40,7 +40,7 @@ if require?
     @bullets.push b
 
   getShips: ->
-    @players.map((p)-> p.ship)
+    @players.map (p)-> p.ship
 
   update: ->
     @tick.count++

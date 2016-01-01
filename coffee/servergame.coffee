@@ -53,9 +53,6 @@ Player.LOGLEN = Config.server.updatesPerStep + 1
   getShipStates: ->
     for player in @players
       state = player.ship.getState()
-
-      # console.log 'sending', player.inputSequence, @tick.count, state.position
-
       id: player.id
       inputSequence: player.inputSequence
       ship: state
@@ -91,20 +88,17 @@ Player.LOGLEN = Config.server.updatesPerStep + 1
 
   updateCollisions: ->
     # update each bullet state and remove dead bullets
-    bullets = []
-    @deadBulletIDs = []
-    for b in @bullets
+    @bullets = @bullets.filter (b) =>
+      # iterate over sprite groups
       for type, sprites of @collisionSpriteLists
-        for sprite in b.detectCollisions sprites
-          sprite.handleBulletImpact b
+        # iterate over the sprites in the group
+        sprite.handleBulletImpact b for sprite in b.detectCollisions sprites
 
       if b.life > 0
-        bullets.push b
+        true
       else
         @deadBulletIDs.push b.id
-
-    # update bullet list to include only live ones
-    @bullets = bullets
+        false
 
   update: ->
     for i in [Config.server.updatesPerStep..1]
@@ -114,4 +108,5 @@ Player.LOGLEN = Config.server.updatesPerStep + 1
   step: (time) ->
     super time
     @sendState()
+    @deadBulletIDs = []
     @newBullets = []

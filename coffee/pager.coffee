@@ -19,11 +19,11 @@ cfg = Config.client.pager
       ttl: cfg.ttl
 
   draw: ->
-    @buffer.purge((m) -> m.ttl < 1)
-    @buffer.map((m, i, buf) =>
+    @buffer.purge (m) -> m.ttl < 1
+    @buffer.map (m, i, buf) =>
       yoffset = @game.canvas.height - cfg.yoffset * (buf.length - i)
       @game.c.fillStyle = cfg.color
       @game.c.font = cfg.font
       @game.c.globalAlpha = min m.ttl / cfg.fade, 1
       @game.c.fillText m.message, cfg.xoffset, yoffset
-      m.ttl--)
+      m.ttl--

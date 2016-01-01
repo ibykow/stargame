@@ -120,9 +120,9 @@ window.onload = ->
   if not window.requestAnimationFrame
     window.requestAnimationFrame = (callback, element) ->
       currTime = +new Date
-      timeToCall = Math.max(0, Config.common.msPerFrame - (currTime - lastTime))
+      timeToCall = Math.max 0, Config.common.msPerFrame - (currTime - lastTime)
       lastTime = currTime + timeToCall
-      window.setTimeout((-> callback(lastTime)), timeToCall)
+      window.setTimeout (-> callback lastTime), timeToCall
 
   window.cancelAnimationFrame ?= (id) -> clearTimeout(id)
 )()
