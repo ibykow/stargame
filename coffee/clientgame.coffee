@@ -17,10 +17,11 @@ Sprite.updatePosition = ->
 Sprite.updateVelocity = ->
 
 (module ? {}).exports = class ClientGame extends Game
-  constructor: (@canvas, @c, socket, params) ->
+  constructor: (@canvas, socket, params) ->
     return unless params
     super params.game.width, params.game.height, params.game.frictionRate
 
+    @c = @canvas.getContext('2d')
     @starStates = params.game.starStates
     @serverTick = params.game.tick
 

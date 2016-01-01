@@ -43,18 +43,16 @@ client = null
         console.log "Error:", err
 
       welcome: (data) ->
-        context = @canvas.getContext('2d')
-
         console.log 'received', data
 
-        @game = new ClientGame(@canvas, context, @socket, data)
+        @game = new ClientGame @canvas, @socket, data
         @game.client = @
         @socket.emit 'join', @game.player.name
         @game.player.ship.updateView = @game.player.ship.updateViewMaster
 
         # update the state event handler
         callback = @game.processServerData.bind @game
-        @socket.on('state', callback)
+        @socket.on 'state', callback
 
         # process the new state
         callback data
