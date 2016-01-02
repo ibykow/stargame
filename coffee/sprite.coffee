@@ -1,12 +1,13 @@
 if require?
   Util = require './util'
+  Eventable = require './eventable'
 
 [abs, isarr, sqrt, round, trunc] = [Math.abs, Array.isArray, Math.sqrt,
   Math.round, Math.trunc]
 
-(module ? {}).exports = class Sprite
+(module ? {}).exports = class Sprite extends Eventable
   constructor: (@game, @position, @width = 10, @height = 10, @color) ->
-    return null unless @game
+    super @game
     @position ?= @game.randomPosition()
     @color ?= Util.randomColorString()
     @velocity = [0, 0]
@@ -45,9 +46,7 @@ if require?
     return [0, 0] unless sprite?.position.length
     Util.toroidalDelta @position, sprite.position, @game.toroidalLimit
 
-  clearFlags: ->
-    for k of @flags
-      @flags[k] = false
+  clearFlags: -> @flags[k] = false for k of @flags
 
   handleBulletImpact: (b) ->
     return unless @flags.isRigid and b?.damage
@@ -64,19 +63,33 @@ if require?
   intersects: (sprite) ->
     return false if @ is sprite or not sprite?.position
     delta = @positionDelta sprite
-    # console.log 'delta', delta
-    # console.log 'delta', delta
     (abs(delta[0]) <= @halfWidth + sprite.halfWidth) and
     (abs(delta[1]) <= @halfHeight + sprite.halfHeight)
 
   getBoundsFor: (type = 'view') ->
     [[@[type][0] - @halfWidth, @[type][1] - @halfHeight], [@width, @height]]
 
-  getBounds: ->
-    @getBoundsFor('position')
+  getBounds: -> @getBoundsFor('position')
 
-  getViewBounds: ->
-    @getBoundsFor('view')
+  getViewBounds: -> @getBoundsFor('view')
+
+  getState: ->
+    # We ignore @magnitude (ie. independent variables only).
+    childStates = {}
+    childStates[type] = child.getState() for type, child of @children
+
+    Object.assign super(),
+      position: @position.slice()
+      velocity: @velocity.slice()
+      width: @width
+      height: @height
+      color: @color
+      flags: @flags
+      children: childStates
+
+  setState: (state) ->
+    super state
+    {@position, @velocity, @width, @height, @color, @flags, @children} = state
 
   isInView: ->
     w = @halfWidth
@@ -116,30 +129,6 @@ if require?
     @updatePosition()
     @updateView()
     @updateChildren()
-
-  getState: ->
-    # We ignore @magnitude.
-    # ie. independent variables only
-    childStates = {}
-    childStates[type] = child.getState() for type, child of @children
-
-    position: @position.slice()
-    velocity: @velocity.slice()
-    width: @width
-    height: @height
-    color: @color
-    flags: @flags
-    children: childStates
-
-  setState: (state) ->
-    @position = state.position
-    @velocity = state.velocity
-    @width = state.width
-    @height = state.height
-    @color = state.color
-    @flags = state.flags
-    @children = state.children
-    # child.parent = @ for type, child of @children
 
   draw: ->
     return unless @flags.isVisible

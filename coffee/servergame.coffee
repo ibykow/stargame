@@ -1,5 +1,6 @@
 Config = require './config'
 Util = require './util'
+Eventable = require './eventable'
 Server = require './server'
 Game = require './game'
 Player = require './player'
@@ -50,12 +51,7 @@ Player.LOGLEN = Config.server.updatesPerStep + 1
       new GasStation star if rnd() < Config.common.rates.gasStation
       star
 
-  getShipStates: ->
-    for player in @players
-      state = player.ship.getState()
-      id: player.id
-      inputSequence: player.inputSequence
-      ship: state
+  getShipStates: -> player.getState() for player in @players
 
   sendInitialState: (player) ->
     return unless player

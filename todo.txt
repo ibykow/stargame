@@ -23,7 +23,7 @@ Gameplay
  - star names
  - ship fuel √
  - player cash √
- - gas stations (eg 1 in 100 stars)
+ - gas stations (eg 1 in 100 stars) √
     - generating √
     - purchase fuel √
  - trophies/achievements
@@ -56,3 +56,20 @@ Engine
   - add ship auto-pilot (pruchasable)
   - add a scripting language for missions
     describes star conditions, pass/fail outcomes/rewards, mission flow, etc
+
+Events
+  - register callbacks with particular events
+  - allow for hierarchy access?
+  - parameters: event name/type, parameters
+
+Player Events
+  - join
+  - leave
+  - die
+  - move
+  - no fuel
+  - re-fuel
+  - no cash
+  - mission success
+  - mission fail
+  - timeout

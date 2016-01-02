@@ -13,6 +13,7 @@ pesoChar = Config.common.chars.peso
   constructor: (@parent, @fuelPrice, @buttonState) ->
     return unless @parent
     super @parent.game, @parent.position, 9, 9
+
     @fuelPrice ?= Config.common.fuel.price.min + rnd() *
       (Config.common.fuel.price.max - Config.common.fuel.price.min)
 
@@ -49,15 +50,13 @@ pesoChar = Config.common.chars.peso
     button.mouse.leave = -> button.enabled = false
 
   getState: ->
-    state = super()
-    state.fuelPrice = @fuelPrice
-    state.button = @buttonState
-    state
+    Object.assign super(),
+      fuelPrice = @fuelPrice
+      button = @buttonState
 
   setState: (state) ->
     super state
-    @fuelPrice = state.fuelPrice ? @fuelPrice
-    @buttonState = state.state.buttonState ? @buttonState
+    {@fuelPrice, @buttonState} = state
 
   updatePosition: ->
     @position = [@parent.position[0], @parent.position[1] - 9,

@@ -1,16 +1,17 @@
 if require?
   Config = require './config'
   Util = require './util'
+  Eventable = require './eventable'
   RingBuffer = require './ringbuffer'
   Ship = require './ship'
 
 pesoChar = Config.common.chars.peso
 
-(module ? {}).exports = class Player
+(module ? {}).exports = class Player extends Eventable
   @LOGLEN: Config.client.player.loglen
-  constructor: (@game, @id, @socket, position) ->
-    return null unless @game
-    @ship = new Ship(@, position)
+  constructor: (@game, @socket, position) ->
+    super @game # initialize eventable
+    @ship = new Ship @, position
     @arrows = []
     @inputs = []
     @cash = 3000
@@ -75,12 +76,22 @@ pesoChar = Config.common.chars.peso
 
       @game.page info
 
+  arrowTo: (sprite, id, color = '#00F') ->
+    @arrows.push(new Arrow @game, @ship, sprite, color, 0.8, 2, id)
+
+  getState: ->
+    Object.assign super(),
+      inputSequence: @inputSequence
+      ship: @ship.getState()
+
+  setState: (state) ->
+    super state
+    @inputSequence = state.inputSequence
+    @ship.setState state.ship
+
   die: ->
     console.log "I'm dead", @id
     @socket.disconnect()
-
-  arrowTo: (sprite, id, color = '#00F') ->
-    @arrows.push(new Arrow @game, @ship, sprite, color, 0.8, 2, id)
 
   updateArrows: ->
     arrows = @arrows.slice()
@@ -107,6 +118,7 @@ pesoChar = Config.common.chars.peso
 
   update: ->
     for action in @inputs when action?.length
+      @emit action, @getState()
       @actions[action].bind(@)()
 
     @ship.update()

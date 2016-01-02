@@ -17,8 +17,8 @@ client = null
     @socket = io.connect(Config.common.uri)
 
     # initialize event listeners
-    @socket.on(event, cb.bind(@)) for event, cb of @events.socket
-    window.addEventListener(event, cb.bind(@)) for event, cb of @events.window
+    @socket.on(event, cb.bind @) for event, cb of @events.socket
+    window.addEventListener(event, cb.bind @) for event, cb of @events.window
 
     # resize the canvas for the first time
     @events.window.resize.call @

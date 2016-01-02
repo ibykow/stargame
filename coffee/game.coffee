@@ -1,5 +1,9 @@
 if require?
+  Config = require './config'
   Util = require './util'
+  RingBuffer = require './ringbuffer'
+  Eventable = require './eventable'
+  Sprite = require './sprite'
   Player = require './player'
 
 (module ? {}).exports = class Game

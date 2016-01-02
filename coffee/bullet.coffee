@@ -31,28 +31,18 @@ nextBulletID = 1
     @position[0] += xdir * (@gun.width + 2)
     @position[1] += ydir * (@gun.height + 2)
     @life = life
-    @id = nextBulletID
-    nextBulletID++
     # @update()
     # console.log 'new bullet at', @position, @gun.player.id
 
   getState: ->
-    state = super()
-    state.life = @life
-    state.damage = @damage
-    state.id = @id
-    state.gun = @gun.getState()
-    state.gun.player =
-      id: @gun.player.id
-    state
+    Object.assign super(),
+      life: @life
+      damage: @damage
+      gun: @gun.getState()
 
   setState: (state) ->
     super state
-    @life = state.life ? @life
-    @damage = state.damage ? @damage
-    @id = state.id ? @id
-    @gun.player =
-      id: state.gun.player.id ? @gun.player.id
+    {@life, @damage} = state
 
   updateVelocity: -> # bullet velocity is constant
 

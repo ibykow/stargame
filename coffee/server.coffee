@@ -13,11 +13,10 @@ module.exports = class Server
     # create a new game
     @game = new ServerGame(@, mapSize, mapSize, 4000, 0.99)
     @frameInterval = Config.server.updatesPerStep * Config.common.msPerFrame
-    @nextPlayerID = 0
     console.log 'Server frame interval:', @frameInterval + 'ms'
 
     # initialize io event handlers
-    @io.on(event, cb.bind(@)) for event, cb of @events.io
+    @io.on(event, cb.bind @) for event, cb of @events.io
 
   pause: ->
     console.log 'The game is empty. Pausing.'
@@ -32,7 +31,7 @@ module.exports = class Server
     io:
       connection: (socket) -> # a client connects
         # create a player object around the socket
-        player = new Player @game, @nextPlayerID, socket
+        player = new Player @game, socket
         @game.players.push player
         @game.ships.push player.ship
         @nextPlayerID++

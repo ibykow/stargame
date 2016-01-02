@@ -1,11 +1,11 @@
 # Provide configuration data
 (module ? {}).exports = Config =
   client:
-    innerWidthOffset: 0
-    innerHeightOffset: 0
     colors:
       background:
         default: '#000'
+    innerWidthOffset: 0
+    innerHeightOffset: 0
     keys:
       space:
         code: 32
@@ -25,8 +25,6 @@
       f:
         code: 'F'.charCodeAt 0
         action: 'fire'
-    player:
-      loglen: 1 << 8
     pager:
       color: '#0f0'
       fade: 30
@@ -35,21 +33,12 @@
       ttl: 60 * 8
       xoffset: 10
       yoffset: 12
+    player:
+      loglen: 1 << 8
   server:
     updatesPerStep: 5
   common:
     uri: 'http://localhost:3000'
-    msPerFrame: 16
-    mapSize: (1 << 15) + 1
-    chars:
-      peso: '\u03df'
-    rates:
-      gasStation: 0.1 # probability of a star having a gas station
-    fuel:
-      distance: 50 # max refueling distance
-      price:
-        min: 0.8
-        max: 1.9
     bullet:
       life: 60 * 3
       speed: 10
@@ -67,6 +56,19 @@
         offset: [10, 4, 0]
       default:
         enabled: true
+    chars:
+      peso: '\u03df'
+    event:
+      max: 0x100
+    fuel:
+      distance: 50 # max refueling distance
+      price:
+        min: 0.8
+        max: 1.9
+    mapSize: (1 << 15) + 1
+    msPerFrame: 16
+    rates:
+      gasStation: 0.1 # probability of a star having a gas station
     ringbuffer:
       max: 50
     ship:

@@ -1,6 +1,7 @@
 global = global or window
 
 if require?
+  Eventable = require './eventable'
   Sprite = require './sprite'
   GasStation = require './gasstation'
   Ship = require './ship'
@@ -17,6 +18,10 @@ Sprite.updatePosition = ->
 Sprite.updateVelocity = ->
 
 (module ? {}).exports = class ClientGame extends Game
+  @events:
+    player:
+      forward: -> console.log "We're flying"
+
   constructor: (@canvas, socket, params) ->
     return unless params
     super params.game.width, params.game.height, params.game.frictionRate
@@ -29,12 +34,17 @@ Sprite.updateVelocity = ->
     @mouseSprites = [] # sprites under the mouse
 
     @collisionSpriteLists.stars = @stars = @generateStars()
-    @player = new Player @, params.id, socket
+    @player = new Player @, socket
+    @player.id = params.id
     @player.name = 'Guest'
     @lastVerifiedInputSequence = 0
     @collisionSpriteLists.myShip = [@player.ship]
     @pager = new Pager @
     @page = @pager.page.bind @pager
+
+    # register event callbacks
+    for type, event of ClientGame.events
+      @player.on name, callback for name, callback of event
 
   interpolation:
     reset: ->
@@ -260,7 +270,7 @@ Sprite.updateVelocity = ->
     @player.update()
     @player.updateArrows()
 
-  clear: ->
+  clearScreen: ->
     @c.globalAlpha = 1
     @c.fillStyle = Config.client.colors.background.default
     @c.fillRect 0, 0, @canvas.width, @canvas.height
@@ -279,7 +289,7 @@ Sprite.updateVelocity = ->
     @player.ship.drawHUD 0, 24
 
   draw: ->
-    @clear()
+    @clearScreen()
     sprite.draw() for sprite in @visibleSprites
     @player.ship.draw()
     arrow.draw() for arrow in @player.arrows

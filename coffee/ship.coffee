@@ -108,13 +108,12 @@ shipRates = Config.common.ship.rates
     super b
 
   getState: ->
-    s = super()
-    s.health = @health
-    s.lastFireInputSequence = @lastFireInputSequence
-    s.fireRate = @fireRate
-    s.fuel = @fuel
-    s.fuelCapacity = @fuelCapacity
-    s
+    Object.assign super(),
+      health: @health
+      lastFireInputSequence: @lastFireInputSequence
+      fireRate: @fireRate
+      fuel: @fuel
+      fuelCapacity: @fuelCapacity
 
   setState: (s) ->
     super(s)
