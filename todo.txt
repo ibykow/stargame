@@ -32,8 +32,18 @@ Gameplay
  - collect bounties on fugitives (eg. attract pirates via distress signal)
 
 Missions
-  - add a scripting language for missions
-    describes star conditions, pass/fail outcomes/rewards, mission flow, etc
+  - introduction/delivery:
+    origin: any start
+    go to destination
+    click/fly through target
+    come back to origin
+  - distress signal:
+    respond to a star's distress signal
+    possible outcomes:
+      trap
+      salvage
+      mission option
+      assist (eg. give gas)
 
 Engine
   - range checking for certain actions (eg. must be near star to buy fuel) √
@@ -44,3 +54,5 @@ Engine
   - add hyperspace/jump to location option (for price)
   - add ai/bots (pirates, friendlies, roadside/spaceside)
   - add ship auto-pilot (pruchasable)
+  - add a scripting language for missions
+    describes star conditions, pass/fail outcomes/rewards, mission flow, etc

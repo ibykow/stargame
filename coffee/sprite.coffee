@@ -42,8 +42,8 @@ if require?
     Util.magnitude @positionDelta(sprite)
 
   positionDelta: (sprite) ->
-    return unless sprite and sprite.position
-    Util.toroidalDelta(@position, sprite.position, @game.toroidalLimit)
+    return [0, 0] unless sprite?.position.length
+    Util.toroidalDelta @position, sprite.position, @game.toroidalLimit
 
   clearFlags: ->
     for k of @flags

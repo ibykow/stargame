@@ -35,25 +35,23 @@
 
   toroidalDelta: (p0, p1, pLimit) ->
     return unless isarr(p0) and isarr(p1) and isarr(pLimit)
-    len = min(min(p0.length, p1.length), pLimit.length)
-    return [] if len < 1
+    dx = p0[0] - p1[0]
+    dy = p0[1] - p1[1]
 
-    for i in [0...len]
-      delta = p0[i] - p1[i]
-      adelta = Math.abs delta
-      sign = 1
-      if delta > 0
-        sign *= -1
+    adx = abs dx
+    ady = abs dy
 
-      if adelta > (pLimit[i] / 2)
-        (pLimit[i] - adelta) * sign
-      else
-        delta
+    if dx > 0 then signx = -1 else signx = 1
+    if dy > 0 then signy = -1 else signy = 1
+
+    dx = (pLimit[0] - adx) * signx if adx > (pLimit[0] / 2)
+    dy = (pLimit[1] - ady) * signy if ady > (pLimit[1] / 2)
+
+    [dx, dy]
 
   magnitude: (v) ->
     return 0 unless isarr v
-    # sqrt v.reduce((p, n) -> p + n * n)
-    sqrt v[0] * v[0] + v[1] + v[1]
+    sqrt v[0] * v[0] + v[1] * v[1]
 
   findEmptySlot: (arr) ->
     return unless isarr arr
