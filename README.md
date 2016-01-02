@@ -1,6 +1,7 @@
 # StarGame
-
 A work in progress
+
+    $ ./run
 
 ### What's available?
 

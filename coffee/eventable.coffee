@@ -2,9 +2,6 @@ if require?
   Config = require './config'
   Util = require './util'
 
-pesoChar = Config.common.chars.peso
-cfg = Config.common.event
-
 (module ? {}).exports = class Eventable
   @nextID: 1
   @registry: [] # list of existing eventables
@@ -27,7 +24,8 @@ cfg = Config.common.event
 
   emit: (name, data) -> # Emits an event. TODO: Prevent infinite loops.
     return unless @listeners[name]?.length
-    callback data, @, @game.tick.count for callback in @listeners[name]
+    data.tick = @game.tick.count
+    callback data for callback in @listeners[name]
 
   on: (name, callback) -> # registers an event listener
     @listeners[name] = @listeners[name] ? []

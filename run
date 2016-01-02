@@ -1,0 +1,15 @@
+#!/bin/bash
+command -v npm >/dev/null 2>&1 || {
+  echo >&2 "I can't find npm. Please install nodejs.";
+  exit 1;
+}
+
+echo 'Installing NPM modules'
+npm install
+
+printf 'Generating game scripts... '
+coffee -o lib/ -c coffee/
+echo 'done'
+
+echo 'Starting server...'
+node app.js

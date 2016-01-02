@@ -1,4 +1,5 @@
 if require?
+  Config = require './config'
   Util = require './util'
   Eventable = require './eventable'
 
