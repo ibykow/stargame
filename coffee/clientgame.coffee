@@ -20,7 +20,7 @@ Sprite.updateVelocity = ->
 (module ? {}).exports = class ClientGame extends Game
   @events:
     player:
-      forward: -> console.log "We're flying"
+      forward: [(-> console.log "We're flying!"), true]
 
   constructor: (@canvas, socket, params) ->
     return unless params
@@ -44,7 +44,7 @@ Sprite.updateVelocity = ->
 
     # register event callbacks
     for type, event of ClientGame.events
-      @player.on name, callback for name, callback of event
+      @player.on name, handler... for name, handler of event
 
   interpolation:
     reset: ->

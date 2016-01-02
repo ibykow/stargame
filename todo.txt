@@ -57,10 +57,37 @@ Engine
   - add a scripting language for missions
     describes star conditions, pass/fail outcomes/rewards, mission flow, etc
 
+Player Objective
+  description: string
+  pass: function
+  fail: function
+  cleanup: function # remove event listeners
+  events:
+    pass: []
+    fail: []
+
+Mission System
+  - create mission
+      start requirements (min players, min)
+      players
+
+
+  - register initial event listeners
+  - missions are event driven
+  - missions can create sprites
+
+Event System
+  - register listeners √
+  - emit events √
+  - add timeout events
+  - add event dependencies (has event occurred since I started listening? etc.)
+
 Events
-  - register callbacks with particular events
-  - allow for hierarchy access?
-  - parameters: event name/type, parameters
+  - timeout
+  - player:
+      action (forward, left, right, brake, fire)
+      death
+
 
 Player Events
   - join
