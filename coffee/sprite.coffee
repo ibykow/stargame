@@ -3,8 +3,8 @@ if require?
   Util = require './util'
   Eventable = require './eventable'
 
-[abs, isarr, sqrt, round, trunc] = [Math.abs, Array.isArray, Math.sqrt,
-  Math.round, Math.trunc]
+{abs, sqrt, round, trunc} = Math
+isarr = Array.isArray
 
 (module ? {}).exports = class Sprite extends Eventable
   constructor: (@game, @position, @width = 10, @height = 10, @color) ->
@@ -24,7 +24,7 @@ if require?
       leave: ->
         console.log "Please don't leave me!"
       click: ->
-        console.log 'You clicked me!'
+        console.log 'You clicked me!', @game.mouseSprites
 
     @flags =
       isVisible: true

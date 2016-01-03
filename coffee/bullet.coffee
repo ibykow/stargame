@@ -3,8 +3,7 @@ if require?
   Util = require './util'
   Sprite = require './sprite'
 
-[ceil, cos, sin] = [ Math.ceil, Math.cos, Math.sin]
-
+{ceil, cos, sin} = Math
 {speed, life} = Config.common.bullet
 
 nextBulletID = 1

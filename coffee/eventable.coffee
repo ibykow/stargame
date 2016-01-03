@@ -16,7 +16,7 @@ if require?
   getState: -> id: @id
   setState: (state) -> @id = state.id ? @id
 
-  emit: (name, data) -> # Emits an event. TODO: Prevent infinite loops.
+  emit: (name, data = {}) -> # Emits an event. TODO: Prevent infinite loops.
     listeners = @listeners[name]
     return unless listeners?.length
 

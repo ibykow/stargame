@@ -4,8 +4,9 @@ if require?
   Sprite = require './sprite'
   Button = require './button'
 
-[abs, floor, isarr, sqrt, rnd, round, trunc] = [Math.abs, Math.floor,
-  Array.isArray, Math.sqrt, Math.random, Math.round, Math.trunc]
+{abs, floor, sqrt, round, trunc} = Math
+isarr = Array.isArray
+rnd = Math.random
 
 pesoChar = Config.common.chars.peso
 
@@ -40,7 +41,7 @@ pesoChar = Config.common.chars.peso
     @click = (b) =>
       return unless b.enabled
       b.enabled = false
-      @game.gasStationID = @parent.id
+      @game.gasStation = @
       @game.player.inputs.push 'refuel'
 
     button = new Button @, 'fillUpButton', @click, state.text, state.params
@@ -51,8 +52,8 @@ pesoChar = Config.common.chars.peso
 
   getState: ->
     Object.assign super(),
-      fuelPrice = @fuelPrice
-      button = @buttonState
+      fuelPrice: @fuelPrice
+      button: @buttonState
 
   setState: (state) ->
     super state

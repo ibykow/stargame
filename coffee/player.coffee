@@ -42,9 +42,9 @@ pesoChar = Config.common.chars.peso
 
     refuel: ->
       # There must be a valid gas station for this to work
-      return unless Util.isNumeric @game.gasStationID
-      station = @game.stars[@game.gasStationID].children['GasStation']
-      return @game.page "Gas station out of order. Sorry." unless station
+      unless station = @game.gasStation
+        @game.page "Gas station out of order. Sorry." unless station
+        return
 
       # Avoid filter cheating by requiring player-station proximity
       if @ship.distanceTo(station) > Config.common.fuel.distance
@@ -69,12 +69,11 @@ pesoChar = Config.common.chars.peso
       @cash -= price
       @ship.fuel += fuelDelta
 
-      # Inform
-      info = 'You bought ' + fuelDelta.toFixed(2) + 'L of fuel for ' +
-        pesoChar + price.toFixed(2) + ' at ' + pesoChar +
-        station.fuelPrice.toFixed(2) + '/L'
-
-      @game.page info
+      # Emit
+      @emit 'refuel',
+        station: station
+        delta: fuelDelta
+        price: price
 
   arrowTo: (sprite, id, color = '#00F') ->
     @arrows.push(new Arrow @game, @ship, sprite, color, 0.8, 2, id)

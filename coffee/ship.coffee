@@ -4,17 +4,8 @@ if require?
   Bullet = require './bullet'
 
 # Shorthands for commonly used / long-named functions
-[abs, floor, min, max, trunc, cos, sin] = [
-  Math.abs,
-  Math.floor
-  Math.min,
-  Math.max,
-  Math.trunc,
-  Math.cos,
-  Math.sin
-]
-
-shipRates = Config.common.ship.rates
+{abs, floor, min, max, trunc, cos, sin} = Math
+rates = Config.common.ship.rates
 
 (module ? {}).exports = class Ship extends Sprite
   @glideBrake: ->
@@ -29,7 +20,7 @@ shipRates = Config.common.ship.rates
     return unless @magnitude
     @isBraking = true
     @velocity[0] *= shipRate.brake
-    @velocity[1] *= shipRates.brake
+    @velocity[1] *= rates.brake
 
   @draw: (c, position, color) ->
     return unless c and position and color
@@ -57,12 +48,12 @@ shipRates = Config.common.ship.rates
     @lastFireInputSequence = 0
 
     # how many input sequences to skip before next fire
-    @fireRate = shipRates.fire
+    @fireRate = rates.fire
 
     # TODO create 'ship engine' class around brakePower and accFactor
     # Would allow for engines as upgrades/purchases
     @brakePower = 550
-    @accFactor = shipRates.acceleration
+    @accFactor = rates.acceleration
 
     @fuel = 1000
     @fuelCapacity = 1000
@@ -74,6 +65,7 @@ shipRates = Config.common.ship.rates
     @velocity[0] += cos(@position[2]) * @accFactor
     @velocity[1] += sin(@position[2]) * @accFactor
     @fuel -= @accFactor
+    @emit 'nofuel' if @fuel < 1
 
   reverse: ->
     return unless @fuel > 0
@@ -84,17 +76,17 @@ shipRates = Config.common.ship.rates
     @fuel--
 
   left: ->
-    @position[2] -= shipRates.turn
+    @position[2] -= rates.turn
 
   right: ->
-    @position[2] += shipRates.turn
+    @position[2] += rates.turn
 
   brake: ->
     # 'Responsive' / 'variable rate' braking
     # Provides a smooth braking experience that doesn't drag on at the end.
     return unless @magnitude
     @isBraking = true
-    rate = min @magnitude * @magnitude / @brakePower, shipRates.brake
+    rate = min @magnitude * @magnitude / @brakePower, rates.brake
     @velocity[0] = @velocity[0] * rate
     @velocity[1] = @velocity[1] * rate
 

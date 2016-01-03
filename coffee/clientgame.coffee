@@ -10,7 +10,9 @@ if require?
   Client = require './client'
   Pager = require './pager'
 
-[isarr, floor, max] = [Array.isArray, Math.floor, Math.max]
+{floor, max} = Math
+isarr = Array.isArray
+
 pesoChar = Config.common.chars.peso
 
 Player::die = -> @ship.isDeleted = true
@@ -18,15 +20,11 @@ Sprite.updatePosition = ->
 Sprite.updateVelocity = ->
 
 (module ? {}).exports = class ClientGame extends Game
-  @events:
-    player:
-      forward: [(-> console.log "We're flying!"), true]
-
   constructor: (@canvas, socket, params) ->
     return unless params
     super params.game.width, params.game.height, params.game.frictionRate
 
-    @c = @canvas.getContext('2d')
+    @c = @canvas.getContext '2d'
     @starStates = params.game.starStates
     @serverTick = params.game.tick
 
@@ -43,8 +41,15 @@ Sprite.updateVelocity = ->
     @page = @pager.page.bind @pager
 
     # register event callbacks
-    for type, event of ClientGame.events
-      @player.on name, handler... for name, handler of event
+    @player.ship.on 'nofuel', (data) => console.log 'no fuel', data, @
+    @player.onceOn 'forward', (data) => console.log 'first flight', data, @
+    @player.on 'refuel', ((data) ->
+      {station, delta, price} = data
+      return unless station and delta?.toFixed and price?.toFixed
+      info = 'You bought ' + delta.toFixed(2) + 'L of fuel for ' +
+        pesoChar + price.toFixed(2) + ' at ' + pesoChar +
+        station.fuelPrice.toFixed(2) + '/L';
+      @game.page info).bind @player
 
   interpolation:
     reset: ->
@@ -59,7 +64,6 @@ Sprite.updateVelocity = ->
   generateStars: ->
     for state, i in @starStates
       s = new Sprite @, state.position, state.width, state.height, state.color
-      s.id = i
       # console.log s.children
       for type, childState of state.children
         # console.log 'adding child', global[type].name, childState

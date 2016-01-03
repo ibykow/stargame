@@ -22,8 +22,9 @@ Sprite::updateView = ->
 # On the server-side, players keep only the inputs necessary to do updates.
 Player.LOGLEN = Config.server.updatesPerStep + 1
 
-[abs, floor, isarr, sqrt, rnd, round, trunc] = [Math.abs, Math.floor,
-  Array.isArray, Math.sqrt, Math.random, Math.round, Math.trunc]
+{abs, floor, sqrt, round, trunc} = Math
+isarr = Array.isArray
+rnd = Math.random
 
 (module ? {}).exports = class ServerGame extends Game
   constructor: (server, @width, @height, numStars = 10, @frictionRate) ->
@@ -45,9 +46,7 @@ Player.LOGLEN = Config.server.updatesPerStep + 1
     for i in [0..n]
       width = Util.randomInt(5, 20)
       height = Util.randomInt(5, 20)
-      star = new Sprite(@, null, width, height)
-      star.id = i
-      # console.log 'star', star
+      star = new Sprite @, null, width, height
       new GasStation star if rnd() < Config.common.rates.gasStation
       star
 
@@ -60,7 +59,7 @@ Player.LOGLEN = Config.server.updatesPerStep + 1
     bulletStates = (bullet.getState() for bullet in @bullets)
 
     # send the id and game information back to the client
-    player.socket.emit('welcome',
+    player.socket.emit 'welcome',
       id: player.id,
       deadBulletIDs: []
       bullets: bulletStates
@@ -70,7 +69,7 @@ Player.LOGLEN = Config.server.updatesPerStep + 1
         height: @height
         frictionRate: @frictionRate
         tick: @tick
-        starStates: @starStates)
+        starStates: @starStates
 
   sendState: ->
     shipStates = @getShipStates()
