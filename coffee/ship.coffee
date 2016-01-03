@@ -5,6 +5,7 @@ if require?
 
 # Shorthands for commonly used / long-named functions
 {abs, floor, min, max, trunc, cos, sin} = Math
+isarr = Array.isArray
 rates = Config.common.ship.rates
 
 (module ? {}).exports = class Ship extends Sprite
@@ -58,42 +59,27 @@ rates = Config.common.ship.rates
     @fuel = 1000
     @fuelCapacity = 1000
 
-  forward: ->
-    return unless @fuel > 0
-    # @velocity[0] += floor cos(@position[2]) * @accFactor
-    # @velocity[1] += floor sin(@position[2]) * @accFactor
-    @velocity[0] += cos(@position[2]) * @accFactor
-    @velocity[1] += sin(@position[2]) * @accFactor
-    @fuel -= @accFactor
-    @emit 'nofuel' if @fuel < 1
+  accelerate: (direction, vector) ->
+    return unless isarr vector
+    @velocity[0] += vector[0]
+    @velocity[1] += vector[1]
+    @emit 'accelerate',
+      direction: direction
+      vector: vector
 
-  reverse: ->
-    return unless @fuel > 0
-    # @velocity[0] -= floor(cos @position[2])
-    # @velocity[1] -= floor(sin @position[2])
-    @velocity[0] -= cos @position[2]
-    @velocity[1] -= sin @position[2]
-    @fuel--
-
-  left: ->
-    @position[2] -= rates.turn
-
-  right: ->
-    @position[2] += rates.turn
-
-  brake: ->
-    # 'Responsive' / 'variable rate' braking
-    # Provides a smooth braking experience that doesn't drag on at the end.
-    return unless @magnitude
-    @isBraking = true
-    rate = min @magnitude * @magnitude / @brakePower, rates.brake
-    @velocity[0] = @velocity[0] * rate
-    @velocity[1] = @velocity[1] * rate
+  turn: (direction, amount) ->
+    @position[2] += amount
+    @emit 'turn',
+      direction: direction
+      amount: amount
 
   fire: ->
     return unless @lastFireInputSequence < @player.inputSequence - @fireRate
     @lastFireInputSequence = @player.inputSequence
-    @game.insertBullet(new Bullet @)
+    bullet = new Bullet @
+    @game.insertBullet bullet
+    @emit 'fire',
+      bullet: bullet
 
   handleBulletImpact: (b) ->
     @health -= b.damage

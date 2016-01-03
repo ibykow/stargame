@@ -5,6 +5,8 @@ if require?
   RingBuffer = require './ringbuffer'
   Ship = require './ship'
 
+{cos, sin} = Math
+
 pesoChar = Config.common.chars.peso
 
 (module ? {}).exports = class Player extends Eventable
@@ -23,22 +25,35 @@ pesoChar = Config.common.chars.peso
 
   actions:
     forward: ->
-      @ship.forward()
+      return unless @ship.fuel > 0
+      @ship.fuel -= @ship.accFactor
+      @ship.accelerate 'forward',
+        [ cos(@ship.position[2]) * @ship.accFactor,
+          sin(@ship.position[2]) * @ship.accFactor, 0 ]
+
+      @emit 'nofuel' if @ship.fuel < 1
 
     reverse: ->
-      @ship.reverse()
+      return unless @ship.fuel > 0
+      @ship.fuel--
+      @ship.accelerate 'reverse',
+        [ -cos @ship.position[2],
+          -sin @ship.position[2], 0 ]
 
-    left: ->
-      @ship.left()
-
-    right: ->
-      @ship.right()
+      @emit 'nofuel' if @ship.fuel < 1
 
     brake: ->
-      @ship.brake()
+      magnitude = @ship.magnitude
+      return unless magnitude
+      @ship.isBraking = true
+      rate = Config.common.ship.rates.brake
+      rate = (min magnitude * magnitude / @ship.brakePower, rate) - 1
+      @ship.accelerate 'brake', [rate, rate, 0]
 
-    fire: ->
-      @ship.fire()
+    left: -> @ship.turn 'left', -Config.common.ship.rates.turn
+    right: -> @ship.turn 'right', Config.common.ship.rates.turn
+
+    fire: -> @ship.fire()
 
     refuel: ->
       # There must be a valid gas station for this to work
@@ -116,9 +131,6 @@ pesoChar = Config.common.chars.peso
     @inputSequence++
 
   update: ->
-    for action in @inputs when action?.length
-      @emit action, @getState()
-      @actions[action].bind(@)()
-
+    @actions[action].bind(@)() for action in @inputs when action?.length
     @ship.update()
     @die() if @ship.health < 0
