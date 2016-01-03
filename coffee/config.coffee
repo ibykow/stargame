@@ -71,7 +71,7 @@
     mapSize: (1 << 15) + 1
     msPerFrame: 16
     rates:
-      gasStation: 0.1 # probability of a star having a gas station
+      gasStation: 0.3 # probability of a star having a gas station
     ringbuffer:
       max: 50
     ship:

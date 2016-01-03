@@ -22,6 +22,7 @@ pesoChar = Config.common.chars.peso
     @logs =
       state: new RingBuffer Player.LOGLEN
       input: new RingBuffer Player.LOGLEN
+    @registerEventHandlers()
 
   actions:
     forward: ->
@@ -59,24 +60,41 @@ pesoChar = Config.common.chars.peso
 
     refuel: ->
       unless station = @game.gasStations[@gasStationIndex]
-        return @game.page "Gas station", @gasStationIndex,
-          "is out of order. Sorry."
+        return @emit 'refuel-error',
+          index: @gasStationIndex
+          type: '404'
+        # @game.page "Gas station", @gasStationIndex, "is out of order. Sorry."
 
       # Avoid filter cheating by requiring player-station proximity
-      if @ship.distanceTo(station) > Config.common.fuel.distance
-        return @game.page 'Sorry. The gas station is too far away.'
+      distance = @ship.distanceTo station
+      if distance > Config.common.fuel.distance
+        return @emit 'refuel-error',
+          index: @gasStationIndex
+          type: 'distance'
+          distance:
+            required: Config.common.fuel.distance
+            actual: distance
+        # @game.page 'Sorry. The gas station is too far away.'
 
       # No money :(
-      return @game.page "Sorry, you're broke." unless @cash > 0
+      unless @cash > 0
+        return @emit 'refuel-error',
+          index: @gasStationIndex
+          type: 'nsf'
+        # @game.page "Sorry, you're broke."
 
       # Calculate the fuel and cost
       fuelDelta = @ship.fuelCapacity - @ship.fuel
 
-      return @game.page "You're full!" unless fuelDelta > 0
+      unless fuelDelta > 0
+        return @emit 'refuel-error',
+          index: @gasStationIndex
+          type: 'full'
+        # @game.page "You're full!" unless fuelDelta > 0
 
       price = fuelDelta * station.fuelPrice
 
-      # Buy as much as we can afford
+      # Buy only as much as we can afford
       if price > @cash
         fuelDelta = @cash / station.fuelPrice
         price = @cash
@@ -87,22 +105,25 @@ pesoChar = Config.common.chars.peso
 
       # Emit
       @emit 'refuel',
-        station: station
+        index: @gasStationIndex
         delta: fuelDelta
         price: price
 
   registerEventHandlers: ->
-    @ship.on 'nofuel', (data) => console.log 'no fuel', data, @
-    @ship.onceOn 'accelerate', (data) => console.log 'first flight', data, @
-    @ship.onceOn 'turn', (data) =>
-      console.log 'turning', data.direction, data, @
-    @ship.on 'refuel', ((data) ->
-      {station, delta, price} = data
-      info = 'You bought ' + delta.toFixed(2) + 'L of fuel for ' +
-        pesoChar + price.toFixed(2) + ' at ' + pesoChar +
-        station.fuelPrice.toFixed(2) + '/L';
-      @game.page info).bind @
+    @ship.on 'nofuel', (data) =>
+      console.log 'Player', @id, 'has run out of fuel'
 
+    @ship.onceOn 'accelerate', (data) =>
+      console.log 'Player', @id, 'has flown for the first time'
+
+    @on 'refuel', (data) =>
+      {index, delta, price} = data
+      console.log 'Gas station', index, 'sold', delta.toFixed(2),
+        'L of fuel to player', @id
+      # info = 'You bought ' + delta.toFixed(2) + 'L of fuel for ' +
+      #   pesoChar + price.toFixed(2) + ' at ' + pesoChar +
+      #   station.fuelPrice.toFixed(2) + '/L';
+      # @game.page info).bind @
 
   arrowTo: (sprite, id, color = '#00F') ->
     @arrows.push(new Arrow @game, @ship, sprite, color, 0.8, 2, id)
