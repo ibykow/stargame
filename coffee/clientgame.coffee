@@ -40,20 +40,6 @@ Sprite.updateVelocity = ->
     @pager = new Pager @
     @page = @pager.page.bind @pager
 
-    # register event callbacks
-    @player.ship.on 'nofuel', (data) => console.log 'no fuel', data, @
-    @player.ship.onceOn 'accelerate', (data) =>
-      console.log 'first flight', data, @
-    @player.ship.onceOn 'turn', (data) =>
-      console.log 'turning', data.direction, data, @
-    @player.ship.on 'refuel', ((data) ->
-      {station, delta, price} = data
-      return unless station and delta?.toFixed and price?.toFixed
-      info = 'You bought ' + delta.toFixed(2) + 'L of fuel for ' +
-        pesoChar + price.toFixed(2) + ' at ' + pesoChar +
-        station.fuelPrice.toFixed(2) + '/L';
-      @game.page info).bind @player
-
   interpolation:
     reset: ->
       @step = 0

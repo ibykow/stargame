@@ -1,7 +1,3 @@
-Bugs
-  - life at 1000 on fuel purchase √
-  - server-side fuel purchase
-
 Milestones
   - player cash √
   - ship fuel √
@@ -94,10 +90,14 @@ Player Events
   - join
   - leave
   - die
-  - move
-  - no fuel
-  - re-fuel
+  - move √
+  - no fuel √
+  - re-fuel √
   - no cash
   - mission success
   - mission fail
   - timeout
+
+Bugs
+  - life at 1000 on fuel purchase √
+  - server-side fuel purchase √

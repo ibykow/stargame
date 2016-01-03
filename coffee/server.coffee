@@ -70,9 +70,9 @@ module.exports = class Server
 
       input: (data) -> # a client has generated input
         return unless data.sequence
+        @gasStationIndex = data.gasStationIndex
         @inputSequence = data.sequence
         @inputs = data.inputs
-        @game.gasStationID = data.gasStationID
         @update()
 
   frame:

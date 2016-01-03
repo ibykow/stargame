@@ -58,10 +58,9 @@ pesoChar = Config.common.chars.peso
     fire: -> @ship.fire()
 
     refuel: ->
-      # There must be a valid gas station for this to work
-      unless station = @game.gasStation
-        @game.page "Gas station out of order. Sorry." unless station
-        return
+      unless station = @game.gasStations[@gasStationIndex]
+        return @game.page "Gas station", @gasStationIndex,
+          "is out of order. Sorry."
 
       # Avoid filter cheating by requiring player-station proximity
       if @ship.distanceTo(station) > Config.common.fuel.distance
@@ -91,6 +90,19 @@ pesoChar = Config.common.chars.peso
         station: station
         delta: fuelDelta
         price: price
+
+  registerEventHandlers: ->
+    @ship.on 'nofuel', (data) => console.log 'no fuel', data, @
+    @ship.onceOn 'accelerate', (data) => console.log 'first flight', data, @
+    @ship.onceOn 'turn', (data) =>
+      console.log 'turning', data.direction, data, @
+    @ship.on 'refuel', ((data) ->
+      {station, delta, price} = data
+      info = 'You bought ' + delta.toFixed(2) + 'L of fuel for ' +
+        pesoChar + price.toFixed(2) + ' at ' + pesoChar +
+        station.fuelPrice.toFixed(2) + '/L';
+      @game.page info).bind @
+
 
   arrowTo: (sprite, id, color = '#00F') ->
     @arrows.push(new Arrow @game, @ship, sprite, color, 0.8, 2, id)
@@ -124,7 +136,7 @@ pesoChar = Config.common.chars.peso
       serverStep: @game.serverTick.count
       ship: @ship.getState()
       inputs: @inputs.slice()
-      gasStationID: @game.gasStationID
+      gasStationIndex: @gasStationIndex
 
     @logs['input'].insert entry
     # console.log 'new entry', entry.sequence, entry.ship.position

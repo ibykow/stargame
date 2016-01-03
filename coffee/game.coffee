@@ -16,6 +16,7 @@ if require?
     @bullets = []
     @paused = true
     @viewOffset = [0, 0] # used by sprites
+    @gasStations = []
     @collisionSpriteLists =
       stars: @stars
       ships: @ships

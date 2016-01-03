@@ -47,7 +47,8 @@ rnd = Math.random
       width = Util.randomInt(5, 20)
       height = Util.randomInt(5, 20)
       star = new Sprite @, null, width, height
-      new GasStation star if rnd() < Config.common.rates.gasStation
+      if rnd() < Config.common.rates.gasStation
+        new GasStation star
       star
 
   getShipStates: -> player.getState() for player in @players
