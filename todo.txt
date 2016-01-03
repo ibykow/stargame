@@ -1,3 +1,7 @@
+Bugs
+  - life at 1000 on fuel purchase √
+  - server-side fuel purchase
+
 Milestones
   - player cash √
   - ship fuel √

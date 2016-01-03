@@ -10,7 +10,7 @@ if require?
   Client = require './client'
   Pager = require './pager'
 
-{floor, max} = Math
+{floor, max, min} = Math
 isarr = Array.isArray
 
 pesoChar = Config.common.chars.peso
@@ -42,8 +42,11 @@ Sprite.updateVelocity = ->
 
     # register event callbacks
     @player.ship.on 'nofuel', (data) => console.log 'no fuel', data, @
-    @player.onceOn 'forward', (data) => console.log 'first flight', data, @
-    @player.on 'refuel', ((data) ->
+    @player.ship.onceOn 'accelerate', (data) =>
+      console.log 'first flight', data, @
+    @player.ship.onceOn 'turn', (data) =>
+      console.log 'turning', data.direction, data, @
+    @player.ship.on 'refuel', ((data) ->
       {station, delta, price} = data
       return unless station and delta?.toFixed and price?.toFixed
       info = 'You bought ' + delta.toFixed(2) + 'L of fuel for ' +
@@ -105,7 +108,7 @@ Sprite.updateVelocity = ->
       @player.ship.health = serverState.health
 
     if serverState.fuel < logEntry.ship.fuel
-      @player.ship.health = serverState.fuel
+      @player.ship.fuel = serverState.fuel
 
     # console.log 'correct', serverPosition, 'vs', clientPosition
     return unless Util.vectorDeltaExists clientPosition, serverPosition
@@ -129,7 +132,8 @@ Sprite.updateVelocity = ->
     count = @tick.count
     @tick.count = logEntry.gameStep
     for entry in entries
-      console.log entry.sequence, entry.gameStep, entry.ship.position
+      console.log 'replaying',
+        entry.sequence, entry.gameStep, entry.ship.position
 
       @player.inputSequence = entry.sequence
       @player.inputs = entry.inputs

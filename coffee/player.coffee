@@ -5,7 +5,7 @@ if require?
   RingBuffer = require './ringbuffer'
   Ship = require './ship'
 
-{cos, sin} = Math
+{cos, max, min, sin} = Math
 
 pesoChar = Config.common.chars.peso
 
@@ -37,8 +37,8 @@ pesoChar = Config.common.chars.peso
       return unless @ship.fuel > 0
       @ship.fuel--
       @ship.accelerate 'reverse',
-        [ -cos @ship.position[2],
-          -sin @ship.position[2], 0 ]
+        [ -(cos @ship.position[2]),
+          -(sin @ship.position[2]), 0 ]
 
       @emit 'nofuel' if @ship.fuel < 1
 
@@ -48,7 +48,9 @@ pesoChar = Config.common.chars.peso
       @ship.isBraking = true
       rate = Config.common.ship.rates.brake
       rate = (min magnitude * magnitude / @ship.brakePower, rate) - 1
-      @ship.accelerate 'brake', [rate, rate, 0]
+      @ship.accelerate 'brake',
+        [ @ship.velocity[0] * rate,
+          @ship.velocity[1] * rate, 0]
 
     left: -> @ship.turn 'left', -Config.common.ship.rates.turn
     right: -> @ship.turn 'right', Config.common.ship.rates.turn
