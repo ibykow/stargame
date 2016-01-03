@@ -6,8 +6,9 @@ if require?
   Sprite = require './sprite'
   Player = require './player'
 
-(module ? {}).exports = class Game
+(module ? {}).exports = class Game extends Eventable
   constructor: (@width = 1 << 8, @height = 1 << 8, @frictionRate = 0.96) ->
+    super @
     @toroidalLimit = [@width, @height]
     @players = []
     @ships = []

@@ -65,6 +65,9 @@
       price:
         min: 0.8
         max: 1.9
+    events:
+      log:
+        max: 0x100 # keep 512 event log entries
     mapSize: (1 << 15) + 1
     msPerFrame: 16
     rates:

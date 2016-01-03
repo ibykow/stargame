@@ -3,177 +3,179 @@ RingBuffer = require '../coffee/ringbuffer'
 
 describe 'RingBuffer', ->
   describe '.new', ->
-    it 'creates a new ring buffer', ->
-      buffer = new RingBuffer 50
-      expect(buffer.max).toBe 50
+    it 'creates a new ring ring', ->
+      ring = new RingBuffer 50
+      expect(ring.max).toBe 50
 
-      buffer = new RingBuffer 3
-      expect(buffer.max).toBe 3
+      ring = new RingBuffer 3
+      expect(ring.max).toBe 3
 
-      buffer = new RingBuffer
-      expect(buffer.max).toBe Config.common.ringbuffer.max
+      ring = new RingBuffer
+      expect(ring.max).toBe Config.common.ringbuffer.max
 
-      buffer = new RingBuffer 0
-      expect(buffer.max).toBe 0
-      expect(buffer.data).toBe undefined
+      ring = new RingBuffer 0
+      expect(ring.max).toBe 0
+      expect(ring.buffer).toBe undefined
 
-      buffer = new RingBuffer -1
-      expect(buffer.max).toBe -1
-      expect(buffer.data).toBe undefined
+      ring = new RingBuffer -1
+      expect(ring.max).toBe -1
+      expect(ring.buffer).toBe undefined
 
   describe '.insert', ->
     it 'should insert items into the array', ->
-      buffer = new RingBuffer 11
+      ring = new RingBuffer 11
 
       for i in [1..10]
-        buffer.insert i
-        expect(buffer.data[i - 1]).toBe i
-        expect(buffer.head).toBe i
+        ring.insert i
+        expect(ring.buffer[i - 1]).toBe i
+        expect(ring.length).toBe i
+        expect(ring.head).toBe i
 
-      buffer.insert null
-      expect(buffer.head).toBe 10
+      ring.insert null
+      expect(ring.head).toBe 10
 
-      buffer.insert 'abc'
-      expect(buffer.head).toBe 0
+      ring.insert 'abc'
+      expect(ring.head).toBe 0
 
       for i in [1..10]
-        buffer.insert i + 5
-        expect(buffer.data[i - 1]).toBe i + 5
-        expect(buffer.head).toBe i
+        ring.insert i + 5
+        expect(ring.buffer[i - 1]).toBe i + 5
+        expect(ring.head).toBe i
 
   describe '.remove', ->
     it 'should remove correct items from array', ->
       [startCharCode, stopCharCode] = [65, 90]
-      buffer = new RingBuffer stopCharCode - startCharCode + 1
-      for i in [startCharCode..stopCharCode]
-        buffer.insert String.fromCharCode(i)
+      length = stopCharCode - startCharCode + 1
+      ring = new RingBuffer length
+      ring.insert String.fromCharCode c for c in [startCharCode..stopCharCode]
+      for c in [startCharCode..stopCharCode]
+        expect(ring.length > 0).toBe true
+        value = ring.remove()
+        expect(value).toBe String.fromCharCode c
 
-      for i in [startCharCode..stopCharCode]
-        expect(buffer.remove()).toBe String.fromCharCode(i)
-
-      expect(buffer.remove()).toBeNull()
+      expect(ring.remove()).toBeNull()
 
     it "shouldn't remove anything from empty arrays", ->
-      buffer = new RingBuffer
-      expect(buffer.remove()).toBe null
+      ring = new RingBuffer
+      expect(ring.remove()).toBe null
 
   describe '.peek', ->
     it 'should provide the item without removing it', ->
-      buffer = new RingBuffer 10
+      ring = new RingBuffer 10
       string = 'Hello, World!'
-      buffer.insert string
+      ring.insert string
 
-      expect(buffer.peek()).toBe string
-      expect(buffer.peek()).toBe string
-      expect(buffer.remove()).toBe string
+      expect(ring.peek()).toBe string
+      expect(ring.peek()).toBe string
+      expect(ring.remove()).toBe string
 
   describe '.purge', ->
     it 'should purge all items that return true from function', ->
-      buffer = new RingBuffer 100
+      ring = new RingBuffer 100
       for i in [5..50]
-        buffer.insert i
+        ring.insert i
 
-      buffer.purge((n) -> n < 20)
+      ring.purge((n) -> n < 20)
 
       for i in [20..50]
-        expect(buffer.remove()).toBe i
+        expect(ring.remove()).toBe i
 
-      buffer.reset()
+      ring.reset()
 
       for i in [1..100]
-        buffer.insert i
+        ring.insert i
 
-      buffer.purge((n) -> n < 50)
+      ring.purge((n) -> n < 50)
 
       for i in [50..100]
-        expect(buffer.remove()).toBe i
+        expect(ring.remove()).toBe i
 
   describe '.map', ->
     it 'should apply a function to each entry and return the results', ->
-      buffer = new RingBuffer 50
-      buffer.insert i for i in [5..50]
-      results = buffer.map((n, i, arr) -> n *= n)
+      ring = new RingBuffer 50
+      ring.insert i for i in [5..50]
+      results = ring.map((n, i, arr) -> n *= n)
 
       expect(results[i - 5]).toBe(i * i) for i in [5..50]
-      expect(buffer.remove()).toBe i for i in [5..50]
+      expect(ring.remove()).toBe i for i in [5..50]
 
-    it 'should return an empty array when dealing with an empty buffer', ->
-      buffer = new RingBuffer 50
-      expect(buffer.map((o) -> 1)).toEqual []
+    it 'should return an empty array when dealing with an empty ring', ->
+      ring = new RingBuffer 50
+      expect(ring.map((o) -> 1)).toEqual []
 
-    it 'should return an full array when dealing with a full buffer', ->
-      buffer = new RingBuffer 10
-      buffer.insert i + 5 for i in [1..10]
+    it 'should return an full array when dealing with a full ring', ->
+      ring = new RingBuffer 10
+      ring.insert i + 5 for i in [1..10]
 
-      expect(buffer.map((n) -> n - 3)).toEqual [3,4,5,6,7,8,9,10,11,12]
+      expect(ring.map((n) -> n - 3)).toEqual [3,4,5,6,7,8,9,10,11,12]
 
-    it 'should return an empty array when dealing with an insane buffer', ->
-      buffer = new RingBuffer 50
-      buffer.insert i for i in [0..55]
-      buffer.head = 90
-      expect(buffer.map((o) -> 1)).toEqual []
+    it 'should return an empty array when dealing with an insane ring', ->
+      ring = new RingBuffer 50
+      ring.insert i for i in [0..55]
+      ring.head = 90
+      expect(ring.map((o) -> 1)).toEqual []
 
   describe '.isSane', ->
     it 'should return true if empty and head and tail are between 0 and max', ->
-      buffer = new RingBuffer 20
+      ring = new RingBuffer 20
 
-      expect(buffer.tail).toBe 0
-      expect(buffer.head).toBe 0
+      expect(ring.tail).toBe 0
+      expect(ring.head).toBe 0
 
-      expect(buffer.isSane()).toBe true
+      expect(ring.isSane()).toBe true
 
-      buffer.tail = -1
-      expect(buffer.isSane()).toBe false
+      ring.tail = -1
+      expect(ring.isSane()).toBe false
 
-      buffer.tail = 0
-      expect(buffer.isSane()).toBe true
+      ring.tail = 0
+      expect(ring.isSane()).toBe true
 
-      buffer.tail = 50
-      expect(buffer.isSane()).toBe false
+      ring.tail = 50
+      expect(ring.isSane()).toBe false
 
-      buffer.tail = 0
-      expect(buffer.isSane()).toBe true
+      ring.tail = 0
+      expect(ring.isSane()).toBe true
 
-      buffer.head = -1
-      expect(buffer.isSane()).toBe false
+      ring.head = -1
+      expect(ring.isSane()).toBe false
 
-      buffer.head = 0
-      expect(buffer.isSane()).toBe true
+      ring.head = 0
+      expect(ring.isSane()).toBe true
 
-      buffer.head = 50
-      expect(buffer.isSane()).toBe false
+      ring.head = 50
+      expect(ring.isSane()).toBe false
 
-      buffer.head = 0
-      expect(buffer.isSane()).toBe true
+      ring.head = 0
+      expect(ring.isSane()).toBe true
 
-      buffer.tail = -1
-      buffer.head = 50
-      expect(buffer.isSane()).toBe false
+      ring.tail = -1
+      ring.head = 50
+      expect(ring.isSane()).toBe false
 
-      buffer.tail = 0
-      buffer.head = 0
-      expect(buffer.isSane()).toBe true
+      ring.tail = 0
+      ring.head = 0
+      expect(ring.isSane()).toBe true
 
-      buffer.tail = 50
-      buffer.head = -1
-      expect(buffer.isSane()).toBe false
+      ring.tail = 50
+      ring.head = -1
+      expect(ring.isSane()).toBe false
 
     it 'should return true if full, and head equals tail between 0 and max', ->
-      buffer = new RingBuffer 20
-      buffer.insert i for i in [0..20]
+      ring = new RingBuffer 20
+      ring.insert i for i in [0..20]
 
-      expect(buffer.full).toBe true
-      expect(buffer.head).toBe buffer.tail
-      expect(buffer.isSane()).toBe true
+      expect(ring.full).toBe true
+      expect(ring.head).toBe ring.tail
+      expect(ring.isSane()).toBe true
 
-      buffer.tail = -1
-      buffer.head = 50
-      expect(buffer.isSane()).toBe false
+      ring.tail = -1
+      ring.head = 50
+      expect(ring.isSane()).toBe false
 
-      buffer.tail = 0
-      buffer.head = 0
-      expect(buffer.isSane()).toBe true
+      ring.tail = 0
+      ring.head = 0
+      expect(ring.isSane()).toBe true
 
-      buffer.tail = 50
-      buffer.head = -1
-      expect(buffer.isSane()).toBe false
+      ring.tail = 50
+      ring.head = -1
+      expect(ring.isSane()).toBe false

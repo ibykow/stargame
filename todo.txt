@@ -70,8 +70,6 @@ Mission System
   - create mission
       start requirements (min players, min)
       players
-
-
   - register initial event listeners
   - missions are event driven
   - missions can create sprites
@@ -87,7 +85,6 @@ Events
   - player:
       action (forward, left, right, brake, fire)
       death
-
 
 Player Events
   - join

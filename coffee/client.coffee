@@ -103,8 +103,8 @@ client = null
 
     request: null
 
-window.onload = ->
-  client = new Client(document.querySelector 'canvas')
+# Load
+window.onload = -> client = new Client document.querySelector 'canvas'
 
 # Frame request code
 (->
