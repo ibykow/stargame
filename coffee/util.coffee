@@ -1,6 +1,8 @@
-[abs, floor, isarr, max, min, pi, rnd, sqrt, trunc] =
-  [ Math.abs, Math.floor, Array.isArray, Math.max,
-    Math.min, Math.PI, Math.random, Math.sqrt, Math.trunc ]
+{abs, floor, max, min, sqrt, trunc} = Math
+
+rnd = Math.random
+pi = Math.PI
+isarr = Array.isArray
 
 (module ? {}).exports = Util =
   PI: pi

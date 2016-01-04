@@ -3,7 +3,7 @@ RingBuffer = require '../coffee/ringbuffer'
 
 describe 'RingBuffer', ->
   describe '.new', ->
-    it 'creates a new ring ring', ->
+    it 'creates a new ring buffer', ->
       ring = new RingBuffer 50
       expect(ring.max).toBe 50
 
