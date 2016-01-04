@@ -110,11 +110,16 @@ pesoChar = Config.common.chars.peso
         price: price
 
   registerEventHandlers: ->
+    callback = (data) ->
+      if data.timedOut
+        console.log 'too late'
+      else
+        console.log 'go!'
+
+    @ship.on 'accelerate', callback, 240
+
     @ship.on 'nofuel', (data) =>
       console.log 'Player', @id, 'has run out of fuel'
-
-    @ship.onceOn 'accelerate', (data) =>
-      console.log 'Player', @id, 'has flown for the first time'
 
     @on 'refuel', (data) =>
       {index, delta, price} = data

@@ -1,8 +1,9 @@
 if require?
   Util = require './util'
 
-isnum = Util.isNumeric
 {max} = Math
+isarr = Array.isArray
+isnum = Util.isNumeric
 
 (module ? {}).exports = class Timer
   @nextID: 1
@@ -17,12 +18,17 @@ isnum = Util.isNumeric
     for id, timer of Timer.pool when timer.isActive
       timer.remaining = timer.nextStep - step
       continue if timer.remaining > 0
+      if timer.deleted
+        deleted.push id
+        continue
       # run the callback
-      timer.callback()
+      timer.callback timer
       if timer.repeats then timer.nextStep += timer.period else deleted.push id
 
     # delete timers
-    delete Timer.pool[id] for id in deleted
+    for id in deleted
+      Timer.pool[id].deleted = true
+      delete Timer.pool[id]
 
   constructor: (@start, @period, @callback, @repeats = false) ->
     return unless (typeof @callback is 'function') and
@@ -30,6 +36,7 @@ isnum = Util.isNumeric
       isnum(@period) and (@period > 0)
 
     @args ?= []
+    @deleted = false
     @isActive = true
     @remaining = @period
     @nextStep = @start + @period

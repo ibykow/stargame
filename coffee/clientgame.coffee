@@ -27,6 +27,7 @@ Sprite.updateVelocity = ->
     @c = @canvas.getContext '2d'
     @starStates = params.game.starStates
     @serverTick = params.game.tick
+    @tick.count = @serverTick.count
 
     @visibleSprites = []
     @mouseSprites = [] # sprites under the mouse

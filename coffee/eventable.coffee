@@ -1,14 +1,34 @@
 if require?
   Config = require './config'
   Util = require './util'
-  Time = require './timer'
+  Timer = require './timer'
   RingBuffer = require './ringbuffer'
 
-isnum = Util.isNumber
+isnum = Util.isNumeric
+isarr = Array.isArray
 
 (module ? {}).exports = class Eventable
   @nextID: 1
   @log: new RingBuffer Config.common.events.log.max
+  @events: {}
+  @run: (step) ->
+    deleted = []
+    for name, eventsList of @events
+      for info in eventsList
+        listeners = info.target.listeners[name] or []
+        listeners = listeners.filter (handler) ->
+          return false if handler.deleted
+          handler.step.current = step
+          result = handler.callback info.data, handler
+          handler.step.previous = step
+          handler.deleted = not handler.repeats
+          if handler.timer and handler.deleted
+            handler.timer.delete()
+            handler.timer = null
+          return handler.repeats
+        deleted.push name
+      delete @events[name] for name in deleted
+
   constructor: (@game) ->
     return unless @game
     @listeners = {}
@@ -20,67 +40,38 @@ isnum = Util.isNumber
   setState: (state) -> @id = state.id ? @id
 
   emit: (name, data = {}) -> # Emits an event. TODO: Prevent infinite loops.
-    listeners = @listeners[name]
-    return unless listeners?.length
-
-    entries = []
-
-    step = @game.tick.count
-
-    listeners = listeners.filter (callback) ->
-      # filter out previously removed callbacks right away
-      return false if callback.remove
-      data.step = callback.step
-      result = callback data
-      callback.step.previous = step
-      callback.remove = callback.once or (callback.conditional and not result)
-
-      entries.push
-        callback: callback
-        removed: callback.remove
-        result: result
-
-      # if .remove is false, we return true to filter out the callback
-      return callback.remove is false
-
-    Eventable.log.insert
-      step: step
-      id: @id
-      name: name
+    info =
+      target: @
       data: data
-      handlers: entries
+
+    if isarr Eventable.events[name]
+      Eventable.events[name].push info
+    else
+      Eventable.events[name] = [info]
 
   # registers an event listener
-  on: (name, callback, once = false, conditional = false) ->
-    @listeners[name] = @listeners[name] ? []
-
-    callback.step =
-      first: @game.tick.count
-      previous: @game.tick.count
-
-    callback.once = once
-    callback.conditional = conditional
-    @listeners[name].push callback
-
-  onUntil: (name, callback, expireStep, failcb) ->
-    return unless name and callback and failcb
+  on: (name, callback, timeout = 0, repeats = false) ->
     step = @game.tick.count
-    period = (max 0, exprieStep - step) + 1
+    handler =
+      target: @
+      repeats: repeats
+      callback: callback
+      deleted: false
+      timedOut: false
+      timer: null
+      step:
+        start: step
+        current: step
+        previous: step
 
-    success = (timer, data) ->
-      callback data
-      timer.delete()
+    if timeout > 0
+      timercb = (handler, timer) ->
+        handler.timedOut = true
+        handler.callback handler
 
-    failure = (name, callback) =>
-      failcb name, callback
-      @removeListener name, callback
+      handler.timer = new Timer step, timeout, timercb.bind @, handler
 
-    timer = new Timer step - 1, period, failure, false, @, [name, callback]
-    success.bind @, timer
-    @on name, success
-
-
-  onceOn: (name, callback) -> @on name, callback, true
-  conditionalOn: (name, callback) -> @on name, callback, false, true
-  removeListener: (name, callback) -> callback.remove = true
-  removeListeners: (name) -> @listeners[name] = []
+    if isarr @listeners[name]
+      @listeners[name].push handler
+    else
+      @listeners[name] = [handler]

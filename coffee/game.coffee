@@ -50,8 +50,9 @@ if require?
     @players.map (p)-> p.ship
 
   update: ->
-    @tick.count++
-    Timer.run @tick.count
+    step = @tick.count++
+    Timer.run step
+    Eventable.run step
     b.update() for b in @bullets
 
   logPlayerStates: ->
