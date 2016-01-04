@@ -1,7 +1,10 @@
 if require?
   Config = require './config'
   Util = require './util'
+  Time = require './timer'
   RingBuffer = require './ringbuffer'
+
+isnum = Util.isNumber
 
 (module ? {}).exports = class Eventable
   @nextID: 1
@@ -37,7 +40,7 @@ if require?
         removed: callback.remove
         result: result
 
-      # false means we filter out the current callback
+      # if .remove is false, we return true to filter out the callback
       return callback.remove is false
 
     Eventable.log.insert
@@ -58,6 +61,24 @@ if require?
     callback.once = once
     callback.conditional = conditional
     @listeners[name].push callback
+
+  onUntil: (name, callback, expireStep, failcb) ->
+    return unless name and callback and failcb
+    step = @game.tick.count
+    period = (max 0, exprieStep - step) + 1
+
+    success = (timer, data) ->
+      callback data
+      timer.delete()
+
+    failure = (name, callback) =>
+      failcb name, callback
+      @removeListener name, callback
+
+    timer = new Timer step - 1, period, failure, false, @, [name, callback]
+    success.bind @, timer
+    @on name, success
+
 
   onceOn: (name, callback) -> @on name, callback, true
   conditionalOn: (name, callback) -> @on name, callback, false, true

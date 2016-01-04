@@ -1,6 +1,7 @@
 if require?
   Config = require './config'
   Util = require './util'
+  Timer = require './timer'
   RingBuffer = require './ringbuffer'
   Eventable = require './eventable'
   Sprite = require './sprite'
@@ -50,6 +51,7 @@ if require?
 
   update: ->
     @tick.count++
+    Timer.run @tick.count
     b.update() for b in @bullets
 
   logPlayerStates: ->

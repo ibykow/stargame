@@ -3,7 +3,7 @@ Player = require './player'
 Game = require './game'
 ServerGame = require './servergame'
 
-[max, min] = [Math.max, Math.min]
+{max, min} = Math
 
 mapSize = Config.common.mapSize
 
@@ -29,6 +29,7 @@ module.exports = class Server
   events:
     # @ is the server instance
     io:
+      error: (err) -> console.log 'IO Error:', err
       connection: (socket) -> # a client connects
         # create a player object around the socket
         player = new Player @game, socket
