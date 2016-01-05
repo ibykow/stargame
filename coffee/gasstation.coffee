@@ -14,7 +14,6 @@ pesoChar = Config.common.chars.peso
   constructor: (@parent, @fuelPrice, @buttonState, @stationIndex = -1) ->
     return unless @parent
     super @parent.game, @parent.position, 9, 9
-    @position[1] -= 9
     @fuelPrice ?= Config.common.fuel.price.min + rnd() *
       (Config.common.fuel.price.max - Config.common.fuel.price.min)
 

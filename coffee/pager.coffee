@@ -9,7 +9,7 @@ cfg = Config.client.pager
 [min] = [Math.min]
 
 (module ? {}).exports = class Pager
-  constructor: (@game, maxlines = cfg.maxlines) ->
+  constructor: (@game, @fade = cfg.fade, maxlines = cfg.maxlines) ->
     return unless @game
     @buffer = new RingBuffer maxlines
 
@@ -20,10 +20,11 @@ cfg = Config.client.pager
 
   draw: ->
     @buffer.purge (m) -> m.ttl < 1
-    @buffer.map (m, i, buf) =>
-      yoffset = @game.canvas.height - cfg.yoffset * (buf.length - i)
+    entries = @buffer.toArray()
+    for entry, i in entries
+      yoffset = @game.canvas.height - cfg.yoffset * (entries.length - i)
       @game.c.fillStyle = cfg.color
       @game.c.font = cfg.font
-      @game.c.globalAlpha = min m.ttl / cfg.fade, 1
-      @game.c.fillText m.message, cfg.xoffset, yoffset
-      m.ttl--
+      @game.c.globalAlpha = min entry.ttl / @fade, 1
+      @game.c.fillText entry.message, cfg.xoffset, yoffset
+      entry.ttl--

@@ -10,7 +10,8 @@ if require?
   Client = require './client'
   Pager = require './pager'
 
-{floor, max, min} = Math
+{abs, floor, max, min} = Math
+rnd = Math.random
 isarr = Array.isArray
 
 pesoChar = Config.common.chars.peso
@@ -20,6 +21,15 @@ Sprite.updatePosition = ->
 Sprite.updateVelocity = ->
 
 (module ? {}).exports = class ClientGame extends Game
+  @brakeStrings: [
+    'BRAKE!',
+    'Oh, dear God please stop!',
+    'Oh lord, Pretus, Lord almight!',
+    'Stop now please. Stop now please. Stop now please.'
+    'STOP!!!'
+    'For the love of Pretus, stop already!'
+    "We're all going to die!"
+  ]
   constructor: (@canvas, socket, params) ->
     return unless params
     super params.game.width, params.game.height, params.game.frictionRate
@@ -32,12 +42,12 @@ Sprite.updateVelocity = ->
     @visibleSprites = []
     @mouseSprites = [] # sprites under the mouse
 
-    @collisionSpriteLists.stars = @stars = @generateStars()
     @player = new Player @, socket
     @player.id = params.id
     @player.name = 'Guest'
     @lastVerifiedInputSequence = 0
     @collisionSpriteLists.myShip = [@player.ship]
+    @collisionSpriteLists.stars = @stars = @generateStars()
     @initializeEventHandlers()
     @pager = new Pager @
     @page = @pager.page.bind @pager
@@ -47,13 +57,51 @@ Sprite.updateVelocity = ->
       @step = 0
       @rate = 1 / Config.server.updatesPerStep
 
+  events:
+    accelerate: [ {
+      callback: (data) ->
+        @page "Woohoo! You're flying now!" if data.direction is 'forward'
+      target: ['player', 'ship']
+      timeout: 0
+      repeats: false }
+    { callback: (data) ->
+        if data.direction is 'brake'
+          phrases = ClientGame.brakeStrings
+          @page phrases[floor rnd() * phrases.length]
+      target: ['player', 'ship']
+      timeout: 0
+      repeats: true }
+    ]
+
+    turn: [
+      target: ['player', 'ship']
+      timeout: 0
+      repeats: false
+      callback: (data) -> @page 'Woohoo! Your very first turn was to the ' +
+        data.direction + ' by ' + abs(data.amount) + ' radians!'
+    ]
+
+    refuel: [
+      target: ['player']
+      timeout: 0
+      repeats: true
+      callback: (data) ->
+        station = @gasStations[data.index]
+        info =
+        @page 'You bought ' + data.delta.toFixed(2) + 'L of fuel for ' +
+          pesoChar + data.price.toFixed(2) + ' at ' + pesoChar +
+          station.fuelPrice.toFixed(2) + '/L'
+    ]
+
   initializeEventHandlers: ->
-    @player.on 'refuel', (data) =>
-      station = @gasStations[data.index]
-      info = 'You bought ' + data.delta.toFixed(2) + 'L of fuel for ' +
-        pesoChar + data.price.toFixed(2) + ' at ' + pesoChar +
-        station.fuelPrice.toFixed(2) + '/L';
-      @page info
+    for name, handlers of @events
+      target = @
+      for info in handlers
+        for child in info.target
+          target = target[child]
+          break if not target
+        continue if not target
+        target.on name, info.callback.bind(@), info.timeout, info.repeats
 
   # quick and dirty
   testPager: ->
@@ -61,13 +109,10 @@ Sprite.updateVelocity = ->
     console.log @pager.buffer
 
   generateStars: ->
-    for state, i in @starStates
+    for state in @starStates
       s = new Sprite @, state.position, state.width, state.height, state.color
-      # console.log s.children
-      for type, childState of state.children
-        # console.log 'adding child', global[type].name, childState
-        global[type].fromState s, childState
-      s
+      global[type].fromState s, cstate for type, cstate of state.children
+      s # collect the stars together to return them
 
   removeShip: (id) ->
     for i in [0...@ships.length]
@@ -140,13 +185,14 @@ Sprite.updateVelocity = ->
 
   processBulletData: (data) ->
     # Remove dead bullets
-    @bullets =
-      (@bullets.filter (b) -> data.deadBulletIDs.indexOf(b.id) is -1)
-      # Add new bullets
-      .concat (for bullet in data.bullets
-        id = bullet.gun.id
-        continue if id is @player.ship.id
-        Bullet.fromState @, bullet)
+    @bullets = @bullets.filter (b) ->
+      (data.deadBulletIDs.indexOf(b.id) is -1) or
+      (b.life > 0)
+
+    # Add new bullets
+    # TODO: Replace our bullet ids with server bullet ids
+    for bullet in data.bullets when not (bullet.gun.id is @player.ship.id)
+      @bullets.push Bullet.fromState @, bullet
 
   processServerData: (data) ->
     [inserted, i, j, stateLog] = [false, 0, 0, @player.logs['state']]

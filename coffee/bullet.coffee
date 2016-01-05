@@ -14,6 +14,7 @@ nextBulletID = 1
     state.gun.game = game
     b = new Bullet state.gun
     b.setState state
+    b.id = state.id
     b
 
   constructor: (@gun, @damage = 2) ->

@@ -1,8 +1,8 @@
 Milestones
-  - player cash √
-  - ship fuel √
-  - gas stations with price per liter √
-  - gas purchase button √
+  √ player cash
+  √ ship fuel
+  √ gas stations with price per liter
+  √ gas purchase button
   - simple mission (delivery)
 
 Interaction:
@@ -21,11 +21,11 @@ View
 
 Gameplay
  - star names
- - ship fuel √
- - player cash √
- - gas stations (eg 1 in 100 stars) √
-    - generating √
-    - purchase fuel √
+ √ ship fuel
+ √ player cash
+ √ gas stations (eg 1 in 100 stars)
+    √ generating
+    √ purchase fuel
  - trophies/achievements
  - upgrades for everything (gun type, fuel, cargo capacity, etc.)
  - ship distress signal (eg. when out of fuel, for fun)
@@ -46,10 +46,10 @@ Missions
       assist (eg. give gas)
 
 Engine
-  - range checking for certain actions (eg. must be near star to buy fuel) √
-  - add message/notification system √
+  √ range checking for certain actions (eg. must be near star to buy fuel)
+  √ add message/notification system
   - add Font object which describes fonts, color, line height, char width, etc.
-  - fix bullet-collisions
+  √ fix bullet-collisions
   - add more ship gears/speeds: craw, normal, fast, turbo
   - add hyperspace/jump to location option (for price)
   - add ai/bots (pirates, friendlies, roadside/spaceside)
@@ -67,22 +67,22 @@ Player Objective
     fail: []
 
 Mission System
+  √ register initial event listeners
+  - missions are event driven
+  - missions can create sprites
   - create mission
       start requirements (min players, min)
       players
-  - register initial event listeners
-  - missions are event driven
-  - missions can create sprites
 
 Event System
-  - register listeners √
-  - emit events √
+  √ register listeners
+  √ emit events
   - add timeout events
   - add event dependencies (has event occurred since I started listening? etc.)
 
 Events
-  - timeout
-  - player:
+  √ timeout
+  √ player:
       action (forward, left, right, brake, fire)
       death
 
@@ -90,16 +90,19 @@ Player Events
   - join
   - leave
   - die
-  - move √
-  - no fuel √
-  - re-fuel √
+  √ move
+  √ no fuel
+  √ re-fuel
   - no cash
   - mission success
   - mission fail
-  - timeout
+  √ timeout
 
 Bugs
-  - life at 1000 on fuel purchase √
-  - server-side fuel purchase √
-  - re-associate client-side bullets with their originators (ship/gun)
+  √ life at 1000 on fuel purchase
+  √ server-side fuel purchase
+  √ re-associate client-side bullets with their originators (ship/gun)
   - dead ship doesn't disappear if their canvas is paused
+  - move gas station icon above star
+  √ pager sequence (refuel update in between brake strings)
+  - ring buffer map overflow (try map instead of toArray in pager brake strings)
