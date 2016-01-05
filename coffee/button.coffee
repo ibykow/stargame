@@ -3,8 +3,9 @@ if require?
   Config = require './config'
   Sprite = require './sprite'
 
-[abs, floor, isarr, sqrt, rnd, round, trunc] = [Math.abs, Math.floor,
-  Array.isArray, Math.sqrt, Math.random, Math.round, Math.trunc]
+{abs, floor, sqrt, round, trunc} = Math
+rnd = Math.random
+isarr = Array.isArray
 
 cfg = Config.common.button
 

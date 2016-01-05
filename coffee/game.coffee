@@ -26,14 +26,10 @@ if require?
       time: 0
       dt: 0
 
-  framesToMs: (frames) ->
-    frames * Config.common.msPerFrame
-
-  msToFrames: (ms) ->
-    ms / Config.common.msPerFrame
-
-  randomPosition: ->
-    [Util.randomInt(0, @width), Util.randomInt(0, @height), 0]
+  getShips: -> p.ship for p in @players
+  framesToMs: (frames) -> frames * Config.common.msPerFrame
+  msToFrames: (ms) -> ms / Config.common.msPerFrame
+  randomPosition: -> [Util.randomInt(0, @width), Util.randomInt(0, @height), 0]
 
   removePlayer: (p) ->
     return unless p
@@ -45,9 +41,6 @@ if require?
   insertBullet: (b) ->
     return unless b
     @bullets.push b
-
-  getShips: ->
-    @players.map (p)-> p.ship
 
   update: ->
     step = @tick.count++

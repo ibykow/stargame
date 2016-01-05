@@ -33,6 +33,8 @@ client = null
       y: 0
       buttons: [false, false, false]
 
+  resizedCallback: -> # overwrite this when a new game is created
+
   getKeyboardInputs: ->
     for i in [0...@keymap.length] when @keys[i] and @keymap[i]
       @keymap[i]
@@ -49,6 +51,7 @@ client = null
         @game.client = @
         @socket.emit 'join', @game.player.name
         @game.player.ship.updateView = @game.player.ship.updateViewMaster
+        @resizedCallback = @game.resized.bind @game
 
         # update the state event handler
         callback = @game.processServerData.bind @game
@@ -91,6 +94,7 @@ client = null
         @canvas.halfWidth = @canvas.width >> 1
         @canvas.halfHeight = @canvas.height >> 1
         @canvas.boundingRect = @canvas.getBoundingClientRect()
+        @resizedCallback() # lets others get the message
 
   frame:
     run: (timestamp) ->

@@ -51,6 +51,7 @@ Sprite.updateVelocity = ->
     @initializeEventHandlers()
     @pager = new Pager @
     @page = @pager.page.bind @pager
+    @initializeContextMenu()
 
   interpolation:
     reset: ->
@@ -92,6 +93,31 @@ Sprite.updateVelocity = ->
           pesoChar + data.price.toFixed(2) + ' at ' + pesoChar +
           station.fuelPrice.toFixed(2) + '/L'
     ]
+
+  resized: -> @resizeContextMenu()
+
+  resizeContextMenu: ->
+    @contextMenu.view = [@canvas.width - @contextMenu.width, 0, 0]
+    @contextMenu.height = @canvas.height
+    @contextMenu.halfHeight = @canvas.halfHeight
+
+  initializeContextMenu: ->
+    @contextMenu = new Sprite @
+    @contextMenu.width = 360
+    @contextMenu.halfWidth = 180
+    @contextMenu.visible = false
+    @contextMenu.color = "#00f"
+    @contextMenu.alpha = 0.6
+    @resizeContextMenu()
+
+    @contextMenu.mouse.leave = -> @visible = false
+    @contextMenu.getViewBounds = -> [[@view[0], @view[1]], [@width, @height]]
+    @contextMenu.draw = ->
+      c = @game.c
+      c.fillStyle = @color
+      c.globalAlpha = @alpha
+      c.fillRect @view[0], @view[1], @width, @height
+      c.globalAlpha = 1
 
   initializeEventHandlers: ->
     for name, handlers of @events
@@ -309,11 +335,14 @@ Sprite.updateVelocity = ->
     @client.mouse.pressed = false
     @client.mouse.released = false
 
+    @contextMenu.visible = true if @client.mouse.x > @canvas.width - 30
+
   update: ->
     @player.inputs = @client.getKeyboardInputs()
     super()
     star.update() for star in @stars
     ship.update() for ship in @ships
+    @visibleSprites.push @contextMenu if @contextMenu.visible
     @updateMouse()
     @interpolation.step++
     @correctPrediction()
