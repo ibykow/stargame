@@ -38,6 +38,7 @@ Sprite.updateVelocity = ->
     @player.name = 'Guest'
     @lastVerifiedInputSequence = 0
     @collisionSpriteLists.myShip = [@player.ship]
+    @initializeEventHandlers()
     @pager = new Pager @
     @page = @pager.page.bind @pager
 
@@ -45,6 +46,14 @@ Sprite.updateVelocity = ->
     reset: ->
       @step = 0
       @rate = 1 / Config.server.updatesPerStep
+
+  initializeEventHandlers: ->
+    @player.on 'refuel', (data) =>
+      station = @gasStations[data.index]
+      info = 'You bought ' + data.delta.toFixed(2) + 'L of fuel for ' +
+        pesoChar + data.price.toFixed(2) + ' at ' + pesoChar +
+        station.fuelPrice.toFixed(2) + '/L';
+      @page info
 
   # quick and dirty
   testPager: ->
@@ -135,8 +144,8 @@ Sprite.updateVelocity = ->
       (@bullets.filter (b) -> data.deadBulletIDs.indexOf(b.id) is -1)
       # Add new bullets
       .concat (for bullet in data.bullets
-        id = bullet.gun.player.id
-        continue if id is @player.id
+        id = bullet.gun.id
+        continue if id is @player.ship.id
         Bullet.fromState @, bullet)
 
   processServerData: (data) ->

@@ -123,8 +123,8 @@ pesoChar = Config.common.chars.peso
 
     @on 'refuel', (data) =>
       {index, delta, price} = data
-      console.log 'Gas station', index, 'sold', delta.toFixed(2),
-        'L of fuel to player', @id
+      console.log 'Gas station', index, 'sold', delta.toFixed(2) +
+      'L of fuel to player', @id
       # info = 'You bought ' + delta.toFixed(2) + 'L of fuel for ' +
       #   pesoChar + price.toFixed(2) + ' at ' + pesoChar +
       #   station.fuelPrice.toFixed(2) + '/L';

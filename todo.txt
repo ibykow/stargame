@@ -101,3 +101,5 @@ Player Events
 Bugs
   - life at 1000 on fuel purchase √
   - server-side fuel purchase √
+  - re-associate client-side bullets with their originators (ship/gun)
+  - dead ship doesn't disappear if their canvas is paused
