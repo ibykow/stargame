@@ -13,7 +13,9 @@ pesoChar = Config.common.chars.peso
 (module ? {}).exports = class GasStation extends Sprite
   constructor: (@parent, @fuelPrice, @buttonState, @stationIndex = -1) ->
     return unless @parent
-    super @parent.game, @parent.position, 9, 9
+    super @parent.game, @parent.position.slice(), 9, 9
+    @position[0] += @parent.halfWidth - 4
+    @position[1] -= @parent.halfHeight + 2
     @fuelPrice ?= Config.common.fuel.price.min + rnd() *
       (Config.common.fuel.price.max - Config.common.fuel.price.min)
 

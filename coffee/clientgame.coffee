@@ -326,17 +326,19 @@ Sprite.updateVelocity = ->
     @c.fillRect 0, 0, @canvas.width, @canvas.height
 
   drawHUD: ->
+    @player.ship.drawHUD 2, 2
     @c.fillStyle = "#fff"
     @c.font = "14px Courier New"
-    @c.fillText @player.ship.position[0].toFixed(0), 0, 10
-    @c.fillText @player.ship.position[1].toFixed(0), 60, 10
-    @c.fillText @client.mouse.x.toFixed(0), 0, 20
-    @c.fillText @client.mouse.y.toFixed(0), 60, 20
-    @c.fillText @player.ship.position[2].toFixed(2), 120, 10
-    @c.fillText @player.ship.velocity[0].toFixed(0), 180, 10
-    @c.fillText @player.ship.velocity[1].toFixed(0), 220, 10
-    @c.fillText pesoChar + @player.cash.toFixed(2), 260, 10
-    @player.ship.drawHUD 0, 24
+    @c.fillText pesoChar + @player.cash.toFixed(2), 0, 52
+
+    @c.fillText @player.ship.position[0].toFixed(0), 80, 10
+    @c.fillText @player.ship.position[1].toFixed(0), 140, 10
+    @c.fillText @player.ship.position[2].toFixed(2), 200, 10
+
+    @c.fillText @player.ship.velocity[0].toFixed(0), 80, 22
+    @c.fillText @player.ship.velocity[1].toFixed(0), 140, 22
+    @c.fillText @client.mouse.x.toFixed(0), 80, 34
+    @c.fillText @client.mouse.y.toFixed(0), 140, 34
 
   draw: ->
     @clearScreen()

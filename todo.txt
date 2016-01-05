@@ -77,7 +77,7 @@ Mission System
 Event System
   √ register listeners
   √ emit events
-  - add timeout events
+  √ add timeout events
   - add event dependencies (has event occurred since I started listening? etc.)
 
 Events
@@ -103,6 +103,6 @@ Bugs
   √ server-side fuel purchase
   √ re-associate client-side bullets with their originators (ship/gun)
   - dead ship doesn't disappear if their canvas is paused
-  - move gas station icon above star
+  √ move gas station icon above star
   √ pager sequence (refuel update in between brake strings)
   - ring buffer map overflow (try map instead of toArray in pager brake strings)

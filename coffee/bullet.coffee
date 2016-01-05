@@ -6,8 +6,6 @@ if require?
 {ceil, cos, sin} = Math
 {speed, life} = Config.common.bullet
 
-nextBulletID = 1
-
 (module ? {}).exports = class Bullet extends Sprite
   @fromState: (game, state) ->
     return unless game and state
@@ -25,14 +23,10 @@ nextBulletID = 1
     vy = @gun.velocity[1]
     xdir = cos @position[2]
     ydir = sin @position[2]
-    xnorm = ceil xdir
-    ynorm = ceil ydir
     @velocity = [xdir * speed, ydir * speed]
     @position[0] += xdir * (@gun.width + 2)
     @position[1] += ydir * (@gun.height + 2)
     @life = life
-    # @update()
-    # console.log 'new bullet at', @position, @gun.player.id
 
   getState: ->
     Object.assign super(),

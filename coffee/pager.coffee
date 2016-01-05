@@ -6,7 +6,7 @@ if require?
 
 cfg = Config.client.pager
 
-[min] = [Math.min]
+{min} = Math
 
 (module ? {}).exports = class Pager
   constructor: (@game, @fade = cfg.fade, maxlines = cfg.maxlines) ->
