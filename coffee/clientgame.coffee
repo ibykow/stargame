@@ -25,7 +25,7 @@ Sprite.updateVelocity = ->
   @brakeStrings: [
     'BRAKE!',
     'Oh, dear God please stop!',
-    'Oh lord, Pretus, Lord almight!',
+    'Oh lord, Pretus, Lord almighty!',
     'Stop now please. Stop now please. Stop now please.'
     'STOP!!!'
     'For the love of Pretus, stop already!'
@@ -72,7 +72,7 @@ Sprite.updateVelocity = ->
           @page phrases[floor rnd() * phrases.length]
       target: ['player', 'ship']
       timeout: 0
-      repeats: true }
+      repeats: false }
     ]
 
     turn: [
@@ -93,6 +93,19 @@ Sprite.updateVelocity = ->
         @page 'You bought ' + data.delta.toFixed(2) + 'L of fuel for ' +
           pesoChar + data.price.toFixed(2) + ' at ' + pesoChar +
           station.fuelPrice.toFixed(2) + '/L'
+    ]
+
+    'refuel-error': [
+      target: ['player']
+      timeout: 0
+      repeats: true
+      callback: (data) ->
+        switch data.type
+          when '404' then info = "Can't find the station."
+          when 'distance' then info = "You're too far from the station."
+          when 'nsf' then info = "You don't have any money for fuel."
+          when 'full' then info = "You're already full on fuel."
+        @page info
     ]
 
   resized: -> @emit 'resize'

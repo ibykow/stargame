@@ -63,7 +63,20 @@ pesoChar = Config.common.chars.peso
         return @emit 'refuel-error',
           index: @gasStationIndex
           type: '404'
-        # @game.page "Gas station", @gasStationIndex, "is out of order. Sorry."
+
+      # No money :(
+      unless @cash > 0
+        return @emit 'refuel-error',
+          index: @gasStationIndex
+          type: 'nsf'
+
+      # Calculate the fuel and cost
+      fuelDelta = @ship.fuelCapacity - @ship.fuel
+
+      unless fuelDelta > 0
+        return @emit 'refuel-error',
+          index: @gasStationIndex
+          type: 'full'
 
       # Avoid filter cheating by requiring player-station proximity
       distance = @ship.distanceTo station
@@ -74,23 +87,6 @@ pesoChar = Config.common.chars.peso
           distance:
             required: Config.common.fuel.distance
             actual: distance
-        # @game.page 'Sorry. The gas station is too far away.'
-
-      # No money :(
-      unless @cash > 0
-        return @emit 'refuel-error',
-          index: @gasStationIndex
-          type: 'nsf'
-        # @game.page "Sorry, you're broke."
-
-      # Calculate the fuel and cost
-      fuelDelta = @ship.fuelCapacity - @ship.fuel
-
-      unless fuelDelta > 0
-        return @emit 'refuel-error',
-          index: @gasStationIndex
-          type: 'full'
-        # @game.page "You're full!" unless fuelDelta > 0
 
       price = fuelDelta * station.fuelPrice
 
