@@ -1,59 +1,37 @@
 if require?
   Util = require './util'
   Config = require './config'
-  Sprite = require './sprite'
 
 {abs, floor, sqrt, round, trunc} = Math
 rnd = Math.random
 isarr = Array.isArray
 
-cfg = Config.common.button
+(module ? {}).exports = class Button extends ComponentView
+  constructor: (@game, @params) ->
+    return unless @game? and @params?.parent
+    {@name, @text, @font, @enabled} = @params
+    @enabled ?= true
+    @name ?= 'myButton'
+    @text ?= 'OK'
+    @font ?=
+      string: '12px Courier New'
+      offset: [5, 5]
+    super @game, @params
 
-(module ? {}).exports = class Button extends Sprite
-  constructor: (@parent, name, click, @text = 'OK', @params = cfg) ->
-    return unless @parent
-
-    { width, height, colors, } = @params
-
-    super @parent.game, @parent.position, width, height, colors.background
-
-    @parent.adopt @, name
-
-    click = click ? -> console.log 'Hello, World'
-
-    @mouse.click = =>
-      @color = colors.click
-      click @
-
-    @enabled = @params.default.enabled
-
-  updatePosition: ->
-    @position = [
-      @parent.position[0] + @params.offset[0],
-      @parent.position[1] + @params.offset[1],
-      @parent.position[2]
-    ]
+    @immediate 'mouse-click', => console.log 'Clicked', @name
 
   update: ->
+    @view = [ @parent.view[0] + @offset[0],
+              @parent.view[1] + @offset[1],
+              @parent.view[2] ]
+
+    # if @hovering then @color = @params.colors.hover
+    # else @color = @params.colors.leave
+
+  draw: ->
+    return unless @enabled and @visible
     super()
-    if @mouse.hovering
-      @color = @params.colors.hover
-    else
-      @color = @params.colors.background
-
-  isInView: ->
-    @enabled and super()
-
-  draw: -> # we don't get called unless the parent is visible
-    return unless @enabled
-    xoff = -@halfWidth
-    yoff = -@halfHeight
-    @game.c.fillStyle = @color
-    @game.c.fillRect @view[0] + xoff, @view[1] + yoff, @width, @height
-    @game.c.fillStyle = @params.colors.text
+    @game.c.fillStyle = @colors.text
     @game.c.font = @params.font.string
-    @game.c.fillText @text, @view[0] + @params.font.offset[0] + xoff,
-      @view[1] + @params.font.offset[1]
-
-    # @game.c.fillText @text, @view[0] + @params.font.offset[0],
-    #   @view[0] + @params.font.offset[1]
+    @game.c.fillText @text,
+      @view[0] + @font.offset[0], @view[1] + @font.offset[1]

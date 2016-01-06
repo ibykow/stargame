@@ -1,42 +1,49 @@
 if require?
   Config = require './config'
   Util = require './util'
-  Sprite = require './sprite'
+  Physical = require './physical'
 
 {ceil, cos, sin} = Math
-{speed, life} = Config.common.bullet
+{damage, life, speed} = Config.common.bullet
 
-(module ? {}).exports = class Bullet extends Sprite
-  @fromState: (game, state) ->
-    return unless game and state
-    state.gun.game = game
-    b = new Bullet state.gun
-    b.setState state
-    b.id = state.id
-    b
+(module ? {}).exports = class Bullet extends Physical
+  constructor: (@game, @params) ->
+    return unless @game?
+    @ship = @game.lib['Ship']?[@params?.shipID]
+    @ship ?= @game.lib['InterpolatedShip']?[@params?.shipID]
+    return console.log "Couldn't create bullet. Ship not found." unless @ship
 
-  constructor: (@gun, @damage = 2) ->
-    return unless @gun
-    super @gun.game, @gun.position.slice(), 2, 2, "#ffd"
+    {@damage, @life, @speed} = @params
 
-    vx = @gun.velocity[0]
-    vy = @gun.velocity[1]
-    xdir = cos @position[2]
-    ydir = sin @position[2]
-    @velocity = [xdir * speed, ydir * speed]
-    @position[0] += xdir * (@gun.width + 2)
-    @position[1] += ydir * (@gun.height + 2)
-    @life = life
+    @damage ?= damage
+    @life ?= life
+    @speed ?= speed
+
+    @params.width = @params.height = 2
+    @params.color = @params.color ? '#FFD'
+
+    vx = @ship.velocity[0]
+    vy = @ship.velocity[1]
+    xdir = cos @ship.position[2]
+    ydir = sin @ship.position[2]
+
+    @params.v0 = [xdir * @speed, ydir * @speed]
+    @params.position = [  @ship.position[0] + xdir * (@ship.width + 2),
+                          @ship.position[1] + ydir * (@ship.height + 2),
+                          @ship.position[2] ]
+
+    super @game, @params
 
   getState: ->
     Object.assign super(),
-      life: @life
       damage: @damage
-      gun: @gun.getState()
+      life: @life
+      shipID: @ship.id
+      speed: @speed
 
   setState: (state) ->
     super state
-    {@life, @damage} = state
+    {@damage, @life, @shipID, @speed} = state
 
   updateVelocity: -> # bullet velocity is constant
 

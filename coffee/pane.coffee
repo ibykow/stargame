@@ -1,40 +1,28 @@
-# Pane: View only sprite
 if require?
-  Util = require './util'
   Config = require './config'
-  Sprite = require './sprite'
+  Util = require './util'
+  ComponentView = require './componentview'
 
-{abs, floor, sqrt, round, trunc} = Math
-rnd = Math.random
-isarr = Array.isArray
+# Pane: A window-like pane which closes when the mouse leaves
+(module ? {}).exports = class Pane extends ComponentView
+  constructor: (@game, @params = {}) ->
+    return unless @game?
+    @params.alpha = @params.alpha ? 0.6
+    @params.dimensions = @params.dimensions ? [360, 0]
+    super @game, @params
 
-(module ? {}).exports = class Pane extends Sprite
-  constructor: (@game, @view, @width, @height, @color, @visible = false,
-  @alpha, @resize = ->) ->
-    return unless @game
-    super @game, @view, @width, @height, @color, @alpha
-    if @visible then @open() else @close()
-    @game.on 'resize', @resize.bind @
-    @mouse.leave = => @close()
+  toggle: -> if @visible then @close() else @open()
 
   open: ->
-    @visible = @flags.isVisible = true
+    @visible = true
     @emit 'open'
 
   close: ->
-    @visible = @flags.isVisible = false
+    @visible = false
     @emit 'close'
 
-  getViewBounds: -> [[@view[0], @view[1]], [@width, @height]]
-  updateView: -> child.updateView() for name, child of @children
-  update: ->
-    return unless @visible
-    @game.visibleSprites.push @
-    child.update() for name, child of @children
-
-  draw: ->
-    c = @game.c
-    c.fillStyle = @color
-    c.globalAlpha = @alpha
-    c.fillRect @view[0], @view[1], @width, @height
-    c.globalAlpha = 1
+  resize: ->
+    {width, height, halfHeight} = @game.canvas
+    @view = [width - @dimensions[0], 0, 0]
+    @dimensions[1] = height
+    @halfHeight = halfHeight

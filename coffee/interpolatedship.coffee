@@ -1,20 +1,18 @@
 if require?
   Util = require './util'
-  Sprite = require './ship'
+  Ship = require './ship'
 
 (module ? {}).exports = class InterpolatedShip extends Ship
-  constructor: (@player, state) ->
-    return null unless @player and state.position
-    super @player, state.position
-    @velocity = state.velocity
-    @color = state.color
-    @prev = state
-    @next = state
+  constructor: (@game, @params) ->
+    return unless @game? and @params?.id
+    @next = @params
+    @setState @params
+    super @game, @params
 
   updateVelocity: -> # InterpolatedShip positions don't count on velocity
   updatePosition: ->
     rate = @game.interpolation.rate * @game.interpolation.step
-    @position = Util.lerp(@prev.position, @next.position, rate)
+    @position = Util.lerp @prev.position, @next.position, rate
 
   setState: (state) ->
     @prev =
@@ -24,3 +22,7 @@ if require?
       color: @next.color
 
     @next = state
+
+  insertView: ->
+    @view = new ShipView @, false
+    @view.update()

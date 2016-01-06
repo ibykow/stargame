@@ -8,61 +8,148 @@ isnum = Util.isNumeric
 isarr = Array.isArray
 
 (module ? {}).exports = class Eventable
-  @nextID: 1
-  @log: new RingBuffer Config.common.events.log.max
   @events: {}
-  @run: (step) ->
-    deleted = []
+  @nextID: 1
+  @processHandlers: (game, handlers, name, data) ->
+    return unless game? and handlers[name]?
+    step = game.tick.count
+    handlers[name].filter (handler) ->
+      return false if handler.deleted
+      handler.step.current = step
+      result = handler.callback data, handler
+      handler.step.previous = step
+      handler.deleted = not handler.repeats
+      if handler.timer and handler.deleted
+        handler.timer.delete()
+        handler.timer = null
+      return handler.repeats
+
+  @run: (game) ->
     for name, eventsList of @events
       for info in eventsList
-        listeners = info.target.listeners[name] or []
-        listeners = listeners.filter (handler) ->
-          return false if handler.deleted
-          handler.step.current = step
-          result = handler.callback info.data, handler
-          handler.step.previous = step
-          handler.deleted = not handler.repeats
-          if handler.timer and handler.deleted
-            handler.timer.delete()
-            handler.timer = null
-          return handler.repeats
-        deleted.push name
-      delete @events[name] for name in deleted
+        info.target.listeners[name] = @processHandlers game,
+          info.target.listeners, name, info.data
 
-  constructor: (@game) ->
-    return unless @game
+        delete @events[name]
+
+  @fromState: (game, state, view) ->
+    return unless game and state?.id
+    eventable = game.lib[@name]?[state.id]
+
+    if eventable
+      eventable.setState state
+    else
+      eventable = new @ game, state
+      eventable.insertView?() if view
+
+    for name, child of state.children
+      child.parent = eventable
+      eventable.children[name] = global[child.type].fromState game, child, view
+
+    eventable
+
+  constructor: (@game, @params = {}) ->
+    return unless @game?
     @listeners = {}
-    @id = Eventable.nextID
+    @immediates = {} # immediate listeners
+    @children = {}
+    @type = @constructor.name
+    @game.lib[@type] = {} unless @game.lib[@type]
+
+    if @params.id
+      @id = @params.id
+      Eventable.nextID = @params.id if @id > Eventable.nextID
+    else
+      @id = Eventable.nextID
+
+    @game.lib[@type][@id] = @
+    {@parent} = @params
+    @parent.adopt @ if @parent
+
     Eventable.nextID++
+
     @game.emit 'new', @
 
-  getState: -> id: @id
-  setState: (state) -> @id = state.id ? @id
+  # (Re)places child and force updates child's parent
+  adopt: (child, name) ->
+    return unless child?.id
+    name = name ? child.id
+    @children[name] = child
+    child.parent = @
+
+  delete: ->
+    child.delete() for name, child of @children
+    if @game.lib[@type]?[@id] is @
+      @deleted = true
+      delete @game.lib[@type][@id]
+
+  getState: ->
+    states = {}
+    state[name] = child.getState() for name, child of @children
+
+    if @parent?
+      parentState =
+        id: @parent.id
+        type: @parent.type
+    else
+      parentState = null
+
+    id: @id
+    type: @constructor.name
+    children: states
+    parent: parentState
+
+  setState: (state, setChildStates = false) ->
+    {@id, @type} = state
+    if setChildStates and state.children
+      for name, child of @children when state.children[name]?
+        child.setState state.children[name], true
 
   emit: (name, data = {}) -> # Emits an event. TODO: Prevent infinite loops.
     info =
       target: @
       data: data
 
-    if isarr Eventable.events[name]
-      Eventable.events[name].push info
-    else
-      Eventable.events[name] = [info]
+    # Process immediates
+    @immediates[name] = Eventable.processHandlers @game, @immediates, name, data
+
+    if isarr Eventable.events[name] then Eventable.events[name].push info
+    else Eventable.events[name] = [info]
+
+  # registers an event listener for immediate execution
+  immediate: (name, callback, timeout, repeats) ->
+    @on name, callback, timeout, repeats, true
 
   # registers an event listener
-  on: (name, callback, timeout = 0, repeats = false) ->
+  on: (name, callback, timeout = 0, repeats = false, immediate = false) ->
     step = @game.tick.count
-    handler =
-      target: @
-      repeats: repeats
-      callback: callback
-      deleted: false
-      timedOut: false
-      timer: null
-      step:
-        start: step
-        current: step
-        previous: step
+    switch typeof callback
+      when 'object'
+        handler = callback
+        handler.target ||= @
+        handler.repeats ||= false
+        handler.deleted ||= false
+        handler.timedOut ||= false
+        handler.timer ||= null
+        handler.step ||=
+          start: step
+          current: step
+          previous: step
+
+      when 'function'
+        handler =
+          target: @
+          repeats: repeats
+          callback: callback
+          deleted: false
+          timedOut: false
+          timer: null
+          step:
+            start: step
+            current: step
+            previous: step
+
+      else return null
 
     if timeout > 0
       timercb = (handler, timer) ->
@@ -71,7 +158,13 @@ isarr = Array.isArray
 
       handler.timer = new Timer step, timeout, timercb.bind @, handler
 
-    if isarr @listeners[name]
-      @listeners[name].push handler
+    if immediate
+      if isarr @immediates[name] then @immediates[name].push handler
+      else @immediates[name] = [handler]
     else
-      @listeners[name] = [handler]
+      if isarr @listeners[name] then @listeners[name].push handler
+      else @listeners[name] = [handler]
+
+    return handler
+
+  insertView: -> # do nothing

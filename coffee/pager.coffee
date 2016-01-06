@@ -4,27 +4,27 @@ if require?
   Util = require './util'
   RingBuffer = require './ringbuffer'
 
-cfg = Config.client.pager
+conf = Config.client.pager
 
 {min} = Math
 
 (module ? {}).exports = class Pager
-  constructor: (@game, @fade = cfg.fade, maxlines = cfg.maxlines) ->
-    return unless @game
-    @buffer = new RingBuffer maxlines
+  constructor: (@game, @fade = conf.fade, maxlines = conf.maxlines) ->
+    return unless @game?
+    @ring = new RingBuffer maxlines
 
   page: (message) ->
-    @buffer.insert
+    @ring.insert
       message: message
-      ttl: cfg.ttl
+      ttl: conf.ttl
 
   draw: ->
-    @buffer.purge (m) -> m.ttl < 1
-    entries = @buffer.toArray()
+    @ring.purge (m) -> m.ttl < 1
+    entries = @ring.toArray()
     for entry, i in entries
-      yoffset = @game.canvas.height - cfg.yoffset * (entries.length - i)
-      @game.c.fillStyle = cfg.color
-      @game.c.font = cfg.font
+      yoffset = @game.canvas.height - conf.yoffset * (entries.length - i)
+      @game.c.fillStyle = conf.color
+      @game.c.font = conf.font
       @game.c.globalAlpha = min entry.ttl / @fade, 1
-      @game.c.fillText entry.message, cfg.xoffset, yoffset
+      @game.c.fillText entry.message, conf.xoffset, yoffset
       entry.ttl--

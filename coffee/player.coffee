@@ -11,10 +11,9 @@ pesoChar = Config.common.chars.peso
 
 (module ? {}).exports = class Player extends Eventable
   @LOGLEN: Config.client.player.loglen
-  constructor: (@game, @socket, position) ->
-    super @game # initialize eventable
-    @ship = new Ship @, position
-    @arrows = []
+  constructor: (@game, @params) ->
+    {@socket, ship} = @params
+    @ship = new Ship @game, ship
     @inputs = []
     @cash = 3000
     @minInputSequence = 1 # used by the server
@@ -22,6 +21,9 @@ pesoChar = Config.common.chars.peso
     @logs =
       state: new RingBuffer Player.LOGLEN
       input: new RingBuffer Player.LOGLEN
+    super @game, @params # initialize eventable
+    @ship.playerID = @id
+    @ship.player = @
     @registerEventHandlers()
 
   actions:
@@ -106,29 +108,22 @@ pesoChar = Config.common.chars.peso
         price: price
 
   registerEventHandlers: ->
-    callback = (data) ->
-      if data.timedOut
-        console.log 'too late'
-        data.deleted = true
-      else
-        console.log 'go!'
-
-    @ship.on 'accelerate', callback, 240
-
-    @ship.on 'nofuel', (data) =>
-      console.log 'Player', @id, 'has run out of fuel'
+    @ship.on 'nofuel', (data) => console.log 'Player', @id, 'ran out of fuel'
 
     @on 'refuel', (data) =>
       {index, delta, price} = data
       console.log 'Gas station', index, 'sold', delta.toFixed(2) +
       'L of fuel to player', @id
-      # info = 'You bought ' + delta.toFixed(2) + 'L of fuel for ' +
-      #   pesoChar + price.toFixed(2) + ' at ' + pesoChar +
-      #   station.fuelPrice.toFixed(2) + '/L';
-      # @game.page info).bind @
 
-  arrowTo: (sprite, id, color = '#00F') ->
-    @arrows.push(new Arrow @game, @ship, sprite, color, 0.8, 2, id)
+  arrowTo: (view, color, lineWidth, alpha) ->
+    params =
+      a: @ship.view
+      b: view
+      color: color
+      alpha: alpha
+      lineWidth: lineWidth
+
+    new Arrow @game, params
 
   getState: ->
     Object.assign super(),
@@ -143,14 +138,6 @@ pesoChar = Config.common.chars.peso
   die: ->
     console.log "I'm dead", @id
     @socket.disconnect()
-
-  updateArrows: ->
-    arrows = @arrows.slice()
-    for arrow, i in arrows
-      if arrow.b.flags.isDeleted
-        @arrows.splice i, 1
-      else
-        arrow.update()
 
   updateInputLog: ->
     entry =

@@ -45,12 +45,14 @@ client = null
         console.log "Error:", err
 
       welcome: (data) ->
-        console.log 'received', data
+        return console.log 'Error (Welcome):', data unless data?.game?
 
-        @game = new ClientGame @canvas, @socket, data
+        console.log 'Welcome:', data
+
+        data.game.socket = @socket
+        @game = new ClientGame @canvas, data.game
         @game.client = @
         @socket.emit 'join', @game.player.name
-        @game.player.ship.updateView = @game.player.ship.updateViewMaster
         @resizedCallback = @game.resized.bind @game
 
         # update the state event handler
@@ -67,7 +69,7 @@ client = null
         console.log 'player', data.id + ', ' + data.name, 'has joined'
 
       leave: (id) ->
-        @game.removeShip(id)
+        @game.removeShip id
         console.log 'player', id, 'has left'
 
       disconnect: ->
@@ -98,8 +100,8 @@ client = null
 
   frame:
     run: (timestamp) ->
-      @game.step timestamp
       @frame.request = window.requestAnimationFrame @frame.run.bind @
+      @game.step timestamp
 
     stop: ->
       @game.gameOver()
@@ -109,6 +111,7 @@ client = null
 
 # Load
 window.onload = -> client = new Client document.querySelector 'canvas'
+{msPerFrame} = Config.common
 
 # Frame request code
 (->
@@ -118,13 +121,13 @@ window.onload = -> client = new Client document.querySelector 'canvas'
   for vendor in vendors
     break if window.requestAnimationFrame
     window.requestAnimationFrame = window[vendor + 'RequestAnimationFrame']
-    window.cancelAnimationFrame = window[vendor + 'CancelAnimationFrame'] ||
+    window.cancelAnimationFrame = window[vendor + 'CancelAnimationFrame'] or
       window[vendor + 'CancelRequestAnimationFrame']
 
   if not window.requestAnimationFrame
     window.requestAnimationFrame = (callback, element) ->
       currTime = +new Date
-      timeToCall = Math.max 0, Config.common.msPerFrame - (currTime - lastTime)
+      timeToCall = Math.max 0, msPerFrame - (currTime - lastTime)
       lastTime = currTime + timeToCall
       window.setTimeout (-> callback lastTime), timeToCall
 

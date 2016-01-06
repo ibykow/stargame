@@ -4,49 +4,42 @@ if require?
   Timer = require './timer'
   RingBuffer = require './ringbuffer'
   Eventable = require './eventable'
-  Sprite = require './sprite'
   Player = require './player'
 
 (module ? {}).exports = class Game extends Eventable
-  constructor: (@width = 1 << 8, @height = 1 << 8, @frictionRate = 0.96) ->
-    super @
+  constructor: (@params) ->
+    {@width, @height, @rates} = @params
     @toroidalLimit = [@width, @height]
-    @players = []
-    @ships = []
-    @stars = []
-    @bullets = []
     @paused = true
-    @viewOffset = [0, 0] # used by sprites
-    @gasStations = []
-    @collisionSpriteLists =
-      stars: @stars
-      ships: @ships
+    @events ||= {}
+    @lib ||= {} # keep references of all eventables in existence
     @tick =
-      count: 0
+      count: @params.count or 0
       time: 0
       dt: 0
 
-  getShips: -> p.ship for p in @players
+    # Eventable expects an initialized game
+    super @, @params
+
+    @initializeEventHandlers()
+
   framesToMs: (frames) -> frames * Config.common.msPerFrame
   msToFrames: (ms) -> ms / Config.common.msPerFrame
   randomPosition: -> [Util.randomInt(0, @width), Util.randomInt(0, @height), 0]
 
-  removePlayer: (p) ->
-    return unless p
-    for i in [0...@players.length]
-      if @players[i].id is p.id
-        @players.splice(i, 1)
-        break
+  initializeEventHandlers: ->
+    for name, handlers of @events
+      for info in handlers
+        info.callback = info.callback.bind @
+        @on name, info
 
-  insertBullet: (b) ->
-    return unless b
-    @bullets.push b
+  insertBullet: (bullet) -> # do nothing client-side
 
   update: ->
     step = @tick.count++
     Timer.run step
-    Eventable.run step
-    b.update() for b in @bullets
+    Eventable.run @
+    bullet.update() for id, bullet of @lib['Bullet'] or {}
 
   logPlayerStates: ->
     for player in @players when player

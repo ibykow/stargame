@@ -1,3 +1,30 @@
+Guiding Principles:
+  Event Driven
+    - everything in the game can emit and handle events
+    - the vast majority of what goes on in the game happens
+        as a result of events
+
+Ideas:
+  Event Aggregators:
+    Some event handlers want to execute immediately.
+    Regular event handlers can wait and allow for events to be aggregated.
+    Example of an immediate event handler: mouse movement handler
+    Example of a regular event handler: handler to update mouse objects list
+    Events can either be aggregated into one place and processed at a regular
+    interval, or they can be funneled into separate 'aggregators' which
+    are processed at separate intervals.
+    Event aggregators will reduce processing use in the case where at least
+    some regular events can be processed less frequently than other regular
+    events. So, instead of having two event layers, immediate, and regular,
+    we can have immediate event handling as well as a hypothetically limitless
+    number of regular events being handled at varying intervals.
+
+WIP:
+  Keep references of all eventables in arrays in the game
+  game.lib =
+    Bullet: [Bullet1, Bullet2, ...]
+    Star: [...]
+
 Milestones
   √ player cash
   √ ship fuel
@@ -106,6 +133,8 @@ Bugs
   √ move gas station icon above star
   √ pager sequence (refuel update in between brake strings)
   - ring buffer map overflow (try map instead of toArray in pager brake strings)
+  - re-enabled bullet firing
+  √ rejoined player not updating existing players
 
 Mission
   - prize

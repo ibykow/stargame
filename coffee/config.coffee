@@ -1,6 +1,9 @@
 # Provide configuration data
 (module ? {}).exports = Config =
   client:
+    arrow:
+      color: '#0F0'
+      lineWidth: 0.5
     colors:
       background:
         default: '#000'
@@ -35,17 +38,34 @@
       yoffset: 12
     player:
       loglen: 1 << 8
+    view:
+      alpha: 1
+      mouse:
+        events:
+          enter: -> console.log 'Planning on staying long?'
+          leave: -> console.log "Please don't leave me!"
+          press: -> console.log "Don't press me Mitch."
+          release: -> console.log 'Release me. Set me free.'
+          click: -> console.log 'You clicked me!'
   server:
+    bulletCollidableTypes: [ 'Ship', 'Star' ]
+    game:
+      width: (1 << 15) + 1
+      height: (1 << 15) + 1
+      stars: 4000
+      rates:
+        friction: 0.99
     updatesPerStep: 5
   common:
     uri: 'http://localhost:3000'
     bullet:
+      damage: 2
       life: 60 * 3
       speed: 10
     button:
       width: 50
       height: 50
-      offset: [0, -8, 0]
+      offset: [0, -8]
       colors:
         background: '#666'
         hover: '#888'
@@ -53,25 +73,30 @@
         text: '#fff'
       font:
         string: '12px Courier New'
-        offset: [10, 4, 0]
+        offset: [10, 4]
       default:
         enabled: true
     chars:
       peso: '\u03df'
-    event:
-      max: 0x100
     fuel:
       distance: 50 # max refueling distance
       price:
         min: 0.8
         max: 1.9
-    events:
-      log:
-        max: 0x100 # keep 512 event log entries
-    mapSize: (1 << 15) + 1
+    model:
+      width: 10
+      height: 10
+      isRigid: true
+      veloctiy: [0,0]
     msPerFrame: 16
     rates:
-      gasStation: 0.3 # probability of a star having a gas station
+      gasStation: 0.2 # probability of a star having a gas station
+      market: 0.4
+      mine:
+        silver: 0.2
+        gold: 0.1
+        platinum: 0.05
+        ununpentium: 0.01
     ringbuffer:
       max: 50
     ship:
