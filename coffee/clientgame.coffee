@@ -4,6 +4,7 @@ if require?
   Eventable = require './eventable'
   Sprite = require './sprite'
   Pane = require './pane'
+  PaneButton = require './panebutton'
   GasStation = require './gasstation'
   Ship = require './ship'
   Game = require './game'
@@ -116,8 +117,12 @@ Sprite.updateVelocity = ->
       @view = [width - @width, 0, 0]
       @height = height
       @halfHeight = halfHeight
+      @updateView()
 
     @contextMenu = new Pane @, [0, 0, 0], 360, 0, "#00f", false, 0.6, resizeCB
+    new PaneButton @contextMenu, 'testBtn', 'Test', null, [20, 20], ->
+      console.log 'This is a test.'
+
     @contextMenu.resize()
 
   initializeEventHandlers: ->
@@ -343,7 +348,7 @@ Sprite.updateVelocity = ->
     super()
     star.update() for star in @stars
     ship.update() for ship in @ships
-    @visibleSprites.push @contextMenu if @contextMenu.visible
+    @contextMenu.update() if @contextMenu.visible
     @updateMouse()
     @interpolation.step++
     @correctPrediction()

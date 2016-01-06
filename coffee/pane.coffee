@@ -20,7 +20,12 @@ isarr = Array.isArray
   open: -> @visible = @flags.isVisible = true
   close: -> @visible = @flags.isVisible = false
   getViewBounds: -> [[@view[0], @view[1]], [@width, @height]]
-  update: -> @game.visibleSprites.push @ unless @visible
+  updateView: -> child.updateView() for name, child of @children
+  update: ->
+    return unless @visible
+    @game.visibleSprites.push @
+    child.update() for name, child of @children
+
   draw: ->
     c = @game.c
     c.fillStyle = @color
