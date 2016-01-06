@@ -4,13 +4,14 @@ if require?
 [atan2, min, sqrt, pi] = [Math.atan2, Math.min, Math.sqrt, Math.PI]
 
 (module ? {}).exports = class Arrow
-  constructor: (@game, @a, @b, @color = "#0f0", @alpha = 1,
-  @lineWidth = 0.5, @id) ->
+  constructor: (@game, @a, @b, @color = "#0f0", @alpha = 1, @lineWidth = 0.5) ->
     return unless @game and @a and @b
     @magnitude = 0
+    @enabled = true
     @prevMagnitude = 0
 
   update: ->
+    return unless @enabled
     p = Util.toroidalDelta @a.view, @b.view, @game.toroidalLimit
     # p = @a.positionDelta @b
     p[2] = atan2(p[0], p[1])
@@ -24,6 +25,7 @@ if require?
       @viewAlpha = @alpha
 
   draw: ->
+    return unless @enabled
     top = (@magnitude * @game.canvas.halfHeight) / @game.width + 30
     side = top - 10
     bottom = min side, 25

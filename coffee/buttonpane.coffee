@@ -1,10 +1,10 @@
 if require?
   Util = require './util'
   Config = require './config'
-  Sprite = require './sprite'
+  ChildPane = require './childpane'
 
-(module ? {}).exports = class PaneButton extends Pane
-  constructor: (@parent, @name, @text, @params, @offset, @click) ->
+(module ? {}).exports = class ButtonPane extends ChildPane
+  constructor: (@parent, @name, @text, @offset, @click, @params) ->
     return unless @parent
 
     @params ?=
@@ -20,23 +20,16 @@ if require?
 
     { @width, @height, @colors } = @params
 
-    super @parent.game, @parent.view, @width, @height, @colors.background
+    super @parent, @name, @offset, @width, @height, @colors.background
 
-    @parent.adopt @, @name
     @enabled = true
-    @visible = true
-    @offset ?= [0, 0]
-    @click ?= -> console.log 'Hello, World'
 
+    @click ?= -> console.log 'Hello, World'
     @mouse.enter = => @color = @colors.hover
     @mouse.leave = => @color = @colors.background
     @mouse.press = => @color = @colors.background
     @mouse.release = => @color = @colors.hover
     @mouse.click = => @click()
-
-  updateView: ->
-    @view[0] = @parent.view[0] + @offset[0]
-    @view[1] = @parent.view[1] + @offset[1]
 
   draw: ->
     return unless @enabled and @visible

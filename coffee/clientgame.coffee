@@ -4,7 +4,7 @@ if require?
   Eventable = require './eventable'
   Sprite = require './sprite'
   Pane = require './pane'
-  PaneButton = require './panebutton'
+  ButtonPane = require './buttonpane'
   GasStation = require './gasstation'
   Ship = require './ship'
   Game = require './game'
@@ -61,28 +61,28 @@ Sprite.updateVelocity = ->
       @rate = 1 / Config.server.updatesPerStep
 
   events:
-    accelerate: [ {
-      callback: (data) ->
-        @page "Woohoo! You're flying now!" if data.direction is 'forward'
-      target: ['player', 'ship']
-      timeout: 0
-      repeats: false }
-    { callback: (data) ->
-        if data.direction is 'brake'
-          phrases = ClientGame.brakeStrings
-          @page phrases[floor rnd() * phrases.length]
-      target: ['player', 'ship']
-      timeout: 0
-      repeats: false }
-    ]
+    # accelerate: [ {
+    #   callback: (data) ->
+    #     @page "Woohoo! You're flying now!" if data.direction is 'forward'
+    #   target: ['player', 'ship']
+    #   timeout: 0
+    #   repeats: false }
+    # { callback: (data) ->
+    #     if data.direction is 'brake'
+    #       phrases = ClientGame.brakeStrings
+    #       @page phrases[floor rnd() * phrases.length]
+    #   target: ['player', 'ship']
+    #   timeout: 0
+    #   repeats: false }
+    # ]
 
-    turn: [
-      target: ['player', 'ship']
-      timeout: 0
-      repeats: false
-      callback: (data) -> @page 'Woohoo! Your very first turn was to the ' +
-        data.direction + ' by ' + abs(data.amount) + ' radians!'
-    ]
+    # turn: [
+    #   target: ['player', 'ship']
+    #   timeout: 0
+    #   repeats: false
+    #   callback: (data) -> @page 'Woohoo! Your very first turn was to the ' +
+    #     data.direction + ' by ' + abs(data.amount) + ' radians!'
+    # ]
 
     refuel: [
       target: ['player']
@@ -119,11 +119,24 @@ Sprite.updateVelocity = ->
       @halfHeight = halfHeight
       @updateView()
 
+    toggleCB = ->
+      if @text is 'On'
+        b.params.font.offset[0] = 14
+        @text = 'Off'
+      else
+        b.params.font.offset[0] = 18
+        @text = 'On'
+
     @contextMenu = new Pane @, [0, 0, 0], 360, 0, "#00f", false, 0.6, resizeCB
-    new PaneButton @contextMenu, 'testBtn', 'Test', null, [20, 20], ->
-      console.log 'This is a test.'
+    b = new ButtonPane @contextMenu, 'testBtn', 'On', [100, 20], toggleCB
+    b.params.font.offset[0] = 18
 
     @contextMenu.resize()
+
+    callback = => @page 'Move your mouse to the right side of the screen ->'
+    timer = new Timer @tick.count, 60 * 10, callback, @repeats = true
+    @contextMenu.on 'open', -> timer.delete()
+    callback()
 
   initializeEventHandlers: ->
     for name, handlers of @events
@@ -285,7 +298,7 @@ Sprite.updateVelocity = ->
       if i is 0 and j > 0
         ship = @ships[0]
         console.log 'arrow to', ship
-        @player.arrowTo ship, ship.player.id
+        @player.arrowTo ship
 
     # if a new player has entered, sort our list of ships by id
     (@ships.sort (a, b) -> a.id - b.id) if inserted

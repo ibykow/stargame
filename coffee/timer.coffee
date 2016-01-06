@@ -35,7 +35,6 @@ isnum = Util.isNumeric
       isnum(@start) and (@start >= 0) and
       isnum(@period) and (@period > 0)
 
-    @args ?= []
     @deleted = false
     @isActive = true
     @remaining = @period
@@ -49,7 +48,5 @@ isnum = Util.isNumeric
   delete: ->
     return unless Timer.pool[@id]
     @callback = ->
-    @args = []
-    @target = @
     @isActive = true
     @nextStep = 0

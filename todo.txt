@@ -106,3 +106,42 @@ Bugs
   √ move gas station icon above star
   √ pager sequence (refuel update in between brake strings)
   - ring buffer map overflow (try map instead of toArray in pager brake strings)
+
+Mission
+  - prize
+  - description
+  - start location
+  - conditions
+    - currency
+    - location
+    - distance traveled
+    - destination
+
+Condition
+  - event handler
+
+Objective
+  - one or more conditions combined with 'and' logic
+  - waits for all conditions to be met
+  - is disabled/deactivated by milestone
+
+Milestone
+  - one or more objectives combined with 'or' logic
+  - two objective categories: pass or fail
+  - disables/deactives all objectives in both categories when one is achieved
+  - success/failure: activate milestone transition
+
+MilestoneTransition
+  - connects two milestone: previous and next
+  - disables previous milestone
+  - on success:
+    - enacts a transition action (eg. give player some money)
+    - activates the next milestone
+  - on failure:
+    - enacts failure action
+    - enacts mission failure on transitions to some previous milestone
+
+Mission:
+  - list of milestones
+  - success action (reward)
+  - failure action (eg. message: you suck)

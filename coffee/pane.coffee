@@ -17,8 +17,14 @@ isarr = Array.isArray
     @game.on 'resize', @resize.bind @
     @mouse.leave = => @close()
 
-  open: -> @visible = @flags.isVisible = true
-  close: -> @visible = @flags.isVisible = false
+  open: ->
+    @visible = @flags.isVisible = true
+    @emit 'open'
+
+  close: ->
+    @visible = @flags.isVisible = false
+    @emit 'close'
+
   getViewBounds: -> [[@view[0], @view[1]], [@width, @height]]
   updateView: -> child.updateView() for name, child of @children
   update: ->
