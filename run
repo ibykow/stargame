@@ -8,7 +8,7 @@ echo 'Installing NPM modules'
 npm install
 
 printf 'Generating game scripts... '
-coffee -o lib/ -c coffee/
+coffee -b -o lib/ -c coffee/
 echo 'done'
 
 echo 'Starting server...'
