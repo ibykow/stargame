@@ -113,6 +113,7 @@ pesoChar = Config.common.chars.peso
     callback = (data) ->
       if data.timedOut
         console.log 'too late'
+        data.deleted = true
       else
         console.log 'go!'
 

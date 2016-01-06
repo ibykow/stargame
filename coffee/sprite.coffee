@@ -7,10 +7,11 @@ if require?
 isarr = Array.isArray
 
 (module ? {}).exports = class Sprite extends Eventable
-  constructor: (@game, @position, @width = 10, @height = 10, @color) ->
+  constructor: (@game, @position, @width = 10, @height = 10, @color, @alpha) ->
     super @game
     @position ?= @game.randomPosition()
     @color ?= Util.randomColorString()
+    @alpha ?= 1
     @velocity = [0, 0]
     @magnitude = 0
     @halfWidth = @width / 2
@@ -133,8 +134,10 @@ isarr = Array.isArray
 
   draw: ->
     return unless @flags.isVisible
+    @game.c.globalAlpha = @alpha
     @game.c.fillStyle = @color
     @game.c.fillRect  @view[0] - @halfWidth, @view[1] - @halfHeight,
                       @width, @height
 
+    @game.c.globalAlpha = 1
     child.draw(@view) for type, child of @children
