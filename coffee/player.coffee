@@ -13,7 +13,6 @@ pesoChar = Config.common.chars.peso
   @LOGLEN: Config.client.player.loglen
   constructor: (@game, @params) ->
     {@socket, ship} = @params
-    @ship = new Ship @game, ship
     @inputs = []
     @cash = 3000
     @minInputSequence = 1 # used by the server
@@ -21,10 +20,9 @@ pesoChar = Config.common.chars.peso
     @logs =
       state: new RingBuffer Player.LOGLEN
       input: new RingBuffer Player.LOGLEN
-    super @game, @params # initialize eventable
+    @generateShip ship
+    super @game, @params
     @ship.playerID = @id
-    @ship.player = @
-    @registerEventHandlers()
 
   actions:
     forward: ->
@@ -48,7 +46,7 @@ pesoChar = Config.common.chars.peso
     brake: ->
       magnitude = @ship.magnitude
       return unless magnitude
-      @ship.isBraking = true
+      @ship.braking = true
       rate = Config.common.ship.rates.brake
       rate = (min magnitude * magnitude / @ship.brakePower, rate) - 1
       @ship.accelerate 'brake',
@@ -107,7 +105,20 @@ pesoChar = Config.common.chars.peso
         delta: fuelDelta
         price: price
 
-  registerEventHandlers: ->
+  arrowTo: (view, color, lineWidth, alpha) ->
+    new Arrow @game,
+      a: @ship.view
+      b: view
+      color: color
+      alpha: alpha
+      lineWidth: lineWidth
+
+  die: ->
+    @game.deadShipIDs.push @ship.id
+    @ship.delete()
+    @emit 'die'
+
+  initializeEventHandlers: ->
     @ship.on 'nofuel', (data) => console.log 'Player', @id, 'ran out of fuel'
 
     @on 'refuel', (data) =>
@@ -115,36 +126,29 @@ pesoChar = Config.common.chars.peso
       console.log 'Gas station', index, 'sold', delta.toFixed(2) +
       'L of fuel to player', @id
 
-  arrowTo: (view, color, lineWidth, alpha) ->
-    params =
-      a: @ship.view
-      b: view
-      color: color
-      alpha: alpha
-      lineWidth: lineWidth
-
-    new Arrow @game, params
-
   getState: ->
     Object.assign super(),
       inputSequence: @inputSequence
-      ship: @ship.getState()
+      ship: @ship?.getState()
 
   setState: (state) ->
     super state
     @inputSequence = state.inputSequence
     @ship.setState state.ship
 
-  die: ->
-    console.log "I'm dead", @id
-    @socket.disconnect()
+  generateShip: (state, view) ->
+    @logs['input'].reset()
+    @ship?.delete?()
+    @ship = Ship.fromState @game, state, view
+    @ship.playerID = @id
+    @ship.player = @
 
   updateInputLog: ->
     entry =
       sequence: @inputSequence
       gameStep: @game.tick.count
       serverStep: @game.serverTick.count
-      ship: @ship.getState()
+      ship: @ship?.getState()
       inputs: @inputs.slice()
       gasStationIndex: @gasStationIndex
 
@@ -158,3 +162,4 @@ pesoChar = Config.common.chars.peso
     @actions[action].bind(@)() for action in @inputs when action?.length
     @ship.update()
     @die() if @ship.health < 0
+    console.log 'no ship for', @id unless @ship?.id

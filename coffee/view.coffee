@@ -20,6 +20,14 @@ if require?
     for name, callback of conf.mouse.events
       @immediate 'mouse-' + name, callback.bind(@), 0, true
 
+  delete: ->
+    # Collect and remove any arrows pointing to the ship
+    if @game.lib['Arrow']?
+      for id, arrow of @game.lib['Arrow']
+        arrow.delete() if (arrow.a.id is @id) or (arrow.b.id is @id)
+
+    super()
+
   getBounds: -> [[0, 0], [1, 1]]
 
   getState: ->

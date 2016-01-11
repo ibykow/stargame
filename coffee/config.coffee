@@ -55,6 +55,10 @@
       stars: 4000
       rates:
         friction: 0.99
+        partition: 100
+    ship:
+      width: 20
+      height: 20
     updatesPerStep: 5
   common:
     uri: 'http://localhost:3000'
@@ -86,7 +90,6 @@
     model:
       width: 10
       height: 10
-      isRigid: true
       veloctiy: [0,0]
     msPerFrame: 16
     rates:

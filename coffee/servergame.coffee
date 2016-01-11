@@ -28,7 +28,6 @@ rnd = Math.random
     @starStates = (star.getState() for id, star of @lib['Star'])
     @page = console.log
     @newBullets = []
-    @deadBulletIDs = []
 
   insertBullet: (bullet) -> @newBullets.push bullet if bullet?
 
@@ -42,18 +41,28 @@ rnd = Math.random
       if rnd() < Config.common.rates.market
         new Market star
 
+  getStates: (initial) ->
+    players = for id, player of @lib['Player']
+      state = player.getState()
+      player.ship?.damaged = 0
+      player.ship?.firing = false
+      state
+
+    if initial then lib = @lib['Bullet'] or [] else lib = @newBullets
+    bullets = (bullet.getState() for bullet in lib when not bullet.isDeleted())
+
+    players: players
+    bullets: bullets
+
   sendInitialState: (player) ->
     return unless player
-
-    playerStates = (player.getState() for id, player of @lib['Player'])
-    bulletStates = (bullet.getState() for bullet in @lib['Bullet']?)
+    {players, bullets} = @getStates true
 
     # send the id and game information back to the client
     player.socket.emit 'welcome',
       bullets:
         dead: []
-        new: bulletStates
-      ships: playerStates
+        new: bullets
       game:
         player: player.getState()
         width: @width
@@ -61,50 +70,26 @@ rnd = Math.random
         rates: @rates
         tick: @tick
         starStates: @starStates
+        deadShipIDs: []
+      players: players
 
   sendState: ->
-    playerStates = (player.getState() for id, player of @lib['Player'])
-    bulletStates = (bullet.getState() for bullet in @newBullets)
+    {players, bullets} = @getStates()
 
     @server.io.emit 'state',
       bullets:
         dead: @deadBulletIDs
-        new: bulletStates
-      ships: playerStates
+        new: bullets
       game:
         tick: @tick
+        deadShipIDs: @deadShipIDs
+      players: players
 
-  # update each bullet state and remove dead bullets
-  updateCollisions: ->
-    # @bullets = @bullets.filter (b) =>
-    #   for type, sprites of @collisionSpriteLists
-    #     sprite.handleBulletImpact b for sprite in b.detectCollisions sprites
-    return unless bullets = @lib['Bullet']
-    collidableTypes = conf.bulletCollidableTypes
-    for id, bullet of bullets
-      if bullet.life <= 0
-        bullet.delete()
-        @deadBulletIDs.push id
-        continue
-
-      # primitive, and inefficient collision detection
-      # TODO: Add a quadtree implementation to handle big sets.
-      for type in collidableTypes when @lib[type]?
-        for id, model of @lib[type]
-          if bullet.intersects model
-            @emit 'hit',
-              bullet: bullet
-              model: model
-            bullet.delete()
-            @deadBulletIDs.push id
-
-  update: ->
-    for i in [conf.updatesPerStep..1]
-      super()
-      # @updateCollisions()
+  update: -> super() for [1..conf.updatesPerStep]
 
   step: (time) ->
     super time
     @sendState()
     @deadBulletIDs = []
+    @deadShipIDs = []
     @newBullets = []

@@ -20,8 +20,7 @@ isarr = Array.isArray
 
 pesoChar = Config.common.chars.peso
 
-Player::die = -> @ship.isDeleted = true
-Ship::fire = -> @emit 'fire'
+Ship::fire = -> @firing = true
 
 (module ? {}).exports = class ClientGame extends Game
   @brakeStrings: [
@@ -50,7 +49,19 @@ Ship::fire = -> @emit 'fire'
 
     @params.player.socket = @params.socket
     @player = Player.fromState @, @params.player
+    @player.state = @params.player
     @player.ship.insertView()
+
+    handler = @player.on 'refuel-error', (data) ->
+      switch data.type
+        when '404' then info = "Can't find the station."
+        when 'distance' then info = "You're too far from the station."
+        when 'nsf' then info = "You don't have any money for fuel."
+        when 'full' then info = "You're already full on fuel."
+        else return
+      @page info
+
+    handler.repeats = true
 
     @player.name = 'Guest'
     @lastVerifiedInputSequence = 0
@@ -66,40 +77,7 @@ Ship::fire = -> @emit 'fire'
       @rate = 1 / Config.server.updatesPerStep
 
   events:
-    # fire: [
-    #   deleted: false
-    #   targetPath: ['player', 'ship']
-    #   timeout: 0
-    #   repeats: true
-    #   callback: (data) -> @page 'bullet fired'
-    # ]
-    #
-    # refuel: [
-    #   targetPath: ['player']
-    #   timeout: 0
-    #   repeats: true
-    #   callback: (data) ->
-    #     station = @gasStations[data.index]
-    #     @page 'You bought ' + data.delta.toFixed(2) + 'L of fuel for ' +
-    #       pesoChar + data.price.toFixed(2) + ' at ' + pesoChar +
-    #       station.fuelPrice.toFixed(2) + '/L'
-    # ]
-    #
-    # 'refuel-error': [
-    #   targetPath: ['player']
-    #   timeout: 0
-    #   repeats: true
-    #   callback: (data) ->
-    #     switch data.type
-    #       when '404' then info = "Can't find the station."
-    #       when 'distance' then info = "You're too far from the station."
-    #       when 'nsf' then info = "You don't have any money for fuel."
-    #       when 'full' then info = "You're already full on fuel."
-    #     @page info
-    # ]
-
     'new': [{
-        # targetPath: []
         timeout: 0
         repeats: true
         callback: (data, handler) ->
@@ -108,7 +86,6 @@ Ship::fire = -> @emit 'fire'
           handler.repeats = false
       }, {
         deleted: true
-        # targetPath: []
         timeout: 0
         repeats: true
         callback: (data, handler) ->
@@ -117,7 +94,7 @@ Ship::fire = -> @emit 'fire'
     }]
 
   initializeContextMenu: ->
-    params =
+    @contextMenu = new Pane @,
       alpha: 0.5
       colors:
         text: '#FFF'
@@ -126,10 +103,9 @@ Ship::fire = -> @emit 'fire'
           hover: '#00F'
           leave: '#00F'
 
-    @contextMenu = new Pane @, params
     @contextMenu.resize()
 
-    timer = new Timer @tick.count, 60 * 10, =>
+    timer = new Timer @tick.count, 60 * 30, =>
       @page 'Move your mouse to the far right to open the menu ->'
 
     timer.repeats = true
@@ -152,7 +128,6 @@ Ship::fire = -> @emit 'fire'
     handler = sensor.immediate 'mouse-enter', => @contextMenu.toggle()
     handler.repeats = true
 
-
   # quick and dirty
   testPager: ->
     @pager.page('Hello, World Number ' + i) for i in [1..20]
@@ -162,21 +137,12 @@ Ship::fire = -> @emit 'fire'
 
   resized: -> @emit 'resize'
 
-  removeShip: (id) ->
-    ship = @lib['InterpolatedShip']?[id]
-    return unless ship
-    viewID = ship.view?.id
-    ship.delete()
-
-    # Collect and remove any arrows pointing to the ship
-    return unless viewID and @lib['Arrow']?
-    for id, arrow of @lib['Arrow']
-      arrow.delete() if (arrow.a.id is viewID) or (arrow.b.id is viewID)
+  removeShip: (id) -> @lib['InterpolatedShip']?[id]?.delete()
 
   correctPrediction: ->
+    return unless shipState = @player.state.ship
     inputLog = @player.logs['input']
-    serverInputSequence = @shipState?.inputSequence
-    serverState = @shipState.ship
+    serverInputSequence = @player.state?.inputSequence
 
     return unless serverInputSequence > @lastVerifiedInputSequence
 
@@ -191,12 +157,14 @@ Ship::fire = -> @emit 'fire'
     logEntry = inputLog.remove()
 
     # Move to the server state if we don't have any inputs to go on
-    return @player.ship.setState serverState if not logEntry?
+    return @player.ship.setState shipState if not logEntry?
 
-    {fuel, health, position} = serverState
+    {damaged, firing, fuel, health, position} = shipState
 
-    @player.ship.fuel = fuel if fuel < logEntry.ship.fuel
-    @player.ship.health = health if health < logEntry.ship.health
+    @player.ship.firing = firing
+    @player.ship.fuel = fuel
+    @player.ship.health = health
+    @player.ship.damaged = damaged
 
     # do the correction only if we're out of sync with the server
     clientPosition = logEntry.ship.position
@@ -207,7 +175,7 @@ Ship::fire = -> @emit 'fire'
     console.log 'correcting ship state'
 
     # set the current ship state to the last known (good) server state
-    @player.ship.setState serverState
+    @player.ship.setState shipState
 
     # store the current entries
     entries = inputLog.toArray().slice()
@@ -233,7 +201,7 @@ Ship::fire = -> @emit 'fire'
     Bullet.fromState @, state, true for state in data.new
 
     # Remove dead bullets
-    @lib['Bullet'][id]?.delete() for id in data.dead
+    @lib['Bullet']?[id]?.delete() for id in data.dead
 
   processServerData: (data) ->
     # Store the most recent server tick data
@@ -244,10 +212,12 @@ Ship::fire = -> @emit 'fire'
     @processBulletData data.bullets
 
     # remove our ship from the pile
-    index = data.ships.findIndex (s) => s.id is @player.id
-    @shipState = (data.ships.splice index, 1)[0]
+    index = data.players.findIndex (s) => s.id is @player.id
+    @player.state = (data.players.splice index, 1)[0]
 
-    InterpolatedShip.fromState @, state.ship, true for state in data.ships
+    InterpolatedShip.fromState @, state.ship, true for state in data.players
+
+    @removeShip id for id in data.game.deadShipIDs
 
     @interpolation.reset()
 
@@ -289,24 +259,26 @@ Ship::fire = -> @emit 'fire'
     m.released = false
 
   update: ->
+    unless @player.ship?
+      return unless @player.state.ship
+      @player.generateShip @player.state.ship, true
+
     @player.inputs = @client.getKeyboardInputs()
     super()
     star.view.update() for id, star of @lib['Star']
     bullet.view.update() for id, bullet of @lib['Bullet'] or {}
 
-    for id, ship of @lib['InterpolatedShip'] or {}
-      ship.update()
-      ship.view.update()
+    ship.update() for id, ship of @lib['InterpolatedShip'] or {}
 
+    @correctPrediction()
     @player.update()
-    @player.ship.view.update()
 
     @contextMenuSensor.update()
     @contextMenu.update()
 
     @updateMouse()
     @interpolation.step++
-    # @correctPrediction()
+
     arrow.update() for id, arrow of @lib['Arrow'] or {}
 
   clearScreen: ->
@@ -317,12 +289,12 @@ Ship::fire = -> @emit 'fire'
   draw: ->
     @clearScreen()
     view.draw() for view in @visibleViews
-    @player.ship.view.drawHUD 2, 2
+    @player.ship?.view.drawHUD 2, 2
     @pager.draw()
 
   gameOver: ->
     console.log 'Game over!'
-    @player.ship.isDeleted = true
+    @player.ship.delete()
 
     @c.fillStyle = "#FFF"
     @c.font = '30px Helvetica'
@@ -342,5 +314,7 @@ Ship::fire = -> @emit 'fire'
     super time # the best kind
     @notifyServer()
     @draw()
+    @deadBulletIDs = []
+    @deadShipIDs = []
     @player.inputs = []
     @visibleViews = []

@@ -1,5 +1,6 @@
 Config = require './config'
 Player = require './player'
+Ship = require './ship'
 Game = require './game'
 ServerGame = require './servergame'
 
@@ -20,6 +21,8 @@ module.exports = class Server
     @frameInterval = Config.server.updatesPerStep * Config.common.msPerFrame
     console.log 'Server frame interval:', @frameInterval + 'ms'
 
+    @numPlayers = 0
+
     # initialize io event handlers
     @io.on(event, cb.bind @) for event, cb of @events.io
 
@@ -31,8 +34,9 @@ module.exports = class Server
     @stats.dt.average = @stats.dt.average * 0.9 + @stats.dt.last * 0.1
     @stats.dt.min = min @stats.dt.min, @stats.dt.last
     @stats.dt.max = max @stats.dt.max, @stats.dt.last
-    # console.log 'dt', @stats.dt.last.toFixed(4), @stats.dt.average.toFixed(4),
-    #   @stats.dt.min.toFixed(4), @stats.dt.max.toFixed(4)
+    if @game.tick.count % (60 * 5) is 0
+      console.log 'dt', @stats.dt.last.toFixed(4), @stats.dt.average.toFixed(4),
+        @stats.dt.max.toFixed(4)
 
   unpause: ->
     console.log 'Unpausing'
@@ -44,7 +48,9 @@ module.exports = class Server
       error: (err) -> console.log 'IO Error:', err
       connection: (socket) -> # a client connects
         # create a player object around the socket
-        player = new Player @game, socket: socket
+        player = new Player @game,
+          ship: Config.common.ship
+          socket: socket
 
         # associate event handlers
         socket.on(event, cb.bind player) for event, cb of @events.socket
@@ -55,19 +61,20 @@ module.exports = class Server
     # @ is the player instance
     socket:
       join: (name) -> # a connected client sends his/her name
-        console.log 'Player', @id, 'is called', name
+        console.log 'Player', @id, 'joined'
 
-        # set the player's name
         @name = name
+        (@immediate 'die', => @generateShip Config.common.ship).repeats = true
 
         # notify other players of the player's name and id
         @socket.broadcast.emit 'join', { name: name, id: @id }
+        @game.server.numPlayers++
 
-        numPlayers = Object.keys(@game.lib['Player']).length
         # start / unpause the game if it's the first player
-        @game.server.unpause() if numPlayers is 1
+        @game.server.unpause() if @game.server.numPlayers is 1
 
       disconnect: -> # a client has disconnected
+        return unless @?
         console.log 'Player', @id, 'has left'
 
         # notify other players that the player has left
@@ -76,12 +83,13 @@ module.exports = class Server
         # destroy the player object associated with this socket
         @delete()
 
-        numPlayers = Object.keys(@game.lib['Player']).length
+        @game.server.numPlayers--
+
         # if this was the last player, pause the game
-        @game.server.pause() if numPlayers is 0
+        @game.server.pause() if @game.server.numPlayers is 0
 
       input: (data) -> # a client has generated input
-        return unless data.sequence
+        return unless data.sequence and @ship
         @gasStationIndex = data.gasStationIndex
         @inputSequence = data.sequence
         @inputs = data.inputs

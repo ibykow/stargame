@@ -8,6 +8,7 @@ if require?
 {abs, floor, min, max, trunc, cos, sin} = Math
 isarr = Array.isArray
 rates = Config.common.ship.rates
+lg = console.log.bind(console)
 
 (module ? {}).exports = class Ship extends Physical
   @glideBrake: ->
@@ -20,7 +21,7 @@ rates = Config.common.ship.rates
     # before you create any server-side ship instances:
     # 'Ship::brake = Ship.glideBrake'
     return unless @magnitude
-    @isBraking = true
+    @braking = true
     @velocity[0] *= shipRate.brake
     @velocity[1] *= rates.brake
 
@@ -29,7 +30,8 @@ rates = Config.common.ship.rates
     @health = 100
     @maxHealth = 100
     @gear = 0
-    @isBraking = false
+    @braking = false
+    @firing = false
     @lastFireInputSequence = 0
 
     # how many input sequences to skip before next fire
@@ -44,6 +46,11 @@ rates = Config.common.ship.rates
     @fuel = parseInt @fuelCapacity
     super @game, @params
 
+  initializeEventHandlers: ->
+    super()
+    # collision detection
+    (@immediate 'hit', (bullet) => @health -= bullet.damage).repeats = true
+
   accelerate: (direction, vector) ->
     return unless isarr vector
     @velocity[0] += vector[0]
@@ -52,26 +59,22 @@ rates = Config.common.ship.rates
       direction: direction
       vector: vector
 
-  turn: (direction, amount) ->
-    @position[2] += amount
-    @emit 'turn',
-      direction: direction
-      amount: amount
+  delete: ->
+    @player?.ship = null
+    super()
 
   fire: ->
     return unless @lastFireInputSequence < @player.inputSequence - @fireRate
+    @firing = true
     @lastFireInputSequence = @player.inputSequence
     bullet = new Bullet @game, shipID: @id
     if @game.client then bullet.insertView() else @game.insertBullet bullet
     @emit 'fire', bullet
 
-  handleBulletImpact: (b) ->
-    @health -= b.damage
-    super b
-
   getState: ->
     Object.assign super(),
       fireRate: @fireRate
+      firing: @firing
       fuel: @fuel
       fuelCapacity: @fuelCapacity
       health: @health
@@ -80,7 +83,18 @@ rates = Config.common.ship.rates
 
   setState: (state) ->
     super state
-    {@fireRate, @fuel, @fuelCapacity, @health,
+    {@fireRate, @firing, @fuel, @fuelCapacity, @health,
     @lastFireInputSequence, @playerID} = state
+
+  turn: (direction, amount) ->
+    @position[2] += amount
+    @emit 'turn',
+      direction: direction
+      amount: amount
+
+  update: ->
+    super()
+    @view?.damaged = @damaged
+    @view?.firing = @firing
 
   insertView: -> @view = new ShipView @, true

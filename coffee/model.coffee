@@ -4,7 +4,7 @@ if require?
   Eventable = require './eventable'
 
 conf = Config.common.model
-{abs, trunc} = Math
+{abs, floor, trunc} = Math
 isarr = Array.isArray
 
 # Model: Something that exists in the game world
@@ -12,9 +12,9 @@ isarr = Array.isArray
   constructor: (@game, @params) ->
     return unless @game?
     @deleted = false
-    {@color, @position, @width, @height} = @params
+    {@color, @partition, @position, @width, @height} = @params
     @color ?= Util.randomColorString()
-    @offset ?= [0, 0]
+    @partition ?= [0, 0] # which partition we are found in
 
     unless @position?.length
       if @parent then @position = @parent.position
@@ -25,9 +25,22 @@ isarr = Array.isArray
 
     @halfWidth = @width / 2
     @halfHeight = @height / 2
+
     super @game, @params
+    @updatePartition()
+
+  initializeEventHandlers: ->
+    super()
+    handler = @immediate 'move', (data, handler) =>
+      return if @deleted
+      @updatePartition()
+    handler.repeats = true
 
   distanceTo: (model) -> Util.magnitude @positionDelta model
+
+  delete: ->
+    delete (@game.at @partition)[@id]
+    super()
 
   positionDelta: (model) ->
     return [0, 0] unless model?.position.length
@@ -66,8 +79,20 @@ isarr = Array.isArray
     @position[0] = x
     @position[1] = y
 
+  updatePartition: ->
+    x = floor @position[0] / @game.partitionSize
+    y = floor @position[1] / @game.partitionSize
+    return if (@partition[0] is x) and (@partition[1] is y)
+
+    delete (@game.at @partition)[@id]
+    @partition = [x, y]
+    (@game.at @partition)[@id] = @
+
   update: ->
+    [x, y] = @position
     @updatePosition()
+    @emit 'move' unless (x is @position[0]) and (y is @position[1])
     child.update() for type, child of @children
+    @view?.update?()
 
   insertView: -> @view = new ModeledView @game, model: @

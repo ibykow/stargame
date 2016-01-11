@@ -6,9 +6,15 @@ if require?
   Eventable = require './eventable'
   Player = require './player'
 
+isarr = Array.isArray
+
 (module ? {}).exports = class Game extends Eventable
   constructor: (@params) ->
     {@width, @height, @rates} = @params
+    @deadBulletIDs = []
+    @deadShipIDs = []
+    @partitions = (({} for [0...@rates.partition]) for [0...@rates.partition])
+    @partitionSize = @width / @rates.partition
     @toroidalLimit = [@width, @height]
     @paused = true
     @events ||= {}
@@ -21,13 +27,28 @@ if require?
     # Eventable expects an initialized game
     super @, @params
 
-    @initializeEventHandlers()
+  around: (partition = [0, 0], radius = 1) ->
+    return @at partition if radius < 1
+    limit = radius * 2 + 1
+    parts = @rates.partition
+    results = {}
+    [x, y] = [(partition[0] - radius) + parts, (partition[1] - radius) + parts]
 
+    for [0...limit]
+      x = (x + 1) % parts
+      for [0...limit]
+        y = (y + 1) % parts
+        results = Object.assign results, @at [x, y]
+
+    results
+
+  at: (partition) -> @partitions[partition[0]][partition[1]] if isarr partition
   framesToMs: (frames) -> frames * Config.common.msPerFrame
   msToFrames: (ms) -> ms / Config.common.msPerFrame
   randomPosition: -> [Util.randomInt(0, @width), Util.randomInt(0, @height), 0]
 
   initializeEventHandlers: ->
+    super()
     for name, handlers of @events
       for info in handlers
         info.callback = info.callback.bind @

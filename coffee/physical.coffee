@@ -9,7 +9,8 @@ isarr = Array.isArray
 (module ? {}).exports = class Physical extends Model
   constructor: (@game, @params = {}) ->
     return unless @game?
-    @isPhyiscal = true
+    @physical = true
+    @damaged = 0
     @magnitude = 0
     @collisions = {} # current collisions stored by type
     {@mass, @v0} = @params
@@ -22,14 +23,29 @@ isarr = Array.isArray
 
     super @game, @params
 
+  initializeEventHandlers: ->
+    super()
+
+    events =
+      immediate:
+        hit:
+          bind: [@]
+          timer: 0
+          repeats: true
+          callback: (bullet) ->
+            bullet.life = 0
+            @damaged += bullet.damage
+
+    (@[type] name, info for name, info of event) for type, event of events
+
   getState: ->
     Object.assign super(),
-      isPhysical: @isRigid
+      damaged: @damaged
       velocity: @velocity.slice()
 
   setState: (state) ->
     super state
-    {@isPhyiscal, @velocity} = state
+    {@damaged, @velocity} = state
 
   update: ->
     super()

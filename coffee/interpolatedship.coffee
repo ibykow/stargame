@@ -10,11 +10,13 @@ if require?
     super @game, @params
 
   updateVelocity: -> # InterpolatedShip positions don't count on velocity
+
   updatePosition: ->
     rate = @game.interpolation.rate * @game.interpolation.step
     @position = Util.lerp @prev.position, @next.position, rate
 
   setState: (state) ->
+    super state
     @prev =
       position: @next.position
       width: @next.velocity

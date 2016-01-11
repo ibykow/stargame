@@ -32,8 +32,8 @@ isarr = Array.isArray
 
         delete @events[name]
 
-  @fromState: (game, state, view) ->
-    return unless game and state?.id
+  @fromState: (game, state = {}, view) ->
+    return unless game
     eventable = game.lib[@name]?[state.id]
 
     if eventable
@@ -68,7 +68,10 @@ isarr = Array.isArray
 
     Eventable.nextID++
 
+    @initializeEventHandlers()
     @game.emit 'new', @
+
+  initializeEventHandlers: ->
 
   # (Re)places child and force updates child's parent
   adopt: (child, name) ->
@@ -78,10 +81,16 @@ isarr = Array.isArray
     child.parent = @
 
   delete: ->
+    if @view?.delete?
+      @view.delete()
+      @view = null
+
     child.delete() for name, child of @children
-    if @game.lib[@type]?[@id] is @
-      @deleted = true
-      delete @game.lib[@type][@id]
+    delete @game.lib[@type][@id] if @game.lib[@type]?[@id] is @
+    @getState = null
+    @deleted = true
+
+  isDeleted: -> @getState is null or @deleted
 
   getState: ->
     states = {}
@@ -121,12 +130,15 @@ isarr = Array.isArray
     @on name, callback, timeout, repeats, true
 
   # registers an event listener
-  on: (name, callback, timeout = 0, repeats = false, immediate = false) ->
+  on: (name, handler, timeout = 0, repeats = false, immediate = false) ->
     step = @game.tick.count
-    switch typeof callback
+    switch typeof handler
       when 'object'
-        handler = callback
-        handler.target ||= @
+        return unless cb = handler.callback
+
+        if handler.bind?.length then handler.callback = cb.bind handler.bind...
+        else handler.callback = cb
+
         handler.repeats ||= false
         handler.deleted ||= false
         handler.timedOut ||= false
@@ -137,8 +149,8 @@ isarr = Array.isArray
           previous: step
 
       when 'function'
+        callback = handler
         handler =
-          target: @
           repeats: repeats
           callback: callback
           deleted: false

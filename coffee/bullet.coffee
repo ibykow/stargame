@@ -34,6 +34,23 @@ if require?
 
     super @game, @params
 
+  delete: ->
+    @game.deadBulletIDs.push @id
+    @life = 0
+    super()
+
+  initializeEventHandlers: ->
+    super()
+    # collision detection
+    handler = @immediate 'move', (data, handler) =>
+      return if @deleted
+      for id, model of @game.around @partition when not (model.id is @id)
+        if @intersects model
+          handler.repeats = false
+          model.emit 'hit', @
+
+    handler.repeats = true
+
   getState: ->
     Object.assign super(),
       damage: @damage
@@ -50,3 +67,4 @@ if require?
   update: ->
     super()
     @life--
+    @delete() unless @life > 0
