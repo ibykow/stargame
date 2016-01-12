@@ -1,10 +1,10 @@
 if require?
   Config = require './config'
   Util = require './util'
-  Eventable = require './eventable'
+  Emitter = require './emitter'
 
 # View: Something that can be seen on screen
-(module ? {}).exports = class View extends Eventable
+(module ? {}).exports = class View extends Emitter
   constructor: (@game, @params) ->
     return unless @game?
     conf = Config.client.view
@@ -13,12 +13,12 @@ if require?
     @alpha ?= 1
     @visible = false
     @offset ?= [0, 0]
-    @game.on 'resize', @resize.bind(@), 0, true
+    @game.on 'resize', @resize.bind @
     @view = [0, 0, 0]
     super @game, @params
 
     for name, callback of conf.mouse.events
-      @immediate 'mouse-' + name, callback.bind(@), 0, true
+      @now 'mouse-' + name, callback.bind(@), 0, true
 
   arrowTo: (view, color, alpha = 1, lineWidth = 1) ->
     new Arrow @game,

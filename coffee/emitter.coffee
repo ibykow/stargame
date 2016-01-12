@@ -7,7 +7,7 @@ if require?
 isnum = Util.isNumeric
 isarr = Array.isArray
 
-(module ? {}).exports = class Eventable
+(module ? {}).exports = class Emitter
   @events: {}
   @nextID: 1
   @processHandlers: (game, handlers, name, data) ->
@@ -38,21 +38,21 @@ isarr = Array.isArray
     if state.deleted
       console.log 'WARNING: Setting from a deleted state!', state.id
 
-    eventable = game.lib[@name]?[state.id]
+    emitter = game.lib[@name]?[state.id]
 
-    if eventable
+    if emitter
       # Overwrite the type to match the current/real constructor
       state.type = @name
-      eventable.setState state
+      emitter.setState state
     else
-      eventable = new @ game, state
-      eventable.insertView?() if view
+      emitter = new @ game, state
+      emitter.insertView?() if view
 
     for name, child of state.children
-      child.parent = eventable
-      eventable.children[name] = global[child.type].fromState game, child, view
+      child.parent = emitter
+      emitter.children[name] = global[child.type].fromState game, child, view
 
-    eventable
+    emitter
 
   constructor: (@game, @params = {}) ->
     return unless @game?
@@ -64,20 +64,20 @@ isarr = Array.isArray
 
     if @params.id
       @id = @params.id
-      Eventable.nextID = @params.id if @id > Eventable.nextID
+      Emitter.nextID = @params.id if @id > Emitter.nextID
     else
-      @id = Eventable.nextID
+      @id = Emitter.nextID
 
     @game.lib[@type][@id] = @
     {@parent} = @params
     @parent.adopt @ if @parent
 
-    Eventable.nextID++
+    Emitter.nextID++
 
-    @initializeEventHandlers()
+    @initEventHandlers()
     @game.emit 'new', @
 
-  initializeEventHandlers: ->
+  initEventHandlers: ->
 
   # (Re)places child and force updates child's parent
   adopt: (child, name) ->
@@ -91,16 +91,20 @@ isarr = Array.isArray
       @view.delete()
       @view = null
 
+    @parent = null
     child.delete() for name, child of @children
+    @children = {}
+    @listeners = {}
+    @immediates = {}
 
     @getState = null
     @deleted = true
 
     if o = @game.lib[@type]?[@id]
-      console.log 'Wrong', @type, @id, o.id unless o is @
+      console.log 'WARNING: id mismatch', @type, @id, o.id unless o is @
       delete @game.lib[@type][@id]
 
-  isDeleted: -> @getState is null or @deleted
+  isDeleted: -> @deleted or (@getState is null)
 
   getState: ->
     states = {}
@@ -130,26 +134,27 @@ isarr = Array.isArray
       data: data
 
     # Process immediates
-    @immediates[name] = Eventable.processHandlers @game, @immediates, name, data
+    @immediates[name] = Emitter.processHandlers @game, @immediates, name, data
 
-    if isarr Eventable.events[name] then Eventable.events[name].push info
-    else Eventable.events[name] = [info]
+    if isarr Emitter.events[name] then Emitter.events[name].push info
+    else Emitter.events[name] = [info]
 
-  # registers an event listener for immediate execution
-  immediate: (name, callback, timeout, repeats) ->
-    @on name, callback, timeout, repeats, true
+  # registers callback to be run as soon as the event is emmited
+  now: (name, handler, timeout, repeats) ->
+    @on name, handler, timeout, repeats, true
 
   # registers an event listener
-  on: (name, handler, timeout = 0, repeats = false, immediate = false) ->
+  on: (name, handler, timeout = 0, repeats = true, now = false) ->
+    return if @isDeleted()
     step = @game.tick.count
     switch typeof handler
       when 'object'
         return unless cb = handler.callback
 
         if handler.bind?.length then handler.callback = cb.bind handler.bind...
-        else handler.callback = cb
 
-        handler.repeats ||= false
+        now = handler.immediate or handler.now or now
+        handler.repeats ?= repeats
         handler.deleted ||= false
         handler.timedOut ||= false
         handler.timer ||= null
@@ -171,7 +176,7 @@ isarr = Array.isArray
             current: step
             previous: step
 
-      else return null
+      else return
 
     if timeout > 0
       timercb = (handler, timer) ->
@@ -180,13 +185,13 @@ isarr = Array.isArray
 
       handler.timer = new Timer step, timeout, timercb.bind @, handler
 
-    if immediate
-      if isarr @immediates[name] then @immediates[name].push handler
-      else @immediates[name] = [handler]
-    else
-      if isarr @listeners[name] then @listeners[name].push handler
-      else @listeners[name] = [handler]
+    if now then type = 'immediates' else type = 'listeners'
+    if isarr @[type][name] then @[type][name].push handler
+    else @[type][name] = [handler]
 
     return handler
+
+  once: (name, handler, timeout) -> @on name, handler, timeout, false, false
+  onceNow: (name, handler, timeout) -> @now name, handler, timeout, false
 
   insertView: -> # do nothing

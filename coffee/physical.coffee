@@ -23,11 +23,11 @@ isarr = Array.isArray
 
     super @game, @params
 
-  initializeEventHandlers: ->
+  initEventHandlers: ->
     super()
 
     events =
-      immediate:
+      now:
         hit:
           bind: [@]
           timer: 0

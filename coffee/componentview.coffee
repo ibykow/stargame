@@ -21,25 +21,11 @@ if require?
     super @game, @params
     @offset.length = 2
 
-    handler = @immediate 'mouse-enter', =>
+    @now 'mouse-enter', => @colors.background.current = @colors.background.hover
+    @now 'mouse-leave', => @colors.background.current = @colors.background.leave
+    @now 'mouse-press', => @colors.background.current = @colors.background.leave
+    @now 'mouse-release', =>
       @colors.background.current = @colors.background.hover
-
-    handler.repeats = true
-
-    handler = @immediate 'mouse-leave', =>
-      @colors.background.current = @colors.background.leave
-
-    handler.repeats = true
-
-    handler = @immediate 'mouse-press', =>
-      @colors.background.current = @colors.background.leave
-
-    handler.repeats = true
-
-    handler = @immediate 'mouse-release', =>
-      @colors.background.current = @colors.background.hover
-
-    handler.repeats = true
 
   getBounds: -> [[@view[0], @view[1]], @dimensions]
 

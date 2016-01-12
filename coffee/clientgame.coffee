@@ -1,7 +1,7 @@
 global = global or window
 
 if require?
-  Eventable = require './eventable'
+  Emitter = require './emitter'
   Phyiscal = require './physical'
   View = require './view'
   Pane = require './pane'
@@ -61,15 +61,13 @@ Ship::fire = -> @firing = true
         else return
       @page info
 
-    handler.repeats = true
-
     @player.name = 'Guest'
     @lastVerifiedInputSequence = 0
 
     @generateStars()
     @pager = new Pager @
     @page = @pager.page.bind @pager
-    @initializeContextMenu()
+    @initContextMenu()
 
   interpolation:
     reset: ->
@@ -99,7 +97,7 @@ Ship::fire = -> @firing = true
           console.log 'created new bullet at', data.position
     }]
 
-  initializeContextMenu: ->
+  initContextMenu: ->
     @contextMenu = new Pane @,
       alpha: 0.5
       colors:
@@ -118,9 +116,7 @@ Ship::fire = -> @firing = true
     timer.callback()
 
     @contextMenu.on 'open', -> timer.delete()
-    handler = @contextMenu.immediate 'mouse-leave', => @contextMenu.close()
-
-    handler.repeats = true
+    @contextMenu.now 'mouse-leave', => @contextMenu.close()
 
     params =
       alpha: 0.25
@@ -129,8 +125,7 @@ Ship::fire = -> @firing = true
     sensor = @contextMenuSensor = new Pane @, params
     sensor.resize()
     sensor.open()
-    handler = sensor.immediate 'mouse-enter', => @contextMenu.toggle()
-    handler.repeats = true
+    sensor.now 'mouse-enter', => @contextMenu.toggle()
 
   # quick and dirty
   testPager: ->

@@ -172,7 +172,7 @@ Ideas:
     number of regular events being handled at varying intervals.
 
 WIP:
-  √ Keep references of all eventables in arrays in the game
+  √ Keep references of all emitters in arrays in the game
   √ game.lib =
       Bullet: { id: bullet }
       Star: { id: star }

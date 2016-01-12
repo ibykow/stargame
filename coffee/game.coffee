@@ -3,12 +3,12 @@ if require?
   Util = require './util'
   Timer = require './timer'
   RingBuffer = require './ringbuffer'
-  Eventable = require './eventable'
+  Emitter = require './emitter'
   Player = require './player'
 
 isarr = Array.isArray
 
-(module ? {}).exports = class Game extends Eventable
+(module ? {}).exports = class Game extends Emitter
   constructor: (@params) ->
     {@width, @height, @rates} = @params
     @deadBulletIDs = []
@@ -18,13 +18,13 @@ isarr = Array.isArray
     @toroidalLimit = [@width, @height]
     @paused = true
     @events ||= {}
-    @lib ||= {} # keep references of all eventables in existence
+    @lib ||= {} # keep references of all emitters in existence
     @tick =
       count: @params.count or 0
       time: 0
       dt: 0
 
-    # Eventable expects an initialized game
+    # Emitter expects an initialized game
     super @, @params
 
   around: (partition = [0, 0], radius = 1) ->
@@ -48,7 +48,7 @@ isarr = Array.isArray
   msToFrames: (ms) -> ms / Config.common.msPerFrame
   randomPosition: -> [Util.randomInt(0, @width), Util.randomInt(0, @height), 0]
 
-  initializeEventHandlers: ->
+  initEventHandlers: ->
     super()
     for name, handlers of @events
       for info in handlers
@@ -60,7 +60,7 @@ isarr = Array.isArray
   update: ->
     step = @tick.count++
     Timer.run step
-    Eventable.run @
+    Emitter.run @
     bullet.update() for id, bullet of @lib['Bullet'] or {}
 
   logPlayerStates: ->

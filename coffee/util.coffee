@@ -70,8 +70,7 @@ isarr = Array.isArray
     return i if f(arr[i], i, arr) for i in [0...arr.length]
     return -1
 
-  randomInt: (min = 0, max = 99) ->
-    return floor(rnd() * (max - min) + min)
+  randomInt: (min = 0, max = 99) -> floor rnd() * (max - min) + min
 
   padString: (s, n = 2, p = '0') ->
     return '' unless s and typeof s is 'string'

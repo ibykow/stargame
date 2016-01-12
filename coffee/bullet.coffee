@@ -39,17 +39,15 @@ if require?
     @life = 0
     super()
 
-  initializeEventHandlers: ->
+  initEventHandlers: ->
     super()
     # collision detection
-    handler = @immediate 'move', (data, handler) =>
+    handler = @now 'move', (data, handler) =>
       return if @deleted
       for id, model of @game.around @partition when not (model.id is @id)
         if @intersects model
           handler.repeats = false
           model.emit 'hit', @
-
-    handler.repeats = true
 
   getState: ->
     Object.assign super(),

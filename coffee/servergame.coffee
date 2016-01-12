@@ -1,7 +1,7 @@
 if require?
   Config = require './config'
   Util = require './util'
-  Eventable = require './eventable'
+  Emitter = require './emitter'
   Server = require './server'
   Game = require './game'
   Player = require './player'

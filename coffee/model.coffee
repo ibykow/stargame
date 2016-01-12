@@ -1,14 +1,14 @@
 if require?
   Config = require './config'
   Util = require './util'
-  Eventable = require './eventable'
+  Emitter = require './emitter'
 
 conf = Config.common.model
 {abs, floor, trunc} = Math
 isarr = Array.isArray
 
 # Model: Something that exists in the game world
-(module ? {}).exports = class Model extends Eventable
+(module ? {}).exports = class Model extends Emitter
   constructor: (@game, @params) ->
     return unless @game?
     @deleted = false
@@ -29,12 +29,9 @@ isarr = Array.isArray
     super @game, @params
     @updatePartition()
 
-  initializeEventHandlers: ->
+  initEventHandlers: ->
     super()
-    handler = @immediate 'move', (data, handler) =>
-      return if @deleted
-      @updatePartition()
-    handler.repeats = true
+    @now 'move', (data, handler) => @updatePartition()
 
   distanceTo: (model) -> Util.magnitude @positionDelta model
 
@@ -82,6 +79,7 @@ isarr = Array.isArray
   updatePartition: ->
     x = floor @position[0] / @game.partitionSize
     y = floor @position[1] / @game.partitionSize
+
     return if (@partition[0] is x) and (@partition[1] is y)
 
     delete (@game.at @partition)[@id]

@@ -18,7 +18,7 @@ isarr = Array.isArray
       offset: [5, 5]
     super @game, @params
 
-    @immediate 'mouse-click', => console.log 'Clicked', @name
+    @now 'mouse-click', => console.log 'Clicked', @name
 
   update: ->
     @view = [ @parent.view[0] + @offset[0],

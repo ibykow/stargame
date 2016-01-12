@@ -66,7 +66,7 @@ module.exports = class Server
         console.log 'Player', @id, 'joined'
 
         @name = name
-        (@immediate 'die', => @generateShip Config.common.ship).repeats = true
+        @now 'die', => @generateShip Config.common.ship
 
         # Introduce ourselves to the other players
         @socket.broadcast.emit 'join', { name: name, id: @id }
@@ -106,7 +106,7 @@ module.exports = class Server
     run: (timestamp) ->
       unless @started
         ms = @frameInterval - 3
-        @frame.request = setInterval (=> @frame.run.bind(@) +new Date), ms
+        @frame.interval = setInterval (=> @frame.run.bind(@) +new Date), ms
         @started = true
 
       @stats.dt.last = process.hrtime()[1]
@@ -114,4 +114,4 @@ module.exports = class Server
       @stats.dt.last = (process.hrtime()[1] - @stats.dt.last) / 1000000
       @processStats()
 
-    stop: -> clearInterval(@frame.request)
+    stop: -> clearInterval @frame.interval

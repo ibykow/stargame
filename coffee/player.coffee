@@ -1,7 +1,7 @@
 if require?
   Config = require './config'
   Util = require './util'
-  Eventable = require './eventable'
+  Emitter = require './emitter'
   RingBuffer = require './ringbuffer'
   Ship = require './ship'
 
@@ -9,7 +9,7 @@ if require?
 
 pesoChar = Config.common.chars.peso
 
-(module ? {}).exports = class Player extends Eventable
+(module ? {}).exports = class Player extends Emitter
   @LOGLEN: Config.client.player.loglen
   constructor: (@game, @params) ->
     {@socket, ship} = @params
@@ -110,7 +110,7 @@ pesoChar = Config.common.chars.peso
     @ship.delete()
     @emit 'die'
 
-  initializeEventHandlers: ->
+  initEventHandlers: ->
     @ship.on 'nofuel', (data) => console.log 'Player', @id, 'ran out of fuel'
 
     @on 'refuel', (data) =>
@@ -145,8 +145,6 @@ pesoChar = Config.common.chars.peso
       gasStationIndex: @gasStationIndex
 
     @logs['input'].insert entry
-    # console.log 'new entry', entry.sequence, entry.ship.position
-
     @latestInputLogEntry = entry
     @inputSequence++
 
@@ -154,4 +152,3 @@ pesoChar = Config.common.chars.peso
     @actions[action].bind(@)() for action in @inputs when action?.length
     @ship.update()
     @die() if @ship.health < 0
-    console.log 'no ship for', @id unless @ship?.id

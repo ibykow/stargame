@@ -46,10 +46,10 @@ lg = console.log.bind(console)
     @fuel = parseInt @fuelCapacity
     super @game, @params
 
-  initializeEventHandlers: ->
+  initEventHandlers: ->
     super()
     # collision detection
-    (@immediate 'hit', (bullet) => @health -= bullet.damage).repeats = true
+    @now 'hit', (bullet) => @health -= bullet.damage
 
   accelerate: (direction, vector) ->
     return unless isarr vector
