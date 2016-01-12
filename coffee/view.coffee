@@ -20,6 +20,14 @@ if require?
     for name, callback of conf.mouse.events
       @immediate 'mouse-' + name, callback.bind(@), 0, true
 
+  arrowTo: (view, color, alpha = 1, lineWidth = 1) ->
+    new Arrow @game,
+      a: @
+      b: view
+      color: color ? view.model.color
+      alpha: alpha
+      lineWidth: lineWidth
+
   delete: ->
     # Collect and remove any arrows pointing to the ship
     if @game.lib['Arrow']?

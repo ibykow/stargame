@@ -81,9 +81,15 @@ Ship::fire = -> @firing = true
         timeout: 0
         repeats: true
         callback: (data, handler) ->
-          return unless data?.type is 'InterpolatedShip'
-          @player.arrowTo data.view
-          handler.repeats = false
+          return unless (type = data.type) and (v = @player.ship.view)
+
+          switch type
+            # Add an arrow to a new player's ship
+            when 'InterpolatedShip' then v.arrowTo data.view
+
+            # Add arrows to other play's ships when our ship (re)generates
+            when 'Ship' then @each 'InterpolatedShip', (s) -> v.arrowTo s.view
+
       }, {
         deleted: true
         timeout: 0
@@ -112,9 +118,7 @@ Ship::fire = -> @firing = true
     timer.callback()
 
     @contextMenu.on 'open', -> timer.delete()
-    handler = @contextMenu.immediate 'mouse-leave', =>
-      console.log 'hello world'
-      @contextMenu.close()
+    handler = @contextMenu.immediate 'mouse-leave', => @contextMenu.close()
 
     handler.repeats = true
 
@@ -140,7 +144,12 @@ Ship::fire = -> @firing = true
   removeShip: (id) -> @lib['InterpolatedShip']?[id]?.delete()
 
   correctPrediction: ->
-    return unless shipState = @player.state.ship
+    # Make sure we have a state to work with
+    return unless state = @player.state.ship
+
+    # If there's a ship ID mismatch, regenerate from the server's state
+    return @player.generateShip state, true unless @player.ship?.id is state.id
+
     inputLog = @player.logs['input']
     serverInputSequence = @player.state?.inputSequence
 
@@ -157,9 +166,9 @@ Ship::fire = -> @firing = true
     logEntry = inputLog.remove()
 
     # Move to the server state if we don't have any inputs to go on
-    return @player.ship.setState shipState if not logEntry?
+    return @player.ship.setState state if not logEntry?
 
-    {damaged, firing, fuel, health, position} = shipState
+    {damaged, firing, fuel, health, position} = state
 
     @player.ship.firing = firing
     @player.ship.fuel = fuel
@@ -175,7 +184,7 @@ Ship::fire = -> @firing = true
     console.log 'correcting ship state'
 
     # set the current ship state to the last known (good) server state
-    @player.ship.setState shipState
+    @player.ship.setState state
 
     # store the current entries
     entries = inputLog.toArray().slice()
@@ -220,6 +229,7 @@ Ship::fire = -> @firing = true
     @removeShip id for id in data.game.deadShipIDs
 
     @interpolation.reset()
+    @correctPrediction()
 
   isMouseInBounds: (bounds) ->
     Util.isInSquareBounds [@client.mouse.x, @client.mouse.y], bounds
@@ -270,9 +280,7 @@ Ship::fire = -> @firing = true
 
     ship.update() for id, ship of @lib['InterpolatedShip'] or {}
 
-    @correctPrediction()
     @player.update()
-
     @contextMenuSensor.update()
     @contextMenu.update()
 

@@ -43,6 +43,7 @@ isarr = Array.isArray
     results
 
   at: (partition) -> @partitions[partition[0]][partition[1]] if isarr partition
+  each: (type, cb) -> cb value for name, value of @lib[type] or {}
   framesToMs: (frames) -> frames * Config.common.msPerFrame
   msToFrames: (ms) -> ms / Config.common.msPerFrame
   randomPosition: -> [Util.randomInt(0, @width), Util.randomInt(0, @height), 0]

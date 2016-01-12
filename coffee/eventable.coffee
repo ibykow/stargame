@@ -34,9 +34,15 @@ isarr = Array.isArray
 
   @fromState: (game, state = {}, view) ->
     return unless game
+
+    if state.deleted
+      console.log 'WARNING: Setting from a deleted state!', state.id
+
     eventable = game.lib[@name]?[state.id]
 
     if eventable
+      # Overwrite the type to match the current/real constructor
+      state.type = @name
       eventable.setState state
     else
       eventable = new @ game, state
@@ -86,15 +92,19 @@ isarr = Array.isArray
       @view = null
 
     child.delete() for name, child of @children
-    delete @game.lib[@type][@id] if @game.lib[@type]?[@id] is @
+
     @getState = null
     @deleted = true
+
+    if o = @game.lib[@type]?[@id]
+      console.log 'Wrong', @type, @id, o.id unless o is @
+      delete @game.lib[@type][@id]
 
   isDeleted: -> @getState is null or @deleted
 
   getState: ->
     states = {}
-    state[name] = child.getState() for name, child of @children
+    states[name] = child.getState() for name, child of @children
 
     if @parent?
       parentState =

@@ -37,9 +37,9 @@ rnd = Math.random
       height = Util.randomInt(5, 20)
       star = new Star @, null, width, height
       if rnd() < Config.common.rates.gasStation
-        new GasStation star
+        new GasStation @, parent: star
       if rnd() < Config.common.rates.market
-        new Market star
+        new Market @, parent: star
 
   getStates: (initial) ->
     players = for id, player of @lib['Player']
@@ -48,7 +48,7 @@ rnd = Math.random
       player.ship?.firing = false
       state
 
-    if initial then lib = @lib['Bullet'] or [] else lib = @newBullets
+    if initial then lib = @lib['Bullet'] or {} else lib = @newBullets
     bullets = (bullet.getState() for bullet in lib when not bullet.isDeleted())
 
     players: players

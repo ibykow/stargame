@@ -7,4 +7,4 @@ Model = require './model' if require?
     @emblemCharacter ?= 'F'
     @params.width = 9
     @params.height = 9
-    super @parent.game, @params
+    super @game, @params

@@ -11,7 +11,6 @@ if require?
         @game.canvas.halfWidth, @game.canvas.halfHeight ]
 
     @view = [halfw + vx, halfh + vy, r]
-    # @game.screenOffset = [x - vx - halfw, y - vy - halfh]
     @game.screenOffset = [x - halfw, y - halfh]
 
     # The current player's ship is always visible

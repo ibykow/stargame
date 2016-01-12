@@ -27,4 +27,6 @@ if require?
 
   insertView: ->
     @view = new ShipView @, false
+    unless @view
+      console.log "Couldn't create view for interpolated ship", @id
     @view.update()

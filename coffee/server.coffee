@@ -5,6 +5,7 @@ Game = require './game'
 ServerGame = require './servergame'
 
 {max, min} = Math
+lg = console.log.bind console
 
 module.exports = class Server
   constructor: (@io) ->
@@ -60,35 +61,41 @@ module.exports = class Server
 
     # @ is the player instance
     socket:
-      join: (name) -> # a connected client sends his/her name
+      # join: officially join the game
+      join: (name) ->
         console.log 'Player', @id, 'joined'
 
         @name = name
         (@immediate 'die', => @generateShip Config.common.ship).repeats = true
 
-        # notify other players of the player's name and id
+        # Introduce ourselves to the other players
         @socket.broadcast.emit 'join', { name: name, id: @id }
         @game.server.numPlayers++
 
         # start / unpause the game if it's the first player
         @game.server.unpause() if @game.server.numPlayers is 1
 
-      disconnect: -> # a client has disconnected
+      disconnect: ->
         return unless @?
         console.log 'Player', @id, 'has left'
 
-        # notify other players that the player has left
+        # Tell the others that this player has left
         @game.server.io.emit 'leave', @ship.id
 
-        # destroy the player object associated with this socket
+        # Destroy the player object associated with this socket
         @delete()
 
         @game.server.numPlayers--
 
-        # if this was the last player, pause the game
+        # Pause the game if it's empty
         @game.server.pause() if @game.server.numPlayers is 0
 
-      input: (data) -> # a client has generated input
+      error: (error) ->
+        lg "ERROR: ", error
+        lg "I say we just ignore this, keep going and see what happens. -" + @id
+
+      # Handle player input
+      input: (data) ->
         return unless data.sequence and @ship
         @gasStationIndex = data.gasStationIndex
         @inputSequence = data.sequence

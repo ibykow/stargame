@@ -105,14 +105,6 @@ pesoChar = Config.common.chars.peso
         delta: fuelDelta
         price: price
 
-  arrowTo: (view, color, lineWidth, alpha) ->
-    new Arrow @game,
-      a: @ship.view
-      b: view
-      color: color
-      alpha: alpha
-      lineWidth: lineWidth
-
   die: ->
     @game.deadShipIDs.push @ship.id
     @ship.delete()
