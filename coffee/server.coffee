@@ -92,7 +92,8 @@ module.exports = class Server
 
       error: (error) ->
         lg "ERROR: ", error
-        lg "I say we just ignore this, keep going and see what happens. -" + @id
+        lg "I say we just ignore this, keep going and see what happens."
+        lg "Love, Player", @id
 
       # Handle player input
       input: (data) ->

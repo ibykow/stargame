@@ -61,7 +61,9 @@
       height: 20
     updatesPerStep: 5
   common:
-    uri: 'http://localhost:3000'
+    url:
+      address: 'localhost'
+      port: 3000
     bullet:
       damage: 2
       life: 60 * 3

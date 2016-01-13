@@ -1,23 +1,48 @@
 # StarGame
-A work in progress
+A Networked Space Adventure
+
+### Install
+
+#### Clone
+    $ git clone git@github.com:ibykow/stargame.git
+    $ cd stargame
+
+#### Configure
+In ```coffee/config.coffee``` change ```Config.common.url``` to your address/port.
+
+#### Install Dependencies and Run the Server
+Make sure you have CoffeeScript installed:
+
+    $ npm install -g coffee-script
+
+Then,
 
     $ ./run
 
-### What's available?
+The ```run``` shell script installs npm dependencies, compiles the CoffeeScript and starts the application.
 
+#### Connect
+Finally, if all works according to plan, point your browser to the address and port you specified in ```coffee/config.coffee``` and start the star adventure!
+
+### Controls
+| Action  | Key         |
+|---------|-------------|
+| Move    | Up, Down    |
+| Turn    | Left, Right |
+| Brake   | Space       |
+| Fire    | F           |
+
+### What's available?
 * canvas rendering
 * socket.io multiplayer
+* basic firing and collision detection
 
 ### What's missing?
-- user interaction besides basic movement/braking/firing
-- bullet collisions and damage
-- money, fuel, or upgrades of any kind
-- missions/story/gameplay of any kind
-- tests (I'm working on it, I swear)
-- raison d'être
+- upgrades
+- missions/story/gameplay
 
-**Current Development Priority:**  
-To seek the Holy Grail
+### What's the point?
+It's done for fun.
 
-**Why is this game taking so long?**  
-```404 - Answer not found.```
+###### Player and Computer Generated Missions
+The current idea is to add player *"objectives"* or **"mission fragments"** which could then be **mixed and matched to create new player experiences**. With that, the hope is to make mixing and matching the fragments so straight-forward that it would **allow non-programmers to easily create objectives, missions and stories** on their own, or have the computer generate everything on its own. That way people will be able to get a fresh and unexpected experience every time they play.

@@ -14,7 +14,9 @@ client = null
     # @canvas.style.left = 0 + 'px'
 
     # connect to server
-    @socket = io.connect(Config.common.uri)
+    url = Config.common.url
+    uri = 'http://' + url.address + ':' + url.port
+    @socket = io.connect uri
 
     # initialize event listeners
     @socket.on(event, cb.bind @) for event, cb of @events.socket

@@ -3,11 +3,11 @@ var app = require('express')(),
     io = require('socket.io')(http),
     Server = require('./lib/server'),
     game = new Server(io),
-    port = 3000;
+    port = require('./lib/config').common.url.port;
 
 http.listen(port, function (err) {
     if (err) {
-        elog(err);
+        console.log(err);
         return;
     }
 
