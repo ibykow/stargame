@@ -5,13 +5,11 @@ if require?
 
 (module ? {}).exports = class ShipView extends ModeledView
   @primaryUpdate: ->
-    [x, y, r, vx, vy, halfw, halfh] =
-      [ @model.position[0], @model.position[1], @model.position[2],
-        @model.velocity[0], @model.velocity[1],
+    [r, vx, vy, halfw, halfh] =
+      [ @model.position[2], @model.velocity[0], @model.velocity[1],
         @game.canvas.halfWidth, @game.canvas.halfHeight ]
 
     @view = [halfw + vx, halfh + vy, r]
-    @game.screenOffset = [x - halfw, y - halfh]
 
     # The current player's ship is always visible
     @visible = true
@@ -41,7 +39,7 @@ if require?
     c.lineWidth = 2
     c.strokeRect x, y, 60, 16
 
-  drawHalo: (color = '#0F0', alpha = 0.4, thickness = 4, margin = 3) ->
+  drawHalo: (color = '#0F0', alpha = 0.4, thickness = 8, margin = 3) ->
     c = @game.c
     c.lineWidth = thickness
     c.strokeStyle = color
@@ -109,6 +107,6 @@ if require?
     c.lineTo -10, -5
     c.closePath()
     c.fill()
-    @drawMuzzleFlash() if @firing
-    @drawHalo '#F00', (min 5, @damaged) / 5, 8 if @damaged
+    @drawMuzzleFlash() if @model.firing
+    @drawHalo '#F00', (min 5, @model.damaged) / 5 if @model.damaged
     c.restore()

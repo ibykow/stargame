@@ -17,7 +17,7 @@ isarr = Array.isArray
     @partition ?= [0, 0] # which partition we are found in
 
     unless @position?.length
-      if @parent then @position = @parent.position
+      if @params.parent then @position = @params.parent.position
       else @position = @game.randomPosition()
 
     @width ?= conf.width
@@ -29,6 +29,8 @@ isarr = Array.isArray
     super @game, @params
     @updatePartition()
 
+  around: (radius) -> @game.around @partition, radius
+
   initEventHandlers: ->
     super()
     @now 'move', (data, handler) => @updatePartition()
@@ -36,7 +38,7 @@ isarr = Array.isArray
   distanceTo: (model) -> Util.magnitude @positionDelta model
 
   delete: ->
-    delete (@game.at @partition)[@id]
+    delete @game.partitions[@partition[0]][@partition[1]][@id]
     super()
 
   positionDelta: (model) ->
@@ -82,15 +84,14 @@ isarr = Array.isArray
 
     return if (@partition[0] is x) and (@partition[1] is y)
 
-    delete (@game.at @partition)[@id]
+    delete @game.partitions[@partition[0]][@partition[1]][@id]
     @partition = [x, y]
-    (@game.at @partition)[@id] = @
+    @game.partitions[@partition[0]][@partition[1]][@id] = @
 
   update: ->
+    super()
     [x, y] = @position
     @updatePosition()
     @emit 'move' unless (x is @position[0]) and (y is @position[1])
-    child.update() for type, child of @children
-    @view?.update?()
 
   insertView: -> @view = new ModeledView @game, model: @

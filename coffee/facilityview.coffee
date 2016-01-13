@@ -1,11 +1,11 @@
 if require?
   Config = require './config'
-  View = require './view'
+  ModeledView = require './modeledview'
 
 pesoChar = Config.common.chars.peso
 
-(module ? {}).exports = class FacilityView extends View
-  draw: -> # we don't get called unless the parent is visible
+(module ? {}).exports = class FacilityView extends ModeledView
+  draw: ->
     c = @game.c
     c.globalAlpha = 1
     c.fillStyle = @model.color

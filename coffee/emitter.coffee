@@ -69,8 +69,11 @@ isarr = Array.isArray
       @id = Emitter.nextID
 
     @game.lib[@type][@id] = @
-    {@parent} = @params
-    @parent.adopt @ if @parent
+
+    {@parent, @alwaysUpdate} = @params
+    @parent.adopt @ if @parent?.id
+
+    @game.updatables[@id] = @ if @params.alwaysUpdate
 
     Emitter.nextID++
 
@@ -80,13 +83,17 @@ isarr = Array.isArray
   initEventHandlers: ->
 
   # (Re)places child and force updates child's parent
-  adopt: (child, name) ->
+  adopt: (child) ->
     return unless child?.id
-    name = name ? child.id
-    @children[name] = child
+    @children[child.id] = child
+    return if child.parent is @
+
+    # Take the child away from the its current parent if present
+    delete child.parent.children[child.id] if child.parent?
     child.parent = @
 
   delete: ->
+    @emit 'delete', parseInt @id
     if @view?.delete?
       @view.delete()
       @view = null
@@ -104,26 +111,30 @@ isarr = Array.isArray
       console.log 'WARNING: id mismatch', @type, @id, o.id unless o is @
       delete @game.lib[@type][@id]
 
-  isDeleted: -> @deleted or (@getState is null)
+    delete @game.updatables[@id]
+
+  getChildrenMatching: (info) ->
+    results = []
+    (results.push child if child.matches info) for id, child of @children
+
+    return results
 
   getState: ->
     states = {}
     states[name] = child.getState() for name, child of @children
 
-    if @parent?
-      parentState =
-        id: @parent.id
-        type: @parent.type
-    else
-      parentState = null
+    if @parent? then parentState =
+      id: @parent.id
+      type: @parent.type
 
     id: @id
     type: @constructor.name
     children: states
-    parent: parentState
+    parent: parentState or null
+    alwaysUpdate: @alwaysUpdate
 
   setState: (state, setChildStates = false) ->
-    {@id, @type} = state
+    {@id, @type, @alwaysUpdate} = state
     if setChildStates and state.children
       for name, child of @children when state.children[name]?
         child.setState state.children[name], true
@@ -138,6 +149,16 @@ isarr = Array.isArray
 
     if isarr Emitter.events[name] then Emitter.events[name].push info
     else Emitter.events[name] = [info]
+
+  isDeleted: -> @deleted or (@getState is null)
+
+  # Returns whether there's a match between ourselves and the state provided
+  # {exact}: Every key of state must exist and equal @[key]
+  matches: (state, exact = false) ->
+    for key, value of state
+      return false unless (@[key] is value) or ((not @[key]?) and not exact)
+
+    return true
 
   # registers callback to be run as soon as the event is emmited
   now: (name, handler, timeout, repeats) ->
@@ -193,5 +214,6 @@ isarr = Array.isArray
 
   once: (name, handler, timeout) -> @on name, handler, timeout, false, false
   onceNow: (name, handler, timeout) -> @now name, handler, timeout, false
+  update: -> child.update() for type, child of @children
 
   insertView: -> # do nothing

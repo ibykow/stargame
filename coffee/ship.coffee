@@ -83,18 +83,13 @@ lg = console.log.bind(console)
 
   setState: (state) ->
     super state
-    {@fireRate, @firing, @fuel, @fuelCapacity, @health,
-    @lastFireInputSequence, @playerID} = state
+    {@firing, @fireRate, @fuel, @fuelCapacity,
+      @health, @lastFireInputSequence, @playerID} = state
 
   turn: (direction, amount) ->
     @position[2] += amount
     @emit 'turn',
       direction: direction
       amount: amount
-
-  update: ->
-    super()
-    @view?.damaged = @damaged
-    @view?.firing = @firing
 
   insertView: -> @view = new ShipView @, true

@@ -23,3 +23,4 @@ rnd = Math.random
   insertView: ->
     @view = new FacilityView @game,
       offset: [@parent.halfWidth - @width, -2 - @parent.halfHeight]
+      model: @

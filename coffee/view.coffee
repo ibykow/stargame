@@ -36,6 +36,8 @@ if require?
 
     super()
 
+  draw: ->
+
   getBounds: -> [[0, 0], [1, 1]]
 
   getState: ->
@@ -50,4 +52,3 @@ if require?
 
   resize: -> # called when the window is resized
   update: -> @game.visibleViews.push @ if @visible
-  draw: ->

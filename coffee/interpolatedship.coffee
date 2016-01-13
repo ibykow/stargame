@@ -7,6 +7,7 @@ if require?
     return unless @game? and @params?.id
     @next = @params
     @setState @params
+    @params.alwaysUpdate = true
     super @game, @params
 
   updateVelocity: -> # InterpolatedShip positions don't count on velocity

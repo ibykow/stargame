@@ -9,9 +9,10 @@ if require?
 (module ? {}).exports = class Bullet extends Physical
   constructor: (@game, @params) ->
     return unless @game?
-    @ship = @game.lib['Ship']?[@params?.shipID]
-    @ship ?= @game.lib['InterpolatedShip']?[@params?.shipID]
-    return console.log "Couldn't create bullet. Ship not found." unless @ship
+    id = @params?.shipID
+    @ship = @game.lib['Ship']?[id] or @game.lib['InterpolatedShip']?[id]
+
+    return console.log "Couldn't create bullet. Ship not found." unless @ship?
 
     {@damage, @life, @speed} = @params
 
@@ -32,6 +33,8 @@ if require?
                           @ship.position[1] + ydir * (@ship.height + 2),
                           @ship.position[2] ]
 
+    @params.alwaysUpdate = @params.alwaysUpdate ? true
+
     super @game, @params
 
   delete: ->
@@ -42,12 +45,12 @@ if require?
   initEventHandlers: ->
     super()
     # collision detection
-    handler = @now 'move', (data, handler) =>
+    @now 'move', (data, handler) =>
       return if @deleted
-      for id, model of @game.around @partition when not (model.id is @id)
-        if @intersects model
-          handler.repeats = false
-          model.emit 'hit', @
+      models = @around 1
+      for model in models when not (model.id is @id) and @intersects model
+        handler.repeats = false
+        model.emit 'hit', @
 
   getState: ->
     Object.assign super(),

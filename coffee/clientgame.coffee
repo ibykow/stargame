@@ -32,6 +32,7 @@ Ship::fire = -> @firing = true
     'For the love of Pretus, stop already!'
     "We're all going to die!"
   ]
+
   constructor: (@canvas, @params) ->
     return unless @canvas? and @params?
     @prevTime = +new Date
@@ -39,7 +40,7 @@ Ship::fire = -> @firing = true
     @c = @canvas.getContext '2d'
     @starStates = @params.starStates
     @serverTick = @params.tick
-    @params.tick = @tick = count: @serverTick.count
+    @params.tick = count: @serverTick.count
 
     @screenOffset = [0, 0]
     @visibleViews = []
@@ -52,7 +53,7 @@ Ship::fire = -> @firing = true
     @player.state = @params.player
     @player.ship.insertView()
 
-    handler = @player.on 'refuel-error', (data) ->
+    @player.on 'refuel-error', (data) ->
       switch data.type
         when '404' then info = "Can't find the station."
         when 'distance' then info = "You're too far from the station."
@@ -86,7 +87,10 @@ Ship::fire = -> @firing = true
             when 'InterpolatedShip' then v.arrowTo data.view
 
             # Add arrows to other play's ships when our ship (re)generates
-            when 'Ship' then @each 'InterpolatedShip', (s) -> v.arrowTo s.view
+            when 'Ship'
+              handler = @player.ship.on 'move', @updateScreenOffset.bind @
+              handler.callback()
+              @each 'InterpolatedShip', (s) -> v.arrowTo s.view
 
       }, {
         deleted: true
@@ -97,46 +101,10 @@ Ship::fire = -> @firing = true
           console.log 'created new bullet at', data.position
     }]
 
-  initContextMenu: ->
-    @contextMenu = new Pane @,
-      alpha: 0.5
-      colors:
-        text: '#FFF'
-        background:
-          current: '#00F'
-          hover: '#00F'
-          leave: '#00F'
-
-    @contextMenu.resize()
-
-    timer = new Timer @tick.count, 60 * 30, =>
-      @page 'Move your mouse to the far right to open the menu ->'
-
-    timer.repeats = true
-    timer.callback()
-
-    @contextMenu.on 'open', -> timer.delete()
-    @contextMenu.now 'mouse-leave', => @contextMenu.close()
-
-    params =
-      alpha: 0.25
-      dimensions: [20, 0]
-
-    sensor = @contextMenuSensor = new Pane @, params
-    sensor.resize()
-    sensor.open()
-    sensor.now 'mouse-enter', => @contextMenu.toggle()
-
-  # quick and dirty
-  testPager: ->
-    @pager.page('Hello, World Number ' + i) for i in [1..20]
-    console.log @pager.ring
-
-  generateStars: -> Star.fromState @, state, true for state in @starStates
-
-  resized: -> @emit 'resize'
-
-  removeShip: (id) -> @lib['InterpolatedShip']?[id]?.delete()
+  clearScreen: ->
+    @c.globalAlpha = 1
+    @c.fillStyle = Config.client.colors.background.default
+    @c.fillRect 0, 0, @canvas.width, @canvas.height
 
   correctPrediction: ->
     # Make sure we have a state to work with
@@ -166,6 +134,7 @@ Ship::fire = -> @firing = true
     {damaged, firing, fuel, health, position} = state
 
     @player.ship.firing = firing
+
     @player.ship.fuel = fuel
     @player.ship.health = health
     @player.ship.damaged = damaged
@@ -200,6 +169,84 @@ Ship::fire = -> @firing = true
       @player.updateInputLog()
       @tick.count++
 
+  draw: ->
+    @clearScreen()
+    view.draw() for view in @visibleViews
+    @player.ship?.view.drawHUD 2, 2
+    @pager.draw()
+
+  gameOver: ->
+    console.log 'Game over!'
+    @player.ship.delete()
+
+    @c.fillStyle = "#FFF"
+    @c.font = '30px Helvetica'
+    @c.fillText 'Game Over!', @canvas.halfWidth - 80, @canvas.halfHeight - 80
+    @c.font = '14px Courier New'
+    @c.fillText "Alright, that's it! I'm sick of it!",
+      @canvas.halfWidth - 135, @canvas.halfHeight - 60
+    @c.fillText "Shut the fuck up, I've got a gun!",
+      @canvas.halfWidth - 130, @canvas.halfHeight - 42
+
+  generateStars: -> Star.fromState @, state, true for state in @starStates
+
+  initContextMenu: ->
+    @contextMenu = new Pane @,
+      alpha: 0.5
+      colors:
+        text: '#FFF'
+        background:
+          current: '#00F'
+          hover: '#00F'
+          leave: '#00F'
+
+    @contextMenu.resize()
+
+    timer = new Timer @tick.count, 60 * 30, =>
+      @page 'Move your mouse to the far right to open the menu ->'
+
+    timer.repeats = true
+    timer.callback()
+
+    @contextMenu.once 'open', -> timer.delete()
+    @contextMenu.now 'mouse-leave', => @contextMenu.close()
+
+    params = Config.client.contextMenu.sensor
+    params.parent = @contextMenu
+
+    sensor = new Pane @, params
+    sensor.resize()
+    sensor.now 'mouse-enter', =>
+      console.log 'toggling'
+      @contextMenu.toggle()
+    sensor.open()
+
+  isMouseInBounds: (bounds) ->
+    Util.isInSquareBounds [@client.mouse.x, @client.mouse.y], bounds
+
+  moveMouse: ->
+    @client.mouse.moved = false
+    previousViews = @mouseViews
+    @mouseViews = []
+    # @contextMenu.toggle() if @client.mouse.x > @canvas.width - 30
+
+    # Create new list of mouseViews
+    for view in @visibleViews
+      continue unless @isMouseInBounds view.getBounds()
+      view.hovering = true
+      @mouseViews.push view
+      view.emit 'mouse-enter' unless ~previousViews.indexOf view
+
+    # Remove items from the old list
+    for view in previousViews when ~@mouseViews.indexOf(view) is 0
+      view.hovering = false
+      view.emit 'mouse-leave'
+
+  notifyServer: ->
+    @player.updateInputLog()
+    entry = @player.latestInputLogEntry
+    @player.socket.emit 'input', entry
+
   processBulletData: (data) ->
     # Add new bullets
     Bullet.fromState @, state, true for state in data.new
@@ -226,26 +273,14 @@ Ship::fire = -> @firing = true
     @interpolation.reset()
     @correctPrediction()
 
-  isMouseInBounds: (bounds) ->
-    Util.isInSquareBounds [@client.mouse.x, @client.mouse.y], bounds
+  removeShip: (id) -> @lib['InterpolatedShip']?[id]?.delete()
 
-  moveMouse: ->
-    @client.mouse.moved = false
-    previousViews = @mouseViews
-    @mouseViews = []
-    # @contextMenu.toggle() if @client.mouse.x > @canvas.width - 30
+  resized: ->
+    screenSize = max @client.canvas.halfWidth, @client.canvas.halfHeight
+    @screenPartitionRadius = (floor screenSize / @partitionSize) + 2
+    @emit 'resize'
 
-    # Create new list of mouseViews
-    for view in @visibleViews
-      continue unless @isMouseInBounds view.getBounds()
-      view.hovering = true
-      @mouseViews.push view
-      view.emit 'mouse-enter' unless ~previousViews.indexOf view
-
-    # Remove items from the old list
-    for view in previousViews when ~@mouseViews.indexOf(view) is 0
-      view.hovering = false
-      view.emit 'mouse-leave'
+  testPager: -> @pager.page('Hello, World Number ' + i) for i in [1..20]
 
   updateMouse: ->
     m = @client.mouse
@@ -263,55 +298,33 @@ Ship::fire = -> @firing = true
     m.pressed = false
     m.released = false
 
+  updateScreenOffset: ->
+    x = @player.ship.position[0] - @canvas.halfWidth
+    y = @player.ship.position[1] - @canvas.halfHeight
+    @screenOffset = [x, y]
+
   update: ->
+    # No ship, no update
     unless @player.ship?
       return unless @player.state.ship
       @player.generateShip @player.state.ship, true
 
+    @visibleViews = []
     @player.inputs = @client.getKeyboardInputs()
     super()
-    star.view.update() for id, star of @lib['Star']
-    bullet.view.update() for id, bullet of @lib['Bullet'] or {}
 
-    ship.update() for id, ship of @lib['InterpolatedShip'] or {}
+    @interpolation.step++
+    proximals = @player.ship.around @screenPartitionRadius
+    model.view.update() for model in proximals when model.type is 'Star'
+
+    @each 'Bullet', (b) -> b.view.update()
+    @each 'Arrow', (a) -> a.update()
+    @each 'ShipView', (v) -> v.update()
 
     @player.update()
-    @contextMenuSensor.update()
-    @contextMenu.update()
 
+    # Call this last because mouseUpdate needs visibleViews to be populated
     @updateMouse()
-    @interpolation.step++
-
-    arrow.update() for id, arrow of @lib['Arrow'] or {}
-
-  clearScreen: ->
-    @c.globalAlpha = 1
-    @c.fillStyle = Config.client.colors.background.default
-    @c.fillRect 0, 0, @canvas.width, @canvas.height
-
-  draw: ->
-    @clearScreen()
-    view.draw() for view in @visibleViews
-    @player.ship?.view.drawHUD 2, 2
-    @pager.draw()
-
-  gameOver: ->
-    console.log 'Game over!'
-    @player.ship.delete()
-
-    @c.fillStyle = "#FFF"
-    @c.font = '30px Helvetica'
-    @c.fillText 'Game Over!', @canvas.halfWidth - 80, @canvas.halfHeight - 80
-    @c.font = '14px Courier New'
-    @c.fillText "Alright, that's it! I'm sick of it!",
-      @canvas.halfWidth - 135, @canvas.halfHeight - 60
-    @c.fillText "Shut the fuck up, I've got a gun!",
-      @canvas.halfWidth - 130, @canvas.halfHeight - 42
-
-  notifyServer: ->
-    @player.updateInputLog()
-    entry = @player.latestInputLogEntry
-    @player.socket.emit 'input', entry
 
   step: (time) ->
     super time # the best kind
@@ -320,4 +333,3 @@ Ship::fire = -> @firing = true
     @deadBulletIDs = []
     @deadShipIDs = []
     @player.inputs = []
-    @visibleViews = []

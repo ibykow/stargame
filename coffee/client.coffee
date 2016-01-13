@@ -56,6 +56,7 @@ client = null
         @game.client = @
         @socket.emit 'join', @game.player.name
         @resizedCallback = @game.resized.bind @game
+        @events.window.resize.call @ # Resize one more time
 
         # update the state event handler
         callback = @game.processServerData.bind @game
@@ -63,6 +64,9 @@ client = null
 
         # process the new state
         callback data
+
+        # Update here for the first time so that stats stay 'clean'
+        @game.update()
 
         # start the game
         @frame.run.bind(@) +new Date
@@ -82,16 +86,20 @@ client = null
       keydown: (e) -> @keys[e.keyCode] = true
       keyup: (e) -> @keys[e.keyCode] = false
       click: (e) -> @mouse.clicked = true
+
       mousedown: (e) ->
         @mouse.pressed = true
         @mouse.buttons[e.button] = true
+
       mouseup: (e) ->
         @mouse.released = true
         @mouse.buttons[e.button] = false
+
       mousemove: (e) ->
         @mouse.moved = true
         @mouse.x = e.clientX - canvas.boundingRect.left
         @mouse.y = e.clientY - canvas.boundingRect.top
+
       resize: (e) ->
         @canvas.width = window.innerWidth - Config.client.innerWidthOffset
         @canvas.height = window.innerHeight - Config.client.innerHeightOffset

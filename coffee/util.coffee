@@ -7,6 +7,26 @@ isarr = Array.isArray
 (module ? {}).exports = Util =
   PI: pi
   TWO_PI: pi * 2
+
+  # Returns a list of keys which differ between objects
+  diff: (a, b) ->
+    results = []
+    (results.push key unless value is b[key]) for key, value of a
+    (results.push key unless a[key]?) for key, value of b
+    return results
+
+  getByType: (items, type) ->
+    return [] unless Object.keys(items).length and (typeof type is 'string')
+    results = []
+    (results.push item if item.type is type) for id, item of items
+    return results
+
+  filterChildrenByType: (list, type) ->
+    return [] unless (isarr list)
+    ret = []
+    (ret = ret.concat @getByType emitter.children, type) for emitter in list
+    return ret
+
   vectorDeltaExists: (a, b) ->
     # Returns true if only one is an array, or if the arrays are
     # of differnt lengths. Returns false if neither are arrays.

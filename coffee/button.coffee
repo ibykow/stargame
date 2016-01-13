@@ -25,9 +25,6 @@ isarr = Array.isArray
               @parent.view[1] + @offset[1],
               @parent.view[2] ]
 
-    # if @hovering then @color = @params.colors.hover
-    # else @color = @params.colors.leave
-
   draw: ->
     return unless @enabled and @visible
     super()

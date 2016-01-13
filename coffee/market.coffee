@@ -7,4 +7,6 @@ Facility = require './facility' if require?
     super @game, @params
 
   insertView: ->
-    @view = new FacilityView @game, offset: [@parent.halfWidth + 2, 0]
+    @view = new FacilityView @game,
+      offset: [@parent.halfWidth + 2, 0]
+      model: @

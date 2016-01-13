@@ -5,24 +5,26 @@ if require?
 
 # Pane: A window-like pane which closes when the mouse leaves
 (module ? {}).exports = class Pane extends ComponentView
+  close: ->
+    @game.stopUpdating @
+    @visible = false
+    @emit 'close'
+
   constructor: (@game, @params = {}) ->
     return unless @game?
     @params.alpha = @params.alpha ? 0.6
     @params.dimensions = @params.dimensions ? [360, 0]
     super @game, @params
 
-  toggle: -> if @visible then @close() else @open()
-
   open: ->
+    @game.startUpdating @
     @visible = true
     @emit 'open'
-
-  close: ->
-    @visible = false
-    @emit 'close'
 
   resize: ->
     {width, height, halfHeight} = @game.canvas
     @view = [width - @dimensions[0], 0, 0]
     @dimensions[1] = height
     @halfHeight = halfHeight
+
+  toggle: -> if @visible then @close() else @open()

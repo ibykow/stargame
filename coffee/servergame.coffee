@@ -6,8 +6,12 @@ if require?
   Game = require './game'
   Player = require './player'
   Star = require './star'
-  GasStation = require './gasstation'
   Market = require './market'
+  GasStation = require './gasstation'
+
+starKidClasses =
+  Market: Market
+  GasStation: GasStation
 
 conf = Config.server
 # On the server-side, players keep only the inputs necessary to do updates.
@@ -36,16 +40,16 @@ rnd = Math.random
       width = Util.randomInt(5, 20)
       height = Util.randomInt(5, 20)
       star = new Star @, null, width, height
-      if rnd() < Config.common.rates.gasStation
-        new GasStation @, parent: star
-      if rnd() < Config.common.rates.market
-        new Market @, parent: star
+      for name, rate of conf.starKid.rates when rnd() < rate
+        continue unless kidClass = starKidClasses[name]
+        new kidClass @, parent: star
 
   getStates: (initial) ->
     players = for id, player of @lib['Player']
       state = player.getState()
-      player.ship?.damaged = 0
-      player.ship?.firing = false
+      # Reset ship
+      player.ship.damaged = 0
+      player.ship.firing = false
       state
 
     if initial then lib = @lib['Bullet'] or {} else lib = @newBullets
@@ -56,7 +60,7 @@ rnd = Math.random
 
   sendInitialState: (player) ->
     return unless player
-    {players, bullets} = @getStates true
+    {players, bullets} = @getStates 'initial'
 
     # send the id and game information back to the client
     player.socket.emit 'welcome',
@@ -64,13 +68,13 @@ rnd = Math.random
         dead: []
         new: bullets
       game:
-        player: player.getState()
-        width: @width
-        height: @height
-        rates: @rates
-        tick: @tick
-        starStates: @starStates
         deadShipIDs: []
+        height: @height
+        width: @width
+        player: player.getState()
+        rates: @rates
+        starStates: @starStates
+        tick: @tick
       players: players
 
   sendState: ->
@@ -81,8 +85,8 @@ rnd = Math.random
         dead: @deadBulletIDs
         new: bullets
       game:
-        tick: @tick
         deadShipIDs: @deadShipIDs
+        tick: @tick
       players: players
 
   update: -> super() for [1..conf.updatesPerStep]

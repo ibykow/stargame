@@ -7,6 +7,10 @@
     colors:
       background:
         default: '#000'
+    contextMenu:
+      sensor:
+        alpha: 0.8
+        dimensions: [10, 0]
     innerWidthOffset: 0
     innerHeightOffset: 0
     keys:
@@ -59,10 +63,20 @@
     ship:
       width: 20
       height: 20
+    starKid:
+      rates:
+        GasStation: 0.2 # probability of a star having a gas station
+        Market: 0.4
+        # Mine:
+        #   silver: 0.2
+        #   gold: 0.1
+        #   platinum: 0.05
+        #   ununpentium: 0.01
+
     updatesPerStep: 5
   common:
     url:
-      address: 'localhost'
+      address: 'localhost' #'192.168.0.100'
       port: 3000
     bullet:
       damage: 2
@@ -94,14 +108,6 @@
       height: 10
       veloctiy: [0,0]
     msPerFrame: 16
-    rates:
-      gasStation: 0.2 # probability of a star having a gas station
-      market: 0.4
-      mine:
-        silver: 0.2
-        gold: 0.1
-        platinum: 0.05
-        ununpentium: 0.01
     ringbuffer:
       max: 50
     ship:

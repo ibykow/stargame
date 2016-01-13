@@ -36,8 +36,8 @@ module.exports = class Server
     @stats.dt.min = min @stats.dt.min, @stats.dt.last
     @stats.dt.max = max @stats.dt.max, @stats.dt.last
     if @game.tick.count % (60 * 5) is 0
-      console.log 'dt', @stats.dt.last.toFixed(4), @stats.dt.average.toFixed(4),
-        @stats.dt.max.toFixed(4)
+      console.log 'dt', @game.tick.count, @stats.dt.last.toFixed(4),
+        @stats.dt.average.toFixed(4), @stats.dt.max.toFixed(4)
 
   unpause: ->
     console.log 'Unpausing'
@@ -115,4 +115,6 @@ module.exports = class Server
       @stats.dt.last = (process.hrtime()[1] - @stats.dt.last) / 1000000
       @processStats()
 
-    stop: -> clearInterval @frame.interval
+    stop: ->
+      clearInterval @frame.interval
+      @started = false
