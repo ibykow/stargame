@@ -1,5 +1,5 @@
 # StarGame
-A Networked Space Adventure
+A Multiplayer Space Adventure
 
 ### Install
 
