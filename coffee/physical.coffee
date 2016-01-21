@@ -29,7 +29,7 @@ isarr = Array.isArray
           timer: 0
           repeats: true
           callback: (model) ->
-            model.life = 0 if model.type is 'Bullet'
+            model.life = 0 if model.type is 'Projectile'
             console.log @type, @id, 'hit by', model.type, model.id, model.damage
             @damaged += model.damage
 

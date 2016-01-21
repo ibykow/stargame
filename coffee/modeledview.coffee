@@ -14,6 +14,11 @@ if require?
     {width, height, halfWidth, halfHeight} = @model
     [[@view[0] - halfWidth, @view[1] - halfHeight], [width, height]]
 
+  initEventHandlers: ->
+    # Pass mouse events onto the model
+    for type in Config.client.mouse.event.types
+      @now 'mouse-' + type, (data, handler) => @model.emit handler.name, data
+
   isOnScreen: ->
     w = @model.halfWidth
     h = @model.halfHeight

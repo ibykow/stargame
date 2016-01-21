@@ -4,15 +4,15 @@ if require?
   Physical = require './physical'
 
 {ceil, cos, sin} = Math
-{damage, life, speed} = Config.common.bullet
+{damage, life, speed} = Config.common.projectile
 
-(module ? {}).exports = class Bullet extends Physical
+(module ? {}).exports = class Projectile extends Physical
   constructor: (@game, @params) ->
     return unless @game?
     id = @params?.shipID
     @ship = @game.lib['Ship']?[id] or @game.lib['InterpolatedShip']?[id]
 
-    return console.log "Couldn't create bullet. Ship not found." unless @ship?
+    return console.log "WARNING! No ship, no projectile." unless @ship?
 
     {@damage, @life, @speed} = @params
 
@@ -38,7 +38,7 @@ if require?
     super @game, @params
 
   delete: ->
-    @game.deadBulletIDs.push @id
+    @game.deadProjectileIDs.push @id
     @life = 0
     super()
 
@@ -77,7 +77,7 @@ if require?
     super state
     {@damage, @life, @shipID, @speed} = state
 
-  updateVelocity: -> # bullet velocity is constant
+  updateVelocity: -> # projectile velocity is constant
 
   update: ->
     super()

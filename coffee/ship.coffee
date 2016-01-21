@@ -2,7 +2,7 @@ if require?
   Config = require './config'
   Physical = require './physical'
   ShipView = require './shipview'
-  Bullet = require './bullet'
+  Projectile = require './projectile'
 
 # Shorthands for commonly used / long-named functions
 {abs, floor, min, max, trunc, cos, sin} = Math
@@ -66,9 +66,9 @@ lg = console.log.bind(console)
     return unless @lastFireInputSequence < @player.inputSequence - @fireRate
     @firing = true
     @lastFireInputSequence = @player.inputSequence
-    bullet = new Bullet @game, shipID: @id
-    if @game.client then bullet.insertView() else @game.insertBullet bullet
-    @emit 'fire', bullet
+    projectile = new Projectile @game, shipID: @id
+    if @game.client then projectile.insertView() else @game.insertProjectile projectile
+    @emit 'fire', projectile
 
   getState: ->
     Object.assign super(),

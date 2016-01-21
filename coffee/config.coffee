@@ -35,6 +35,10 @@
       s:
         code: 'S'.charCodeAt 0
         action: 'suicide'
+    mouse:
+      event:
+        types: ['click', 'enter', 'leave', 'press', 'release']
+
     pager:
       color: '#0f0'
       fade: 30
@@ -55,7 +59,7 @@
           release: -> console.log 'Release me. Set me free.'
           click: -> console.log 'You clicked me!'
   server:
-    bulletCollidableTypes: [ 'Ship', 'Star' ]
+    projectileCollidableTypes: [ 'Ship', 'Star' ]
     game:
       width: (1 << 17) + 1
       height: (1 << 17) + 1
@@ -81,7 +85,7 @@
     url:
       address: 'localhost' #'192.168.0.100'
       port: 3000
-    bullet:
+    projectile:
       damage: 2
       life: 60 * 3
       speed: 10

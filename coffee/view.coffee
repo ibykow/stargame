@@ -18,7 +18,7 @@ if require?
     super @game, @params
 
     for name, callback of conf.mouse.events
-      @now 'mouse-' + name, callback.bind(@), 0, true
+      @on 'mouse-' + name, callback.bind(@), 0, true
 
   arrowTo: (view, color, alpha = 1, lineWidth = 1) ->
     new Arrow @game,

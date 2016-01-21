@@ -31,9 +31,9 @@ rnd = Math.random
 
     @starStates = (star.getState() for id, star of @lib['Star'])
     @page = console.log
-    @newBullets = []
+    @newProjectiles = []
 
-  insertBullet: (bullet) -> @newBullets.push bullet if bullet?
+  insertProjectile: (projectile) -> @newProjectiles.push projectile if projectile?
 
   generateStars: (n) ->
     for i in [0..n]
@@ -53,21 +53,21 @@ rnd = Math.random
       player.ship.firing = false
       state
 
-    if initial then lib = @lib['Bullet'] or {} else lib = @newBullets
-    bullets = (bullet.getState() for bullet in lib when not bullet.isDeleted())
+    if initial then lib = @lib['Projectile'] or {} else lib = @newProjectiles
+    projectiles = (projectile.getState() for projectile in lib when not projectile.isDeleted())
 
     players: players
-    bullets: bullets
+    projectiles: projectiles
 
   sendInitialState: (player) ->
     return unless player
-    {players, bullets} = @getStates 'initial'
+    {players, projectiles} = @getStates 'initial'
 
     # send the id and game information back to the client
     player.socket.emit 'welcome',
-      bullets:
+      projectiles:
         dead: []
-        new: bullets
+        new: projectiles
       game:
         deadShipIDs: []
         height: @height
@@ -79,12 +79,12 @@ rnd = Math.random
       players: players
 
   sendState: ->
-    {players, bullets} = @getStates()
+    {players, projectiles} = @getStates()
 
     @server.io.emit 'state',
-      bullets:
-        dead: @deadBulletIDs
-        new: bullets
+      projectiles:
+        dead: @deadProjectileIDs
+        new: projectiles
       game:
         deadShipIDs: @deadShipIDs
         tick: @tick
@@ -95,6 +95,6 @@ rnd = Math.random
   step: (time) ->
     super time
     @sendState()
-    @deadBulletIDs = []
+    @deadProjectileIDs = []
     @deadShipIDs = []
-    @newBullets = []
+    @newProjectiles = []

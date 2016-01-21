@@ -200,6 +200,8 @@ isarr = Array.isArray
 
       else return
 
+    handler.name = name
+
     if timeout > 0
       timercb = (handler, timer) ->
         handler.timedOut = true

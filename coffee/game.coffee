@@ -25,7 +25,7 @@ Physical::explode = ->
 (module ? {}).exports = class Game extends Emitter
   constructor: (@params) ->
     {@width, @height, @rates} = @params
-    @deadBulletIDs = []
+    @deadProjectileIDs = []
     @deadShipIDs = []
     @partitions = (({} for [0...@rates.partition]) for [0...@rates.partition])
     @partitionSize = @width / @rates.partition
@@ -95,7 +95,7 @@ Physical::explode = ->
         info.callback = info.callback.bind @
         @on name, info
 
-  insertBullet: (bullet) -> # do nothing client-side
+  insertProjectile: (projectile) -> # do nothing client-side
 
   logPlayerStates: ->
     for player in @players when player

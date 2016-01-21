@@ -53,7 +53,7 @@ Engine
   - make explosions into model that cause damage
   - make object keep track of handlers they register so they can be deleted
   - add Font object which describes fonts, color, line height, char width, etc.
-  √ fix bullet-collisions
+  √ fix projectile-collisions
   - add more ship gears/speeds: craw, normal, fast, turbo
   - add hyperspace/jump to location option (for price)
   - add ai/bots (pirates, friendlies, roadside/spaceside)
@@ -105,14 +105,20 @@ Player Events
 Explosives
   - triggers: timer, contact, proximity, target, damage
 
+Projectiles
+  - like projectiles
+  - originate from a source?
+  - have payloads
+  - missiles?
+
 Bugs
   √ life at 1000 on fuel purchase
   √ server-side fuel purchase
-  √ re-associate client-side bullets with their originators (ship/gun)
+  √ re-associate client-side projectiles with their originators (ship/gun)
   √ rejoined player not updating existing players
   √ move gas station icon above star
   √ pager sequence (refuel update in between brake strings)
-  √ re-enabled bullet firing
+  √ re-enabled projectile firing
   √ Ships not updating properly (arrows, firing, etc)
   √ gas station isn't being drawn
   - dead ship doesn't disappear if their canvas is paused
@@ -181,5 +187,5 @@ Ideas:
 WIP:
   √ Keep references of all emitters in arrays in the game
   √ game.lib =
-      Bullet: { id: bullet }
+      Projectile: { id: projectile }
       Star: { id: star }

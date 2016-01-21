@@ -46,7 +46,7 @@ Ship::fire = -> @firing = true
     @visibleViews = []
     @mouseViews = [] # views under the mouse
     @proximals = [] # All emitters around the player's ship
-    @proximalViewTypes = ['Bullet', 'Explosion', 'Star']
+    @proximalViewTypes = ['Projectile', 'Explosion', 'Star']
 
     super @params
 
@@ -82,25 +82,24 @@ Ship::fire = -> @firing = true
         timeout: 0
         repeats: true
         callback: (data, handler) ->
-          return unless (type = data.type) and (v = @player.ship.view)
-
+          return unless (type = data.type) and (myship = @player.ship)
           switch type
             # Add an arrow to a new player's ship
-            when 'InterpolatedShip' then v.arrowTo data.view
+            when 'InterpolatedShip' then myship.view.arrowTo data.view
             when 'Explosion' then data.insertView()
             # Add arrows to other play's ships when our ship (re)generates
             when 'Ship'
-              handler = @player.ship.on 'move', @updateScreenOffset.bind @
-              handler.callback()
-              @each 'InterpolatedShip', (s) -> v.arrowTo s.view
+              (myship.on 'move', @updateScreenOffset.bind @).callback()
+              @each 'InterpolatedShip', (ship) -> myship.view.arrowTo ship.view
+            when 'Star' then data.now 'mouse-click', -> data.explode()
 
       }, {
         deleted: true
         timeout: 0
         repeats: true
         callback: (data, handler) ->
-          return unless data?.type is 'Bullet'
-          console.log 'created new bullet at', data.position
+          return unless data?.type is 'Projectile'
+          console.log 'created new projectile at', data.position
     }]
 
   clearScreen: ->
@@ -248,12 +247,12 @@ Ship::fire = -> @firing = true
     entry = @player.latestInputLogEntry
     @player.socket.emit 'input', entry
 
-  processBulletData: (data) ->
-    # Add new bullets
-    Bullet.fromState @, state, true for state in data.new
+  processProjectileData: (data) ->
+    # Add new projectiles
+    Projectile.fromState @, state, true for state in data.new
 
-    # Remove dead bullets
-    @lib['Bullet']?[id]?.delete() for id in data.dead
+    # Remove dead projectiles
+    @lib['Projectile']?[id]?.delete() for id in data.dead
 
   processServerData: (data) ->
     # Store the most recent server tick data
@@ -261,7 +260,7 @@ Ship::fire = -> @firing = true
     # Make it so we don't fall behind the server game tick
     @tick.count = @serverTick.count + 1 if @serverTick.count > @tick.count
 
-    @processBulletData data.bullets
+    @processProjectileData data.projectiles
 
     # remove our ship from the pile
     index = data.players.findIndex (s) => s.id is @player.id
@@ -335,6 +334,6 @@ Ship::fire = -> @firing = true
     super time # the best kind
     @notifyServer()
     @draw()
-    @deadBulletIDs = []
+    @deadProjectileIDs = []
     @deadShipIDs = []
     @player.inputs = []
