@@ -10,10 +10,6 @@ if require?
     @params.alwaysUpdate = true
     super @game, @params
 
-  delete: ->
-    super()
-    Explosion.fromState @game, position: @position.slice(), true
-
   updateVelocity: -> # InterpolatedShip positions don't count on velocity
 
   updatePosition: ->

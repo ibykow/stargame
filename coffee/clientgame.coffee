@@ -219,9 +219,7 @@ Ship::fire = -> @firing = true
 
     sensor = new Pane @, params
     sensor.resize()
-    sensor.now 'mouse-enter', =>
-      console.log 'toggling'
-      @contextMenu.toggle()
+    sensor.now 'mouse-enter', => @contextMenu.toggle()
     sensor.open()
 
   isMouseInBounds: (bounds) ->
@@ -276,7 +274,7 @@ Ship::fire = -> @firing = true
     @interpolation.reset()
     @correctPrediction()
 
-  removeShip: (id) -> @lib['InterpolatedShip']?[id]?.delete()
+  removeShip: (id) -> @lib['InterpolatedShip']?[id]?.explode()
 
   resized: ->
     screenSize = max @client.canvas.halfWidth, @client.canvas.halfHeight

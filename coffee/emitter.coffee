@@ -55,6 +55,7 @@ isarr = Array.isArray
 
   constructor: (@game, @params = {}) ->
     return unless @game?
+    @born = @game.tick.count
     @deleted = @params.deleted or false
     @listeners = {}
     @immediates = {} # immediate listeners

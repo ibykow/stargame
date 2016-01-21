@@ -13,13 +13,9 @@ isarr = Array.isArray
     @damaged = 0
     @magnitude = 0
     @collisions = {} # current collisions stored by type
-    {@mass, @v0} = @params
+    {@mass, @velocity} = @params
 
-    if @v0?.length
-      @velocity = @v0.slice()
-    else
-      @v0 = [0, 0]
-      @velocity = [0, 0]
+    @velocity ?= [0, 0]
 
     super @game, @params
 

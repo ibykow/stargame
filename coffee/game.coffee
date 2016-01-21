@@ -4,11 +4,27 @@ if require?
   Timer = require './timer'
   RingBuffer = require './ringbuffer'
   Emitter = require './emitter'
+  Model = require './model'
+  Physical = require './physical'
+  Explosion = require './explosion'
   Player = require './player'
 
 {min, max} = Math
 isarr = Array.isArray
 isnum = Util.isNumeric
+
+Model::explode = ->
+  Explosion.fromState @game, position: @position.slice(), true
+  @delete()
+
+Physical::explode = ->
+  state =
+    position: @position.slice()
+    velocity: @velocity.slice()
+
+  Explosion.fromState @game, state, true
+  @delete()
+
 
 (module ? {}).exports = class Game extends Emitter
   constructor: (@params) ->

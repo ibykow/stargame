@@ -32,6 +32,9 @@
       f:
         code: 'F'.charCodeAt 0
         action: 'fire'
+      s:
+        code: 'S'.charCodeAt 0
+        action: 'suicide'
     pager:
       color: '#0f0'
       fade: 30

@@ -58,6 +58,11 @@ pesoChar = Config.common.chars.peso
 
     fire: -> @ship.fire()
 
+    suicide: ->
+      return if @dead or (@game.tick.count - @ship.born < 50)
+      console.log 'Player', @id, 'has commited suicide', @ship.id
+      @ship.health = 0
+
     refuel: ->
       unless station = @game.gasStations[@gasStationIndex]
         return @emit 'refuel-error',
@@ -106,8 +111,10 @@ pesoChar = Config.common.chars.peso
         price: price
 
   die: ->
+    return if @dead
+    @dead = true
     @game.deadShipIDs.push @ship.id
-    @ship.delete()
+    @ship.explode()
     @emit 'die'
 
   initEventHandlers: ->
@@ -151,4 +158,4 @@ pesoChar = Config.common.chars.peso
   update: ->
     @actions[action].bind(@)() for action in @inputs when action?.length
     @ship.update()
-    @die() if @ship.health < 0
+    @die() unless @ship.health > 0

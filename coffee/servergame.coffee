@@ -46,6 +46,7 @@ rnd = Math.random
 
   getStates: (initial) ->
     players = for id, player of @lib['Player']
+      player.dead = false
       state = player.getState()
       # Reset ship
       player.ship.damaged = 0

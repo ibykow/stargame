@@ -28,7 +28,7 @@ if require?
     xdir = cos @ship.position[2]
     ydir = sin @ship.position[2]
 
-    @params.v0 = [xdir * @speed, ydir * @speed]
+    @params.velocity = [xdir * @speed, ydir * @speed]
     @params.position = [  @ship.position[0] + xdir * (@ship.width + 2),
                           @ship.position[1] + ydir * (@ship.height + 2),
                           @ship.position[2] ]

@@ -1,6 +1,7 @@
 if require?
   Config = require './config'
   Util = require './util'
+  Model = require './model'
   Physical = require './physical'
   ExplosionView = require './explosionview'
 
@@ -29,7 +30,7 @@ if require?
 
   update: ->
     return @delete() unless @life > 0
-
+    super()
     @rate = @life / @strength
     @rate *= @rate
 
