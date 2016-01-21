@@ -36,7 +36,7 @@ isarr = Array.isArray
     return unless game
 
     if state.deleted
-      console.log 'WARNING: Setting from a deleted state!', state.id
+      console.log 'WARNING! Setting from deleted state:', state.id
 
     emitter = game.lib[@name]?[state.id]
 
@@ -56,6 +56,7 @@ isarr = Array.isArray
 
   constructor: (@game, @params = {}) ->
     return unless @game?
+    @deleted = @params.deleted or false
     @listeners = {}
     @immediates = {} # immediate listeners
     @children = {}

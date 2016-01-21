@@ -8,13 +8,13 @@ if require?
   constructor: (@game, @params) ->
     return unless @game?
     conf = Config.client.view
-    {@alpha, @mouse, @offset} = @params
+    {@alpha, @mouse, @offset, @view, @visible} = @params
     @resize = @params.resize or @resize
-    @alpha ?= 1
-    @visible = false
     @offset ?= [0, 0]
+    @alpha ?= 1
+    @view ?= [0, 0, 0]
+    @visible ?= false
     @game.on 'resize', @resize.bind @
-    @view = [0, 0, 0]
     super @game, @params
 
     for name, callback of conf.mouse.events

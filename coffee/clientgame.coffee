@@ -45,6 +45,7 @@ Ship::fire = -> @firing = true
     @screenOffset = [0, 0]
     @visibleViews = []
     @mouseViews = [] # views under the mouse
+    @proximals = [] # All emitters around the player's ship
 
     super @params
 
@@ -171,6 +172,7 @@ Ship::fire = -> @firing = true
 
   draw: ->
     @clearScreen()
+
     view.draw() for view in @visibleViews
     @player.ship?.view.drawHUD 2, 2
     @pager.draw()
@@ -314,8 +316,11 @@ Ship::fire = -> @firing = true
     super()
 
     @interpolation.step++
-    proximals = @player.ship.around @screenPartitionRadius
-    model.view.update() for model in proximals when model.type is 'Star'
+    @proximals = @player.ship.around @screenPartitionRadius
+
+    for model in @proximals
+      switch model.type
+        when 'Star' then model.view.update()
 
     @each 'Bullet', (b) -> b.view.update()
     @each 'Arrow', (a) -> a.update()
