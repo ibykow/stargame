@@ -102,6 +102,9 @@ Player Events
   - mission fail
   √ timeout
 
+Explosives
+  - triggers: timer, contact, proximity, target, damage
+
 Bugs
   √ life at 1000 on fuel purchase
   √ server-side fuel purchase

@@ -59,8 +59,8 @@ Ship::fire = -> @firing = true
       switch data.type
         when '404' then info = "Can't find the station."
         when 'distance' then info = "You're too far from the station."
-        when 'nsf' then info = "You don't have any money for fuel."
-        when 'full' then info = "You're already full on fuel."
+        when 'nsf' then info = "You don't have money for fuel."
+        when 'full' then info = "Your fuel is already full."
         else return
       @page info
 
@@ -87,7 +87,7 @@ Ship::fire = -> @firing = true
           switch type
             # Add an arrow to a new player's ship
             when 'InterpolatedShip' then v.arrowTo data.view
-
+            when 'Explosion' then data.insertView()
             # Add arrows to other play's ships when our ship (re)generates
             when 'Ship'
               handler = @player.ship.on 'move', @updateScreenOffset.bind @

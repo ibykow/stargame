@@ -44,13 +44,27 @@ if require?
 
   initEventHandlers: ->
     super()
-    # collision detection
-    @now 'move', (data, handler) =>
-      return if @deleted
-      models = @around 1
-      for model in models when not (model.id is @id) and @intersects model
-        handler.repeats = false
-        model.emit 'hit', @
+
+    events =
+      now:
+        hit:
+          bind: [@]
+          timer: 0
+          repeats: true
+          callback: (model) -> @life -= model.damage
+
+        move:
+          bind: [@]
+          timer: 0
+          repeats: true
+          callback: (data, handler) ->
+            return if @deleted
+            models = @around 1
+            for model in models when not (model.id is @id) and @intersects model
+              handler.repeats = false
+              model.emit 'hit', @
+
+    (@[type] name, info for name, info of event) for type, event of events
 
   getState: ->
     Object.assign super(),

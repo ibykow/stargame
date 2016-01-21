@@ -5,28 +5,37 @@ if require?
   Physical = require './physical'
   ExplosionView = require './explosionview'
 
+{abs, ceil, floor, max} = Math
+
 (module ? {}).exports = class Explosion extends Physical
   constructor: (@game, params = alwaysUpdate: true) ->
     return unless @game?
 
-    {@life, @strength} = params
-    unless @strength?
-      @strength = 100
-      @life = @strength
+    name = params.name
+    unless Config.common.explosions[name]?
+      console.log 'Explosion type', name, 'not found'
+      name = 'default'
 
+    conf = Config.common.explosions[name]
+
+    @colors = params.colors or conf.colors
+    @damageRate = params.damageRate or conf.damageRate
+    @strength = params.strength or conf.strength
+    @life = @strength
     params.alwaysUpdate = true
     super @game, params
 
   getState: -> Object.assign super(),
-    position: @position
-    radius: @radius
+    colors: @colors
+    damageRate: @damageRate
+    life: @life
+    strength: @strength
 
   insertView: -> @view = new ExplosionView @game, model: @
 
   setState: (state) ->
     super state
-    @position = state.position
-    @radius = state.radius
+    {@colors, @damageRate, @life, @strength} = state
 
   update: ->
     return @delete() unless @life > 0
@@ -37,3 +46,10 @@ if require?
     @life--
 
     @radius = @strength * (1 - @rate)
+
+    return unless @damage = floor @strength * @damageRate * @rate
+    # Collision detection
+    models = @around ceil @radius / @game.partitionSize
+    proximity = max @magnitude - 1, 1
+    for model in models when not (model.id is @id)
+      model.emit 'hit', @ if proximity > abs @radius - @distanceTo model

@@ -13,18 +13,14 @@ if require?
 isarr = Array.isArray
 isnum = Util.isNumeric
 
-Model::explode = ->
-  Explosion.fromState @game, position: @position.slice(), true
+Model::explode = (state = position: @position.slice()) ->
+  new Explosion @game, state
   @delete()
 
 Physical::explode = ->
-  state =
+  super
     position: @position.slice()
     velocity: @velocity.slice()
-
-  Explosion.fromState @game, state, true
-  @delete()
-
 
 (module ? {}).exports = class Game extends Emitter
   constructor: (@params) ->

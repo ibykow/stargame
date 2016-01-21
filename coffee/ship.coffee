@@ -47,9 +47,8 @@ lg = console.log.bind(console)
     super @game, @params
 
   initEventHandlers: ->
+    @now 'hit', (model) => @health -= model.damage or 0
     super()
-    # collision detection
-    @now 'hit', (bullet) => @health -= bullet.damage
 
   accelerate: (direction, vector) ->
     return unless isarr vector

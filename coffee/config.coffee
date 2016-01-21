@@ -57,8 +57,8 @@
   server:
     bulletCollidableTypes: [ 'Ship', 'Star' ]
     game:
-      width: (1 << 15) + 1
-      height: (1 << 15) + 1
+      width: (1 << 17) + 1
+      height: (1 << 17) + 1
       stars: 4000
       rates:
         friction: 0.99
@@ -101,6 +101,13 @@
         enabled: true
     chars:
       peso: '\u03df'
+    explosions:
+      default:
+        colors:
+          stroke: '#ff0'
+          fill: '#fff'
+        damageRate: 0.6
+        strength: 100
     fuel:
       distance: 50 # max refueling distance
       price:

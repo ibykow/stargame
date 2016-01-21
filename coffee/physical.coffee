@@ -28,9 +28,10 @@ isarr = Array.isArray
           bind: [@]
           timer: 0
           repeats: true
-          callback: (bullet) ->
-            bullet.life = 0
-            @damaged += bullet.damage
+          callback: (model) ->
+            model.life = 0 if model.type is 'Bullet'
+            console.log @type, @id, 'hit by', model.type, model.id, model.damage
+            @damaged += model.damage
 
     (@[type] name, info for name, info of event) for type, event of events
 
