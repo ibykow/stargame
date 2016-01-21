@@ -1,47 +1,26 @@
 if require?
   Config = require './config'
   Util = require './util'
-  View = require './view'
+  Physical = require './physical'
+  ExplosionView = require './explosionview'
 
-{sqrt} = Math
-
-(module ? {}).exports = class Explosion extends View
+(module ? {}).exports = class Explosion extends Physical
   constructor: (@game, params = alwaysUpdate: true) ->
     return unless @game?
 
-    {@position, @radius} = params
-    @frames = 60
-    @life = @frames
+    {@life, @strength} = params
+    unless @strength?
+      @strength = 100
+      @life = @strength
+
     params.alwaysUpdate = true
-    @position ?= [0, 0]
-    @radius ?=
-      current: 50
-      final: 200
-      initial: 50
-
-    @radius.current ?= @radius.initial
-    @radius.delta = @radius.final - @radius.initial
     super @game, params
-
-  draw: ->
-    c = @game.c
-    c.globalAlpha = @rate
-    c.fillStyle = '#fff'
-    # c.fillStyle = 'rgb(' + @shade + ',' + @shade + ',255)'
-    c.beginPath()
-    c.arc @view[0], @view[1], @radius.current, 0, Util.TWO_PI
-    c.closePath()
-    c.fill()
-    c.globalAlpha = 1
 
   getState: -> Object.assign super(),
     position: @position
     radius: @radius
 
-  isOnScreen: ->
-    (@view[0] > -@radius.current) and (@view[1] > -@radius.current) and
-    (@view[0] + @radius.current < @game.canvas.width) and
-    (@view[1] + @radius.current < @game.canvas.height)
+  insertView: -> @view = new ExplosionView @game, model: @
 
   setState: (state) ->
     super state
@@ -49,14 +28,11 @@ if require?
     @radius = state.radius
 
   update: ->
-    return @delete() unless @life-- > 0
-    {screenOffset, toroidalLimit} = @game
+    return @delete() unless @life > 0
 
-    @rate = @life / @frames
+    @rate = @life / @strength
     @rate *= @rate
-    @radius.current = @radius.delta * (1 - @rate)
-    @shade = @rate * 0xFF
 
-    @view = Util.toroidalDelta @position, screenOffset, toroidalLimit
-    @visible = @isOnScreen()
-    super()
+    @life--
+
+    @radius = @strength * (1 - @rate)

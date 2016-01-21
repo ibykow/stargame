@@ -12,7 +12,7 @@ if require?
 
   delete: ->
     super()
-    new Explosion @game, position: @position.slice()
+    Explosion.fromState @game, position: @position.slice(), true
 
   updateVelocity: -> # InterpolatedShip positions don't count on velocity
 
@@ -32,6 +32,5 @@ if require?
 
   insertView: ->
     @view = new ShipView @, false
-    unless @view
-      console.log "Couldn't create view for interpolated ship", @id
+    console.log "Couldn't create view for interpolated ship", @id unless @view
     @view.update()

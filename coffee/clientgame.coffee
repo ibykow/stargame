@@ -46,6 +46,7 @@ Ship::fire = -> @firing = true
     @visibleViews = []
     @mouseViews = [] # views under the mouse
     @proximals = [] # All emitters around the player's ship
+    @proximalViewTypes = ['Bullet', 'Explosion', 'Star']
 
     super @params
 
@@ -282,6 +283,9 @@ Ship::fire = -> @firing = true
     @screenPartitionRadius = (floor screenSize / @partitionSize) + 2
     @emit 'resize'
 
+  testExplosion: -> Explosion.fromState @,
+    position: @player.ship.position.slice(), true
+
   testPager: -> @pager.page('Hello, World Number ' + i) for i in [1..20]
 
   updateMouse: ->
@@ -319,10 +323,8 @@ Ship::fire = -> @firing = true
     @proximals = @player.ship.around @screenPartitionRadius
 
     for model in @proximals
-      switch model.type
-        when 'Star' then model.view.update()
+      model.view.update() if ~@proximalViewTypes.indexOf model.type
 
-    @each 'Bullet', (b) -> b.view.update()
     @each 'Arrow', (a) -> a.update()
     @each 'ShipView', (v) -> v.update()
 

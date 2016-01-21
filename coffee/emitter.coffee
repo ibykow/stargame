@@ -35,8 +35,7 @@ isarr = Array.isArray
   @fromState: (game, state = {}, view) ->
     return unless game
 
-    if state.deleted
-      console.log 'WARNING! Setting from deleted state:', state.id
+    console.log 'WARNING! Deleted state:', @name, state.id if state.deleted
 
     emitter = game.lib[@name]?[state.id]
 
