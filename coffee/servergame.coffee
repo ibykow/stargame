@@ -24,6 +24,7 @@ rnd = Math.random
 (module ? {}).exports = class ServerGame extends Game
   constructor: (@server, @params) ->
     return unless @server?
+    @page = console.log
     super @params
 
     @types.update = ['Projectile', 'Explosion']
@@ -32,7 +33,6 @@ rnd = Math.random
     @generateStars stars
 
     @starStates = (star.getState() for id, star of @lib['Star'])
-    @page = console.log
     @newProjectiles = []
 
   insertProjectile: (p) -> @newProjectiles.push p if p?

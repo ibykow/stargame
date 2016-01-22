@@ -137,7 +137,7 @@ pesoChar = Config.common.chars.peso
 
   generateShip: (state, view) ->
     @logs['input'].reset()
-    @ship?.delete?()
+    @ship?.delete? 'to replace it with a shinier one: ' + state.id
     @ship = Ship.fromState @game, state, view
     @ship.playerID = @id
     @ship.player = @

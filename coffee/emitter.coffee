@@ -61,6 +61,7 @@ isarr = Array.isArray
     @immediates = {} # immediate listeners
     @isEmitter = true
     @listeners = {}
+    @page = @game.page
     @type = @constructor.name
 
     @game.lib[@type] = {} unless @game.lib[@type]
@@ -89,13 +90,13 @@ isarr = Array.isArray
     @children[child.id] = child
     return if child.parent is @
 
-    # Take the child away from the its current parent if present
+    # Take the child away from its current parent if present
     delete child.parent.children[child.id] if child.parent?
     child.parent = @
 
   delete: (reason = 'for no particular reason') ->
     @deleted = true
-    console.log 'Deleting ' + @ + ' ' + reason
+    @page 'Deleting ' + @ + ' ' + reason
 
     @emit 'delete', parseInt @id
     if @view?.delete?

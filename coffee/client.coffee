@@ -73,12 +73,11 @@ client = null
         # start the game
         @frame.run.bind(@) +new Date
 
-      join: (data) ->
-        console.log 'player', data.id + ', ' + data.name, 'has joined'
+      join: (data) -> console.log 'Player ' + data.id + ' joined the game'
 
       leave: (id) ->
         @game.removeShip id
-        console.log 'player', id, 'has left'
+        console.log 'Player' + id + ' has left the game'
 
       disconnect: ->
         @frame.stop.bind(@)()

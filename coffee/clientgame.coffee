@@ -32,16 +32,6 @@ Emitter::arrowTo = (view, color, alpha = 1, lineWidth = 1) ->
 Ship::fire = -> @firing = true
 
 (module ? {}).exports = class ClientGame extends Game
-  @brakeStrings: [
-    'BRAKE!',
-    'Oh, dear God please stop!',
-    'Oh lord, Pretus, Lord almighty!',
-    'Stop now please. Stop now please. Stop now please.'
-    'STOP!!!'
-    'For the love of Pretus, stop already!'
-    "We're all going to die!"
-  ]
-
   constructor: (@canvas, @params) ->
     return unless @canvas? and @params?
     @prevTime = +new Date
@@ -57,6 +47,9 @@ Ship::fire = -> @firing = true
     @visibleViews = []
     @mouseViews = [] # views under the mouse
     @proximals = [] # All emitters around the player's ship
+
+    @pager = new Pager @
+    @page = @pager.page.bind @pager
 
     super @params
     @types = Config.client.types
@@ -79,9 +72,6 @@ Ship::fire = -> @firing = true
     @lastVerifiedInputSequence = 0
 
     @generateStars()
-    @pager = new Pager @
-    @page = @pager.page.bind @pager
-
     @initContextMenu()
     @minimap = new Minimap @
     @contextMenu.on 'open', => @minimap.resize()

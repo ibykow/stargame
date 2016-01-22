@@ -82,4 +82,4 @@ if require?
   update: ->
     super()
     @life--
-    @delete 'it reached its limit' unless @life > 0
+    @delete 'because it expired' unless @life > 0

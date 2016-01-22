@@ -15,6 +15,7 @@ isnum = Util.isNumeric
 
 Model::explode = (state = position: @position.slice()) ->
   new Explosion @game, state
+  @page 'Exploding' + @
   @delete 'because it exploded'
 
 Physical::explode = ->
@@ -118,8 +119,8 @@ Physical::explode = ->
 
     return unless showStats
 
-    console.log 'update dt', @game.tick.count,
-      @stats.dt.last, @stats.dt.average.toFixed(4), @stats.dt.max
+    console.log 'Update ∆t ' + @game.tick.count + ' ' + @stats.dt.last + ' ' +
+      @stats.dt.average.toFixed(4) + ' ' + @stats.dt.max
 
   step: (time) ->
     @tick.dt = time - @tick.time

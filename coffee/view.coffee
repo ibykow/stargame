@@ -26,7 +26,7 @@ if require?
     if @game.lib['Arrow']?
       for id, arrow of @game.lib['Arrow'] when not arrow.deleted
         if (@equals arrow.a) or @equals arrow.b
-          arrow.delete 'because ' + @ + ' was deleted'
+          arrow.delete 'because ' + @ + ' is being deleted'
 
     super arguments[0]
 

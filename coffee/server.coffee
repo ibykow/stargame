@@ -36,7 +36,7 @@ module.exports = class Server
     @stats.dt.min = min @stats.dt.min, @stats.dt.last
     @stats.dt.max = max @stats.dt.max, @stats.dt.last
     if @game.tick.count % (60 * 5) is 0
-      console.log 'dt', @game.tick.count, @stats.dt.last.toFixed(4),
+      console.log '∆t', @game.tick.count, @stats.dt.last.toFixed(4),
         @stats.dt.average.toFixed(4), @stats.dt.max.toFixed(4)
 
   unpause: ->
@@ -92,9 +92,7 @@ module.exports = class Server
       error: (error) ->
         lg "ERROR: ", error
         lg "I say we just ignore this, keep going and see what happens."
-        lg "Love, Player", @id
 
-      # Handle player input
       input: (data) ->
         return unless data.sequence and @ship
         @gasStationIndex = data.gasStationIndex

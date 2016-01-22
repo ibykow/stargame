@@ -40,7 +40,7 @@ if require?
 
   update: ->
     unless @life > 0
-      return @delete 'because it petered out'
+      return @delete 'because it fizzled out'
     super()
     @rate = @life / @strength
     @rate *= @rate

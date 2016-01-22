@@ -53,6 +53,7 @@
         'Explosion',
         'ExplosionView',
         'Projectile',
+        'ModeledView',
         'Arrow',
         'ShipView'
       ]
