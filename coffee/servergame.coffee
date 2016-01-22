@@ -26,6 +26,8 @@ rnd = Math.random
     return unless @server?
     super @params
 
+    @types.update = ['Projectile', 'Explosion']
+
     {stars} = @params
     @generateStars stars
 
@@ -33,7 +35,7 @@ rnd = Math.random
     @page = console.log
     @newProjectiles = []
 
-  insertProjectile: (projectile) -> @newProjectiles.push projectile if projectile?
+  insertProjectile: (p) -> @newProjectiles.push p if p?
 
   generateStars: (n) ->
     for i in [0..n]

@@ -11,7 +11,8 @@ if require?
   constructor: (@game, params = {}) ->
     return unless @game?
 
-    name = params.name
+    {name} = params
+    name ?= 'default'
     unless Config.common.explosions[name]?
       console.log 'Explosion type', name, 'not found'
       name = 'default'
@@ -38,7 +39,8 @@ if require?
     {@colors, @damageRate, @life, @strength} = state
 
   update: ->
-    return @delete() unless @life > 0
+    unless @life > 0
+      return @delete 'because it petered out'
     super()
     @rate = @life / @strength
     @rate *= @rate

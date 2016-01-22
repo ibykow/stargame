@@ -59,9 +59,8 @@ lg = console.log.bind(console)
       vector: vector
 
   delete: ->
-    console.log 'Deleting ship', @id
     @player?.ship = null
-    super()
+    super arguments[0]
 
   fire: ->
     return unless @lastFireInputSequence < @player.inputSequence - @fireRate

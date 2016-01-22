@@ -15,7 +15,7 @@ isnum = Util.isNumeric
 
 Model::explode = (state = position: @position.slice()) ->
   new Explosion @game, state
-  @delete()
+  @delete 'because it exploded'
 
 Physical::explode = ->
   super
@@ -45,6 +45,8 @@ Physical::explode = ->
         average: 0
         min: 10
         max: 0
+
+    @types = update: []
 
     # Emitter expects an initialized game
     super @, @params
@@ -132,3 +134,4 @@ Physical::explode = ->
     step = @tick.count++
     Timer.run step # Timer loop
     Emitter.run @ # Event loop
+    (@each type, (e) -> e.update()) for type in @types.update # Updates

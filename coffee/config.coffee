@@ -42,6 +42,20 @@
       yoffset: 12
     player:
       loglen: 1 << 8
+    types:
+      proximal: [
+        'Projectile',
+        'Explosion',
+        'Star'
+      ]
+      update: [
+        'InterpolatedShip',
+        'Explosion',
+        'ExplosionView',
+        'Projectile',
+        'Arrow',
+        'ShipView'
+      ]
     view:
       alpha: 1
       events:

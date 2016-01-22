@@ -81,8 +81,6 @@ isarr = Array.isArray
     @initEventHandlers()
     @game.emit 'new', @
 
-  initEventHandlers: ->
-
   # (Re)places child and force updates child's parent
   adopt: (child) ->
     return unless child?.id
@@ -93,16 +91,18 @@ isarr = Array.isArray
     delete child.parent.children[child.id] if child.parent?
     child.parent = @
 
-  delete: ->
+  delete: (reason = 'for no particular reason') ->
     @deleted = true
+    console.log 'Deleting ' + @ + ' ' + reason
 
     @emit 'delete', parseInt @id
     if @view?.delete?
-      @view.delete()
+      @view.delete 'because its parent, ' + @.toString() + ', is being deleted'
       @view = null
 
     @parent = null
-    child.delete() for name, child of @children
+    for name, child of @children
+      child.delete 'because its parent, ' + @.toString() + ', is being deleted'
     @children = {}
     @listeners = {}
     @immediates = {}
@@ -110,8 +110,19 @@ isarr = Array.isArray
     @getState = null
 
     if o = @game.lib[@type]?[@id]
-      console.log 'WARNING: id mismatch', @type, @id, o.id unless o is @
+      console.log 'WARNING: ' + @ + 'should have id ' + o.id unless o is @
       delete @game.lib[@type][@id]
+
+  emit: (name, data = {}) -> # Emits an event. TODO: Prevent infinite loops.
+    info =
+      target: @
+      data: data
+
+    # Process immediates
+    @immediates[name] = Emitter.processHandlers @game, @immediates, name, data
+
+    if isarr Emitter.events[name] then Emitter.events[name].push info
+    else Emitter.events[name] = [info]
 
   getChildrenMatching: (info) ->
     results = []
@@ -133,23 +144,8 @@ isarr = Array.isArray
     parent: parentState or null
     alwaysUpdate: @alwaysUpdate
 
-  setState: (state, setChildStates = false) ->
-    {@id, @type, @alwaysUpdate} = state
-    if setChildStates and state.children
-      for name, child of @children when state.children[name]?
-        child.setState state.children[name], true
-
-  emit: (name, data = {}) -> # Emits an event. TODO: Prevent infinite loops.
-    info =
-      target: @
-      data: data
-
-    # Process immediates
-    @immediates[name] = Emitter.processHandlers @game, @immediates, name, data
-
-    if isarr Emitter.events[name] then Emitter.events[name].push info
-    else Emitter.events[name] = [info]
-
+  initEventHandlers: ->
+  insertView: -> # do nothing
   isDeleted: -> @deleted or (@getState is null)
 
   # Returns whether there's a match between ourselves and the state provided
@@ -216,6 +212,13 @@ isarr = Array.isArray
 
   once: (name, handler, timeout) -> @on name, handler, timeout, false, false
   onceNow: (name, handler, timeout) -> @now name, handler, timeout, false
-  update: -> child.update() for type, child of @children
 
-  insertView: -> # do nothing
+  setState: (state, setChildStates = false) ->
+    {@id, @type, @alwaysUpdate} = state
+    if setChildStates and state.children
+      for name, child of @children when state.children[name]?
+        child.setState state.children[name], true
+
+  toString: -> '' + this.type + ' ' + this.id
+
+  update: -> child.update() for type, child of @children

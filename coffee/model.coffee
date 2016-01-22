@@ -40,7 +40,7 @@ isarr = Array.isArray
 
   delete: ->
     delete @game.partitions[@partition[0]][@partition[1]][@id]
-    super()
+    super arguments[0]
 
   positionDelta: (model) ->
     return [0, 0] unless model?.position.length

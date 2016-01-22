@@ -57,9 +57,9 @@ Ship::fire = -> @firing = true
     @visibleViews = []
     @mouseViews = [] # views under the mouse
     @proximals = [] # All emitters around the player's ship
-    @proximalViewTypes = ['Projectile', 'Explosion', 'Star']
 
     super @params
+    @types = Config.client.types
 
     @params.player.socket = @params.socket
     @player = Player.fromState @, @params.player
@@ -202,7 +202,7 @@ Ship::fire = -> @firing = true
 
   gameOver: ->
     console.log 'Game over!'
-    @player.ship.delete()
+    @player.ship.delete "because it's game over for player", @player.id
 
     @c.fillStyle = "#FFF"
     @c.font = '30px Helvetica'
@@ -275,7 +275,8 @@ Ship::fire = -> @firing = true
     Projectile.fromState @, state, true for state in data.new
 
     # Remove dead projectiles
-    @lib['Projectile']?[id]?.delete() for id in data.dead
+    reason = 'because it died'
+    @lib['Projectile']?[id]?.delete reason for id in data.dead
 
   processServerData: (data) ->
     # Store the most recent server tick data
@@ -339,16 +340,12 @@ Ship::fire = -> @firing = true
     @player.inputs = @client.getKeyboardInputs()
     super()
 
-    @interpolation.step++
     @proximals = @player.ship.around @screenPartitionRadius
 
-    for model in @proximals
-      model.view.update() if ~@proximalViewTypes.indexOf model.type
-
-    @each 'Arrow', (a) -> a.update()
-    @each 'ShipView', (v) -> v.update()
-
+    # for model in @proximals
+    #   model.view.update() if ~@types.proximal.indexOf model.type
     @player.update()
+    @interpolation.step++
 
     # Call this last because mouseUpdate needs visibleViews to be populated
     @updateMouse()

@@ -83,7 +83,7 @@ module.exports = class Server
         @game.server.io.emit 'leave', @ship.id
 
         # Destroy the player object associated with this socket
-        @delete()
+        @delete 'because the socket disconnected'
 
         @game.server.numPlayers--
 

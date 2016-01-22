@@ -25,9 +25,10 @@ if require?
     # Collect and remove any arrows pointing to the ship
     if @game.lib['Arrow']?
       for id, arrow of @game.lib['Arrow'] when not arrow.deleted
-        arrow.delete() if (arrow.a.id is @id) or (arrow.b.id is @id)
+        if (arrow.a.id is @id) or (arrow.b.id is @id)
+          arrow.delete 'because ' + @type + ' ' + @id + ' was deleted'
 
-    super()
+    super arguments[0]
 
   draw: ->
     @game.c.globalAlpha = @alpha

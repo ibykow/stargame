@@ -40,7 +40,7 @@ if require?
   delete: ->
     @game.deadProjectileIDs.push @id
     @life = 0
-    super()
+    super arguments[0]
 
   initEventHandlers: ->
     super()
@@ -82,4 +82,4 @@ if require?
   update: ->
     super()
     @life--
-    @delete() unless @life > 0
+    @delete 'it reached its limit' unless @life > 0

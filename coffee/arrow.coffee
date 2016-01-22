@@ -18,35 +18,36 @@ isarr = Array.isArray
 
   delete: ->
     @deleted = true
-    super()
+    super arguments[0]
 
   draw: ->
-    super()
+    @transform()
 
-    top = (@magnitude * @game.canvas.halfHeight) / @game.width + 30
-    side = top - 10
-    bottom = min side, 25
     c = @game.c
+    c.globalAlpha = @alpha
 
     c.strokeStyle = @color
     c.lineWidth = @lineWidth
 
     c.beginPath()
-    c.moveTo 0, bottom
-    c.lineTo 3, side
-    c.lineTo 8, side
-    c.lineTo 0, top
-    c.lineTo -8, side
-    c.lineTo -3, side
+    c.moveTo 0, @bottom
+    c.lineTo 3, @side
+    c.lineTo 8, @side
+    c.lineTo 0, @top
+    c.lineTo -8, @side
+    c.lineTo -3, @side
     c.closePath()
     c.stroke()
 
     @restore()
 
   update: ->
-    @offset = @a.offset
-    delta = @offsetDelta @b
+    @offset = @a.offset.slice()
+    delta = @a.offsetDelta @b
     @rotation = PI - atan2 delta...
     @magnitude = sqrt delta.reduce (a, b) -> a + b * b
     @alpha = min 1, @magnitude / @game.canvas.halfHeight
+    @top = (@magnitude * @game.canvas.halfHeight) / @game.width + 30
+    @side = @top - 10
+    @bottom = min @side, 25
     super()
