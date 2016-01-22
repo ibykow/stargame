@@ -75,15 +75,14 @@ module.exports = class Server
         # start / unpause the game if it's the first player
         @game.server.unpause() if @game.server.numPlayers is 1
 
-      disconnect: ->
+      disconnect: (reason) ->
         return unless @?
-        console.log 'Player', @id, 'has left'
 
         # Tell the others that this player has left
         @game.server.io.emit 'leave', @ship.id
 
         # Destroy the player object associated with this socket
-        @delete 'because the socket disconnected'
+        @delete 'due to socket ' + reason
 
         @game.server.numPlayers--
 

@@ -30,7 +30,7 @@ isarr = Array.isArray
           repeats: true
           callback: (model) ->
             model.life = 0 if model.type is 'Projectile'
-            console.log '' + @ + ' was hit by' + model + ' at ' + model.damage
+            console.log '' + @ + ' was hit by ' + model + ' at ' + model.damage
             @damaged += model.damage
 
     (@[type] name, info for name, info of event) for type, event of events

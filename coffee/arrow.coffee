@@ -12,9 +12,10 @@ isarr = Array.isArray
     {@a, @b, @color, @lineWidth} = @params
     return unless @a.isView and @b.isView
     conf = Config.client.arrow
-    @color ?= conf.color
+    @color ?= @b.color or conf.color
     @lineWidth ?= conf.lineWidth
     super @game, @params
+    console.log '' + @ + ' points from ' + @a + ' to ' + @b
 
   delete: ->
     @deleted = true

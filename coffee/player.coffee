@@ -60,7 +60,7 @@ pesoChar = Config.common.chars.peso
 
     suicide: ->
       return if @dead or (@game.tick.count - @ship.born < 50)
-      console.log 'Player', @id, 'has commited suicide', @ship.id
+      console.log '' + @ + ' commited suicide on ' + @ship
       @ship.health = 0
 
     refuel: ->

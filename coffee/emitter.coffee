@@ -56,11 +56,13 @@ isarr = Array.isArray
   constructor: (@game, @params = {}) ->
     return unless @game?
     @born = @game.tick.count
-    @deleted = @params.deleted or false
-    @listeners = {}
-    @immediates = {} # immediate listeners
     @children = {}
+    @deleted = @params.deleted or false
+    @immediates = {} # immediate listeners
+    @isEmitter = true
+    @listeners = {}
     @type = @constructor.name
+
     @game.lib[@type] = {} unless @game.lib[@type]
 
     if @params.id
@@ -97,12 +99,12 @@ isarr = Array.isArray
 
     @emit 'delete', parseInt @id
     if @view?.delete?
-      @view.delete 'because its parent, ' + @.toString() + ', is being deleted'
+      @view.delete 'because its model is ' + @.toString()
       @view = null
 
     @parent = null
     for name, child of @children
-      child.delete 'because its parent, ' + @.toString() + ', is being deleted'
+      child.delete 'because its parent is ' + @.toString()
     @children = {}
     @listeners = {}
     @immediates = {}
@@ -123,6 +125,8 @@ isarr = Array.isArray
 
     if isarr Emitter.events[name] then Emitter.events[name].push info
     else Emitter.events[name] = [info]
+
+  equals: (emitter) -> @id is emitter.id and (@type is emitter.type)
 
   getChildrenMatching: (info) ->
     results = []
