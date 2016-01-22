@@ -8,7 +8,7 @@ if require?
 {abs, ceil, floor, max} = Math
 
 (module ? {}).exports = class Explosion extends Physical
-  constructor: (@game, params = alwaysUpdate: true) ->
+  constructor: (@game, params = {}) ->
     return unless @game?
 
     name = params.name

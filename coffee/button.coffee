@@ -8,9 +8,8 @@ isarr = Array.isArray
 
 (module ? {}).exports = class Button extends ComponentView
   constructor: (@game, @params) ->
-    return unless @game? and @params?.parent
-    {@name, @text, @font, @enabled} = @params
-    @enabled ?= true
+    return unless @game?
+    {@name, @text, @font} = @params
     @name ?= 'myButton'
     @text ?= 'OK'
     @font ?=
@@ -20,15 +19,10 @@ isarr = Array.isArray
 
     @now 'mouse-click', => console.log 'Clicked', @name
 
-  update: ->
-    @view = [ @parent.view[0] + @offset[0],
-              @parent.view[1] + @offset[1],
-              @parent.view[2] ]
-
   draw: ->
-    return unless @enabled and @visible
     super()
     @game.c.fillStyle = @colors.text
     @game.c.font = @params.font.string
     @game.c.fillText @text,
-      @view[0] + @font.offset[0], @view[1] + @font.offset[1]
+      @offset[0] + @font.offset[0], @pffset[1] + @font.offset[1]
+    @restore()

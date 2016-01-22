@@ -25,13 +25,13 @@ if require?
 
     vx = @ship.velocity[0]
     vy = @ship.velocity[1]
-    xdir = cos @ship.position[2]
-    ydir = sin @ship.position[2]
+    xdir = cos @ship.rotation
+    ydir = sin @ship.rotation
 
     @params.velocity = [xdir * @speed, ydir * @speed]
     @params.position = [  @ship.position[0] + xdir * (@ship.width + 2),
                           @ship.position[1] + ydir * (@ship.height + 2),
-                          @ship.position[2] ]
+                          @ship.rotation ]
 
     @params.alwaysUpdate = @params.alwaysUpdate ? true
 

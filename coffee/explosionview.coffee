@@ -5,6 +5,8 @@ if require?
 
 (module ? {}).exports = class ExplosionView extends ModeledView
   draw: ->
+    @transform()
+
     {colors, radius, rate} = @model
     c = @game.c
     c.globalAlpha = rate
@@ -12,11 +14,11 @@ if require?
     c.fillStyle = colors.fill
     c.lineWidth = 5 * rate
     c.beginPath()
-    c.arc @view[0], @view[1], radius, 0, Util.TWO_PI
+    c.arc 0, 0, radius, 0, Util.TWO_PI
     c.closePath()
-    c.stroke()
     c.fill()
-    c.globalAlpha = 1
+    c.stroke()
+    @restore()
 
   isOnScreen: -> true
 

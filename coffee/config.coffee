@@ -13,28 +13,21 @@
         dimensions: [10, 0]
     innerWidthOffset: 0
     innerHeightOffset: 0
-    keys:
-      space:
-        code: 32
-        action: 'brake'
-      left:
-        code: 37
-        action: 'left'
-      right:
-        code: 39
-        action: 'right'
-      up:
-        code: 38
-        action: 'forward'
-      down:
-        code: 40
-        action: 'reverse'
-      f:
-        code: 'F'.charCodeAt 0
-        action: 'fire'
-      s:
-        code: 'S'.charCodeAt 0
-        action: 'suicide'
+    key:
+      codes:
+        space: 32
+        left: 37
+        right: 39
+        up: 38
+        down: 40
+      map:
+        space: 'brake'
+        left: 'left'
+        right: 'right'
+        up: 'forward'
+        down: 'reverse'
+        f: 'fire'
+        s: 'suicide'
     mouse:
       event:
         types: ['click', 'enter', 'leave', 'press', 'release']
@@ -51,13 +44,12 @@
       loglen: 1 << 8
     view:
       alpha: 1
-      mouse:
-        events:
-          enter: -> console.log 'Planning on staying long?'
-          leave: -> console.log "Please don't leave me!"
-          press: -> console.log "Don't press me Mitch."
-          release: -> console.log 'Release me. Set me free.'
-          click: -> console.log 'You clicked me!'
+      events:
+        'mouse-enter': -> console.log 'Planning on staying long?'
+        'mouse-leave': -> console.log "Please don't leave me!"
+        'mouse-press': -> console.log "Don't press me Mitch."
+        'mouse-release': -> console.log 'Release me. Set me free.'
+        'mouse-click': -> console.log 'You clicked me!'
   server:
     projectileCollidableTypes: [ 'Ship', 'Star' ]
     game:
@@ -101,8 +93,6 @@
       font:
         string: '12px Courier New'
         offset: [10, 4]
-      default:
-        enabled: true
     chars:
       peso: '\u03df'
     explosions:

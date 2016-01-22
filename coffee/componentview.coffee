@@ -8,7 +8,7 @@ if require?
   constructor: (@game, @params) ->
     return unless @game?
 
-    {@dimensions, @colors, @offset} = @params
+    {@colors, @dimensions} = @params
     @dimensions ?= [100, 50]
     @halfDimensions = [@dimensions[0] / 2, @dimensions[1] / 2]
     @colors ?=
@@ -19,7 +19,6 @@ if require?
         leave: '#444'
 
     super @game, @params
-    @offset.length = 2
 
     {hover, leave} = @colors.background
 
@@ -28,22 +27,20 @@ if require?
     @now 'mouse-press', => @colors.background.current = leave
     @now 'mouse-release', => @colors.background.current = hover
 
-  getBounds: -> [[@view[0], @view[1]], @dimensions]
+  getBounds: -> [@offset, @dimensions]
 
   getState: ->
     Object.assign super(),
-      alpha: @alpha
       colors: @colors
-      offset: @offset
-      view: @view
+      dimensions: @dimensions
 
   setState: (state) ->
     super state
-    {@alpha, @colors, @offset, @view} = state
+    {@colors, @dimensions} = state
 
   draw: ->
+    super()
     c = @game.c
-    c.globalAlpha = @alpha
     c.fillStyle = @colors.background.current
-    c.fillRect @view[0], @view[1], @dimensions...
-    c.globalAlpha = 1
+    c.fillRect 0, 0, @dimensions...
+    @restore()

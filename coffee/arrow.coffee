@@ -3,53 +3,33 @@ if require?
   Util = require './util'
   View = require './view'
 
-{atan2, min, sqrt} = Math
-pi = Math.PI
+{atan2, min, PI, sqrt} = Math
 isarr = Array.isArray
 
 (module ? {}).exports = class Arrow extends View
   constructor: (@game, @params) ->
     return unless @game? and @params.a? and @params.b?
     {@a, @b, @color, @lineWidth} = @params
-    return unless isarr(@a.view) and isarr(@b.view)
+    return unless @a.isView and @b.isView
     conf = Config.client.arrow
     @color ?= conf.color
     @lineWidth ?= conf.lineWidth
-    @enabled = true
     super @game, @params
 
-  update: ->
-    return unless @enabled
-    @visible = true
-    p = Util.toroidalDelta @a.view, @b.view, @game.toroidalLimit
-    # p = @a.positionDelta @b
-    p[2] = atan2 p[0], p[1]
-
-    @theta = pi - p[2]
-    @magnitude = sqrt(p[0] * p[0] + p[1] * p[1])
-
-    if @magnitude < @game.canvas.halfHeight
-      @viewAlpha = min @alpha, @magnitude / @game.canvas.halfHeight
-    else
-      @viewAlpha = @alpha
-
+  delete: ->
+    @deleted = true
     super()
 
   draw: ->
-    return unless @enabled
+    super()
+
     top = (@magnitude * @game.canvas.halfHeight) / @game.width + 30
     side = top - 10
     bottom = min side, 25
-
     c = @game.c
-    c.save()
 
-    c.globalAlpha = @viewAlpha
     c.strokeStyle = @color
     c.lineWidth = @lineWidth
-
-    c.translate @a.view[0], @a.view[1]
-    c.rotate @theta
 
     c.beginPath()
     c.moveTo 0, bottom
@@ -58,7 +38,15 @@ isarr = Array.isArray
     c.lineTo 0, top
     c.lineTo -8, side
     c.lineTo -3, side
-
     c.closePath()
     c.stroke()
-    c.restore()
+
+    @restore()
+
+  update: ->
+    @offset = @a.offset
+    delta = @offsetDelta @b
+    @rotation = PI - atan2 delta...
+    @magnitude = sqrt delta.reduce (a, b) -> a + b * b
+    @alpha = min 1, @magnitude / @game.canvas.halfHeight
+    super()

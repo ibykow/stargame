@@ -12,7 +12,7 @@ if require?
 
   getBounds: ->
     {width, height, halfWidth, halfHeight} = @model
-    [[@view[0] - halfWidth, @view[1] - halfHeight], [width, height]]
+    [[@offset[0] - halfWidth, @offset[1] - halfHeight], [width, height]]
 
   initEventHandlers: ->
     # Pass mouse events onto the model
@@ -20,23 +20,17 @@ if require?
       @now 'mouse-' + type, (data, handler) => @model.emit handler.name, data
 
   isOnScreen: ->
-    w = @model.halfWidth
-    h = @model.halfHeight
-    cw = @game.canvas.width
-    ch = @game.canvas.height
-    @game.c? and (@view[0] >= -w) and (@view[1] >= -h) and
-      (@view[0] <= cw + w) and (@view[1] <= ch + h)
+    (@offset[0] + @model.halfWidth > 0) and
+    (@offset[1] + @model.halfHeight > 0) and
+    (@offset[0] - @model.halfWidth < @game.canvas.width) and
+    (@offset[1] - @model.halfHeight < @game.canvas.height)
 
   update: ->
     {screenOffset, toroidalLimit} = @game
 
     # Generate a view based on the model
-    @view = Util.toroidalDelta @model.position, screenOffset, toroidalLimit
-
-    # Set the offsets
-    @view[0] += @offset[0]
-    @view[1] += @offset[1]
-    @view[2] = @model.position[2]
+    @offset = Util.toroidalDelta @model.position, screenOffset, toroidalLimit
+    @rotation = @model.rotation
 
     # Check and update visibility
     @visible = @isOnScreen()
@@ -44,9 +38,9 @@ if require?
 
   # Simple. Draw a box based on the model
   draw: ->
+    super()
     {color, width, height, halfWidth, halfHeight} = @model
     c = @game.c
-    c.globalAlpha = @alpha
     c.fillStyle = color
-    c.fillRect  @view[0] - halfWidth, @view[1] - halfHeight, width, height
-    c.globalAlpha = 1
+    c.fillRect -halfWidth, -halfHeight, width, height
+    @restore()

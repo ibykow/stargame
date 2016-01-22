@@ -3,7 +3,7 @@ if require?
   Ship = require './ship'
 
 (module ? {}).exports = class InterpolatedShip extends Ship
-  constructor: (@game, @params) ->
+  constructor: (@game, @params = {}) ->
     return unless @game? and @params?.id
     @next = @params
     @setState @params
@@ -27,6 +27,6 @@ if require?
     @next = state
 
   insertView: ->
-    @view = new ShipView @, false
+    @view = new ShipView @game, model: @
     console.log "Couldn't create view for interpolated ship", @id unless @view
     @view.update()

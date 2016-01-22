@@ -71,9 +71,8 @@ isarr = Array.isArray
 
     [dx, dy]
 
-  magnitude: (v) ->
-    return 0 unless isarr v
-    sqrt v[0] * v[0] + v[1] * v[1]
+  # sqrt v.reduce (a, b) -> a + b * b
+  magnitude: (v = [0]) -> sqrt v[0] * v[0] + v[1] * v[1]
 
   findEmptySlot: (arr) ->
     return unless isarr arr

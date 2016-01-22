@@ -29,8 +29,8 @@ pesoChar = Config.common.chars.peso
       return unless @ship.fuel > 0
       @ship.fuel -= @ship.accFactor
       @ship.accelerate 'forward',
-        [ cos(@ship.position[2]) * @ship.accFactor,
-          sin(@ship.position[2]) * @ship.accFactor, 0 ]
+        [ cos(@ship.rotation) * @ship.accFactor,
+          sin(@ship.rotation) * @ship.accFactor, 0 ]
 
       @emit 'nofuel' if @ship.fuel < 1
 
@@ -38,8 +38,8 @@ pesoChar = Config.common.chars.peso
       return unless @ship.fuel > 0
       @ship.fuel--
       @ship.accelerate 'reverse',
-        [ -(cos @ship.position[2]),
-          -(sin @ship.position[2]), 0 ]
+        [ -(cos @ship.rotation),
+          -(sin @ship.rotation), 0 ]
 
       @emit 'nofuel' if @ship.fuel < 1
 

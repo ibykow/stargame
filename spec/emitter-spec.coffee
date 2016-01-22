@@ -7,7 +7,7 @@ isnum = Util.isNumeric
 describe 'Emitter', ->
   [child, em, game] = []
 
-  afterEach -> Emitter.nextID = 1
+  afterEach -> Emitter.ids = {}
 
   beforeEach ->
     game =
@@ -52,7 +52,7 @@ describe 'Emitter', ->
     expect(em).toBeDefined()
     expect(em.id).toBeGreaterThan 0
     expect(em.game).toBe game
-    expect(Emitter.nextID).toBeGreaterThan em.id
+    expect(em.type).toBe 'Emitter'
     expect(game.lib['Emitter'][em.id]).toBe em
     expect(em.type).toBe 'Emitter'
 
@@ -67,9 +67,7 @@ describe 'Emitter', ->
     it 'should have a dictionary of events', ->
       expect(typeof Emitter.events).toBe 'object'
 
-    it 'should have a valid nextID', ->
-      expect(isnum Emitter.nextID).toBe true
-      expect(Emitter.nextID).toBeGreaterThan 0
+    it 'should have a valid ids table', -> expect(Emitter.ids).toEqual {}
 
     describe '@fromState', ->
       it 'creates a new emitter when no state is provided', ->

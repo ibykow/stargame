@@ -12,8 +12,9 @@ isarr = Array.isArray
   constructor: (@game, @params) ->
     return unless @game?
     @deleted = false
-    {@color, @partition, @position, @width, @height} = @params
+    {@color, @partition, @position, @rotation, @width, @height} = @params
     @color ?= Util.randomColorString()
+    @rotation ?= 0
     @partition ?= [0, 0] # which partition we are found in
 
     unless @position?.length
@@ -61,22 +62,13 @@ isarr = Array.isArray
       deleted: @deleted
       color: @color
       position: @position.slice()
+      rotation: @rotation
       width: @width
       height: @height
 
   setState: (state) ->
     super state
-    {@deleted, @color, @position, @width, @height} = state
-
-  updatePosition: ->
-    x = trunc((@position[0] + @velocity[0] + @game.width) * 100) / 100
-    y = trunc((@position[1] + @velocity[1] + @game.height) * 100) / 100
-    z = trunc (((@position[2] + Util.TWO_PI) % Util.TWO_PI) * 100) / 100
-    x %= @game.width
-    y %= @game.height
-
-    @position[0] = x
-    @position[1] = y
+    {@deleted, @color, @position, @rotation, @width, @height} = state
 
   updatePartition: ->
     x = floor @position[0] / @game.partitionSize
@@ -87,11 +79,5 @@ isarr = Array.isArray
     delete @game.partitions[@partition[0]][@partition[1]][@id]
     @partition = [x, y]
     @game.partitions[@partition[0]][@partition[1]][@id] = @
-
-  update: ->
-    super()
-    [x, y] = @position
-    @updatePosition()
-    @emit 'move' unless (x is @position[0]) and (y is @position[1])
 
   insertView: -> @view = new ModeledView @game, model: @

@@ -5,38 +5,47 @@ if require?
 
 # View: Something that can be seen on screen
 (module ? {}).exports = class View extends Emitter
-  constructor: (@game, @params) ->
+  constructor: (@game, @params = {}) ->
     return unless @game?
-    conf = Config.client.view
-    {@alpha, @mouse, @offset, @view, @visible} = @params
-    @resize = @params.resize or @resize
-    @offset ?= [0, 0]
+
+    {@alpha, @offset, @rotation, @visible} = @params
     @alpha ?= 1
-    @view ?= [0, 0, 0]
-    @visible ?= false
+    @offset ?= [0, 0]
+    @rotation ?= 0
+
+    @resize = @params.resize or @resize
     @game.on 'resize', @resize.bind @
+
+    @visible ?= true
+    @isView = true
+
     super @game, @params
-
-    for name, callback of conf.mouse.events
-      @on 'mouse-' + name, callback.bind(@), 0, true
-
-  arrowTo: (view, color, alpha = 1, lineWidth = 1) ->
-    new Arrow @game,
-      a: @
-      b: view
-      color: color ? view.model.color
-      alpha: alpha
-      lineWidth: lineWidth
 
   delete: ->
     # Collect and remove any arrows pointing to the ship
     if @game.lib['Arrow']?
-      for id, arrow of @game.lib['Arrow']
+      for id, arrow of @game.lib['Arrow'] when not arrow.deleted
         arrow.delete() if (arrow.a.id is @id) or (arrow.b.id is @id)
 
     super()
 
   draw: ->
+    @game.c.globalAlpha = @alpha
+    @transform()
+
+  transform: ->
+    @game.c.translate @offset...
+    @game.c.rotate @rotation
+
+    @game.deltas.offset = (n + @offset[i] for n, i in @game.deltas.offset)
+    @game.deltas.rotation += @rotation
+
+  restore: ->
+    @game.deltas.offset = (n - @offset[i] for n, i in @game.deltas.offset)
+    @game.deltas.rotation -= @rotation
+
+    @game.c.rotate @rotation * -1
+    @game.c.translate @offset.map((n) -> -n)...
 
   getBounds: -> [[0, 0], [1, 1]]
 
@@ -44,11 +53,24 @@ if require?
     Object.assign super(),
       alpha: @alpha
       offset: @offset
-      view: @view
+      rotation: @rotation
+      visible: @visible
+
+  initEventHandlers: -> @on e, cb.bind @ for e, cb of Config.client.view.events
+
+  offsetDelta: (target) ->
+    Util.toroidalDelta @offset, target.offset, @game.toroidalLimit
+
+  restoreRotation: ->
+    @game.c.rotate @game.deltas.rotation * -1
+    @game.deltas.rotation = 0
+
+  restoreOffset: ->
+    @game.c.translate @game.deltas.offset.map((n) -> -n)...
 
   setState: (state) ->
     super state
-    {@alpha, @offset, @view} = state
+    {@alpha, @offset, @rotation, @visible} = state
 
   resize: -> # called when the window is resized
   update: -> @game.visibleViews.push @ if @visible

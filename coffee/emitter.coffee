@@ -9,7 +9,7 @@ isarr = Array.isArray
 
 (module ? {}).exports = class Emitter
   @events: {}
-  @nextID: 1
+  @ids: {}
   @processHandlers: (game, handlers, name, data) ->
     return unless game? and handlers[name]?
     step = game.tick.count
@@ -67,14 +67,14 @@ isarr = Array.isArray
       @id = @params.id
       Emitter.nextID = @params.id if @id > Emitter.nextID
     else
-      @id = Emitter.nextID
+      Emitter.ids[@type] ?= 0
+      Emitter.ids[@type]++
+      @id = Emitter.ids[@type]
 
     @game.lib[@type][@id] = @
 
     {@parent, @alwaysUpdate} = @params
     @parent.adopt @ if @parent?.id
-
-    @game.updatables[@id] = @ if @params.alwaysUpdate
 
     Emitter.nextID++
 
@@ -94,6 +94,8 @@ isarr = Array.isArray
     child.parent = @
 
   delete: ->
+    @deleted = true
+
     @emit 'delete', parseInt @id
     if @view?.delete?
       @view.delete()
@@ -106,13 +108,10 @@ isarr = Array.isArray
     @immediates = {}
 
     @getState = null
-    @deleted = true
 
     if o = @game.lib[@type]?[@id]
       console.log 'WARNING: id mismatch', @type, @id, o.id unless o is @
       delete @game.lib[@type][@id]
-
-    delete @game.updatables[@id]
 
   getChildrenMatching: (info) ->
     results = []

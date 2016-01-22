@@ -4,23 +4,12 @@ if require?
   ModeledView = require './modeledview'
 
 (module ? {}).exports = class ShipView extends ModeledView
-  @primaryUpdate: ->
-    [r, vx, vy, halfw, halfh] =
-      [ @model.position[2], @model.velocity[0], @model.velocity[1],
-        @game.canvas.halfWidth, @game.canvas.halfHeight ]
-
-    @view = [halfw + vx, halfh + vy, r]
-
-    # The current player's ship is always visible
-    @visible = true
-    @game.visibleViews.push @
-
-  constructor: (ship, isPrimary) ->
-    return unless ship
-    super ship.game, model: ship
-    (@update = ShipView.primaryUpdate.bind @)() if isPrimary
 
   drawFuel: (x, y) ->
+    constructor: (@game, @params) ->
+      @params.alwaysUpdate = true
+      super @game, @params
+
     c = @game.c
     if @model.fuel
       c.font = "10px Helvetica"
@@ -96,17 +85,18 @@ if require?
 
   draw: ->
     c = @game.c
-    c.save()
-    c.fillStyle = @model.color
-    c.translate @view...
-    c.rotate @view[2]
     c.globalAlpha = @alpha
+    @transform()
+    c.fillStyle = @model.color
+
     c.beginPath()
     c.moveTo 10, 0
     c.lineTo -10, 5
     c.lineTo -10, -5
     c.closePath()
     c.fill()
+
     @drawMuzzleFlash() if @model.firing
     @drawHalo '#F00', (min 5, @model.damaged) / 5 if @model.damaged
-    c.restore()
+
+    @restore()

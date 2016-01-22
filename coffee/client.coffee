@@ -27,13 +27,15 @@ client = null
 
     # intialize the keymap
     @keymap = new Array 0xFF
-    @keymap[info.code] = info.action for key, info of Config.client.keys
+    for key, action of Config.client.key.map
+      code = Config.client.key.codes[key] or key.toUpperCase().charCodeAt 0
+      @keymap[code] = action
 
     @keys = (false for [0..0xFF])
     @mouse =
+      buttons: [false, false, false]
       x: 0
       y: 0
-      buttons: [false, false, false]
 
   resizedCallback: -> # overwrite this when a new game is created
 

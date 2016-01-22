@@ -34,9 +34,6 @@ Physical::explode = ->
     @events ||= {}
     @lib ||= {} # keep references of all emitters in existence
 
-    # Keep a reference of all emitters to update on each step
-    @updatables = {}
-
     @tick =
       count: @params.tick?.count or 0
       time: 0
@@ -72,7 +69,7 @@ Physical::explode = ->
   each: (type, cb) -> cb value for name, value of @lib[type] or {}
   framesToMs: (frames) -> frames * Config.common.msPerFrame
   msToFrames: (ms) -> ms / Config.common.msPerFrame
-  randomPosition: -> [Util.randomInt(0, @width), Util.randomInt(0, @height), 0]
+  randomPosition: -> [Util.randomInt(0, @width), Util.randomInt(0, @height)]
 
   getTypeMatching: (type, info) ->
     if typeof info is 'function' then callback = info
@@ -122,11 +119,6 @@ Physical::explode = ->
     console.log 'update dt', @game.tick.count,
       @stats.dt.last, @stats.dt.average.toFixed(4), @stats.dt.max
 
-  startUpdating: (emitter) ->
-    # Do nothing if no emitter exists, or one is already registered
-    return unless emitter? and not @updatables[emitter.id]?
-    @updatables[emitter.id] = emitter
-
   step: (time) ->
     @tick.dt = time - @tick.time
     @tick.time = time
@@ -136,12 +128,7 @@ Physical::explode = ->
     @stats.dt.last = (+new Date) - @stats.dt.last
     @processStats()
 
-  stopUpdating: (emitter) ->
-    if isnum emitter then id = emitter else id = emitter.id
-    delete @updatables[id]
-
   update: ->
     step = @tick.count++
     Timer.run step # Timer loop
     Emitter.run @ # Event loop
-    emitter.update() for id, emitter of @updatables

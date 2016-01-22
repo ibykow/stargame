@@ -59,15 +59,17 @@ lg = console.log.bind(console)
       vector: vector
 
   delete: ->
+    console.log 'Deleting ship', @id
     @player?.ship = null
     super()
 
   fire: ->
     return unless @lastFireInputSequence < @player.inputSequence - @fireRate
+
     @firing = true
     @lastFireInputSequence = @player.inputSequence
     projectile = new Projectile @game, shipID: @id
-    if @game.client then projectile.insertView() else @game.insertProjectile projectile
+
     @emit 'fire', projectile
 
   getState: ->
@@ -86,9 +88,18 @@ lg = console.log.bind(console)
       @health, @lastFireInputSequence, @playerID} = state
 
   turn: (direction, amount) ->
-    @position[2] += amount
+    @rotation += amount
     @emit 'turn',
       direction: direction
       amount: amount
 
-  insertView: -> @view = new ShipView @, true
+  insertView: ->
+    @view = new ShipView @game, model: @
+    @view.update = ->
+      {halfWidth, halfHeight} = @game.canvas
+      v = @model.velocity
+
+      @offset = [halfWidth + v[0], halfHeight + v[1]]
+      @rotation = @model.rotation
+      @visible = true
+      @game.visibleViews.push @

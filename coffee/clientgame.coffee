@@ -4,6 +4,7 @@ if require?
   Emitter = require './emitter'
   Phyiscal = require './physical'
   View = require './view'
+  Minimap = require './minimap'
   Pane = require './pane'
   Button = require './button'
   Client = require './client'
@@ -19,6 +20,14 @@ rnd = Math.random
 isarr = Array.isArray
 
 pesoChar = Config.common.chars.peso
+
+Emitter::arrowTo = (view, color, alpha = 1, lineWidth = 1) ->
+  new Arrow @game,
+    a: @ # origin
+    b: view # target
+    color: color ? view.model.color
+    alpha: alpha
+    lineWidth: lineWidth
 
 Ship::fire = -> @firing = true
 
@@ -43,6 +52,8 @@ Ship::fire = -> @firing = true
     @params.tick = count: @serverTick.count
 
     @screenOffset = [0, 0]
+    @resetDeltas()
+
     @visibleViews = []
     @mouseViews = [] # views under the mouse
     @proximals = [] # All emitters around the player's ship
@@ -70,7 +81,12 @@ Ship::fire = -> @firing = true
     @generateStars()
     @pager = new Pager @
     @page = @pager.page.bind @pager
+
     @initContextMenu()
+    @minimap = new Minimap @
+    @contextMenu.on 'open', => @minimap.resize()
+    @contextMenu.on 'close', => @minimap.resize()
+    @contextMenu.close()
 
   interpolation:
     reset: ->
@@ -102,7 +118,14 @@ Ship::fire = -> @firing = true
           console.log 'created new projectile at', data.position
     }]
 
+  resetDeltas: ->
+    @c.setTransform 1, 0, 0, 1, 0, 0
+    @deltas =
+      offset: [0, 0]
+      rotation: 0
+
   clearScreen: ->
+    @resetDeltas()
     @c.globalAlpha = 1
     @c.fillStyle = Config.client.colors.background.default
     @c.fillRect 0, 0, @canvas.width, @canvas.height

@@ -10,4 +10,4 @@ pesoChar = Config.common.chars.peso
     c.globalAlpha = 1
     c.fillStyle = @model.color
     c.font = "14px Courier New"
-    c.fillText @model.emblemCharacter, @view[0], @view[1]
+    c.fillText @model.emblemCharacter, @offset[0], @offset[1]
