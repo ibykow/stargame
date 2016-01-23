@@ -76,7 +76,7 @@ isarr = Array.isArray
 
     @game.lib[@type][@id] = @
 
-    {@parent, @alwaysUpdate} = @params
+    {@parent} = @params
     @parent.adopt @ if @parent?.id
 
     Emitter.nextID++
@@ -147,7 +147,6 @@ isarr = Array.isArray
     type: @constructor.name
     children: states
     parent: parentState or null
-    alwaysUpdate: @alwaysUpdate
 
   initHandlers: ->
 
@@ -221,7 +220,7 @@ isarr = Array.isArray
   once: (name, handler, timeout) -> @on name, handler, timeout, false
 
   setState: (state, setChildStates = false) ->
-    {@id, @type, @alwaysUpdate} = state
+    {@id, @type} = state
     if setChildStates and state.children
       for name, child of @children when state.children[name]?
         child.setState state.children[name], true

@@ -25,7 +25,6 @@ if require?
     xdir = cos @ship.rotation
     ydir = sin @ship.rotation
 
-    @params.alwaysUpdate = true
     @params.color = @params.color ? '#FFD'
     @params.position =
       [ @ship.position[0] + xdir * (@ship.width + 2),

@@ -40,18 +40,6 @@ isarr = Array.isArray
     @velocity[1] = trunc(@velocity[1] * friction * 100) / 100
     @magnitude = Util.magnitude @velocity
 
-  updatePosition: ->
-    x = trunc((@position[0] + @velocity[0] + @game.width) * 100) / 100
-    y = trunc((@position[1] + @velocity[1] + @game.height) * 100) / 100
-    x %= @game.width
-    y %= @game.height
-
-    @position[0] = x
-    @position[1] = y
-
   update: ->
-    super()
-    [x, y] = @position
     @updateVelocity()
-    @updatePosition()
-    @emit 'move' unless (x is @position[0]) and (y is @position[1])
+    super()

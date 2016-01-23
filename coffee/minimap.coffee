@@ -8,7 +8,6 @@ if require?
     {@size, @zoom} = @params
     @size ?= 100
     @zoom = 4 unless (@zoom >= 1) and (@zoom <= 8)
-    @params.alwaysUpdate = true
     @params.visible = true
     super @game, @params
     @resize()

@@ -23,7 +23,6 @@ if require?
     @damageRate = params.damageRate or conf.damageRate
     @strength = params.strength or conf.strength
     @life = @strength
-    params.alwaysUpdate = true
     super @game, params
 
   getState: -> Object.assign super(),

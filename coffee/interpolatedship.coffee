@@ -7,7 +7,6 @@ if require?
     return unless @game? and @params?.id
     @next = @params
     @setState @params
-    @params.alwaysUpdate = true
     super @game, @params
 
   updateVelocity: -> # InterpolatedShip positions don't count on velocity
@@ -15,11 +14,13 @@ if require?
   updatePosition: ->
     rate = @game.interpolation.rate * @game.interpolation.step
     @position = Util.lerp @prev.position, @next.position, rate
+    @rotation = Util.lerp([@prev.rotation], [@next.rotation], rate)[0]
 
   setState: (state) ->
     super state
     @prev =
       position: @next.position
+      rotation: @next.rotation
       width: @next.velocity
       height: @next.height
       color: @next.color

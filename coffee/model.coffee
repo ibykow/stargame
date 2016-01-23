@@ -77,4 +77,19 @@ isarr = Array.isArray
     @game.partitions[x][y][@id] = @
     @partition = [x, y]
 
+  updatePosition: ->
+    [a, b] = @position
+    x = trunc((@position[0] + @velocity[0] + @game.width) * 100) / 100
+    y = trunc((@position[1] + @velocity[1] + @game.height) * 100) / 100
+    x %= @game.width
+    y %= @game.height
+
+    @position[0] = x
+    @position[1] = y
+    @emit 'move' unless (a is @position[0]) and (b is @position[1])
+
+  update: ->
+    super()
+    @updatePosition()
+
   insertView: -> @view = new ModeledView @game, model: @

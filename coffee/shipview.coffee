@@ -4,12 +4,7 @@ if require?
   ModeledView = require './modeledview'
 
 (module ? {}).exports = class ShipView extends ModeledView
-
   drawFuel: (x, y) ->
-    constructor: (@game, @params) ->
-      @params.alwaysUpdate = true
-      super @game, @params
-
     c = @game.c
     c.globalAlpha = 1
     if @model.fuel
