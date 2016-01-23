@@ -8,7 +8,7 @@ if require?
 {abs, floor, min, max, trunc, cos, sin} = Math
 isarr = Array.isArray
 rates = Config.common.ship.rates
-lg = console.log.bind(console)
+lg = console.log.bind console
 
 (module ? {}).exports = class Ship extends Physical
   @glideBrake: ->
@@ -27,15 +27,15 @@ lg = console.log.bind(console)
 
   constructor: (@game, @params) ->
     return unless @game?
-    @health = 100
-    @maxHealth = 100
-    @gear = 0
     @braking = false
+    @fireRate = rates.fire
     @firing = false
-    @lastFireInputSequence = 0
+    @gear = 0
+    @health = 100
+    @lastFired = 0
+    @maxHealth = 100
 
     # how many input sequences to skip before next fire
-    @fireRate = rates.fire
 
     # TODO create 'ship engine' class around brakePower and accFactor
     # Would allow for engines as upgrades/purchases
@@ -46,8 +46,9 @@ lg = console.log.bind(console)
     @fuel = parseInt @fuelCapacity
     super @game, @params
 
-  initEventHandlers: ->
-    @now 'hit', (model) => @health -= model.damage or 0
+  initHandlers: ->
+    @now 'hit': (model) => @health -= model.damage or 0
+    @on 'nofuel', (data) => console.log 'Player', @id, 'ran out of fuel'
     super()
 
   accelerate: (direction, vector) ->
@@ -62,14 +63,7 @@ lg = console.log.bind(console)
     @player?.ship = null
     super arguments[0]
 
-  fire: ->
-    return unless @lastFireInputSequence < @player.inputSequence - @fireRate
-
-    @firing = true
-    @lastFireInputSequence = @player.inputSequence
-    projectile = new Projectile @game, shipID: @id
-
-    @emit 'fire', projectile
+  fire: -> @emit 'fire'
 
   getState: ->
     Object.assign super(),
@@ -78,13 +72,13 @@ lg = console.log.bind(console)
       fuel: @fuel
       fuelCapacity: @fuelCapacity
       health: @health
-      lastFireInputSequence: @lastFireInputSequence
+      lastFired: @lastFired
       playerID: @playerID
 
   setState: (state) ->
     super state
     {@firing, @fireRate, @fuel, @fuelCapacity,
-      @health, @lastFireInputSequence, @playerID} = state
+      @health, @lastFired, @playerID} = state
 
   turn: (direction, amount) ->
     @rotation += amount

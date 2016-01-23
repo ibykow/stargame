@@ -9,13 +9,13 @@ isarr = Array.isArray
 
 # Model: Something that exists in the game world
 (module ? {}).exports = class Model extends Emitter
-  constructor: (@game, @params) ->
+  constructor: (@game, @params = {}) ->
     return unless @game?
-    @deleted = false
     {@color, @partition, @position, @rotation, @width, @height} = @params
     @color ?= Util.randomColorString()
-    @rotation ?= 0
+    @deleted = false
     @partition ?= [0, 0] # which partition we are found in
+    @rotation ?= 0
 
     unless @position?.length
       if @params.parent then @position = @params.parent.position
@@ -23,18 +23,15 @@ isarr = Array.isArray
 
     @width ?= conf.width
     @height ?= conf.height
-
     @halfWidth = @width / 2
     @halfHeight = @height / 2
 
     super @game, @params
     @updatePartition()
 
-  around: (radius) -> @game.around @partition, radius
+  initHandlers: -> @now 'move', => @updatePartition()
 
-  initEventHandlers: ->
-    super()
-    @now 'move', (data, handler) => @updatePartition()
+  around: (radius) -> @game.around @partition, radius
 
   distanceTo: (model) -> Util.magnitude @positionDelta model
 
@@ -77,7 +74,7 @@ isarr = Array.isArray
     return if (@partition[0] is x) and (@partition[1] is y)
 
     delete @game.partitions[@partition[0]][@partition[1]][@id]
+    @game.partitions[x][y][@id] = @
     @partition = [x, y]
-    @game.partitions[@partition[0]][@partition[1]][@id] = @
 
   insertView: -> @view = new ModeledView @game, model: @

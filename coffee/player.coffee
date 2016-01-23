@@ -56,7 +56,7 @@ pesoChar = Config.common.chars.peso
     left: -> @ship.turn 'left', -Config.common.ship.rates.turn
     right: -> @ship.turn 'right', Config.common.ship.rates.turn
 
-    fire: -> @ship.fire()
+    fire: -> @ship?.fire()
 
     suicide: ->
       return if @dead or (@game.tick.count - @ship.born < 50)
@@ -117,13 +117,12 @@ pesoChar = Config.common.chars.peso
     @ship.explode()
     @emit 'die'
 
-  initEventHandlers: ->
-    @ship.on 'nofuel', (data) => console.log 'Player', @id, 'ran out of fuel'
-
-    @on 'refuel', (data) =>
+  initEventHandler: ->
+    super()
+    @on 'refuel',(data) =>
       {index, delta, price} = data
       console.log 'Gas station', index, 'sold', delta.toFixed(2) +
-      'L of fuel to player', @id
+        'L of fuel to player', @id
 
   getState: ->
     Object.assign super(),

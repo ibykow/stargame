@@ -8,7 +8,7 @@ isnum = Util.isNumeric
 isarr = Array.isArray
 
 (module ? {}).exports = class Emitter
-  @events: {}
+  @events = {}
   @ids: {}
   @processHandlers: (game, handlers, name, data) ->
     return unless game? and handlers[name]?
@@ -81,7 +81,7 @@ isarr = Array.isArray
 
     Emitter.nextID++
 
-    @initEventHandlers()
+    @initHandlers()
     @game.emit 'new', @
 
   # (Re)places child and force updates child's parent
@@ -149,7 +149,8 @@ isarr = Array.isArray
     parent: parentState or null
     alwaysUpdate: @alwaysUpdate
 
-  initEventHandlers: ->
+  initHandlers: ->
+
   insertView: -> # do nothing
   isDeleted: -> @deleted or (@getState is null)
 
@@ -173,7 +174,9 @@ isarr = Array.isArray
       when 'object'
         return unless cb = handler.callback
 
-        if handler.bind?.length then handler.callback = cb.bind handler.bind...
+        if bindings = handler.bindings
+          bindings = [bindings] unless isarr bindings
+          handler.callback = cb.bind bindings...
 
         now = handler.immediate or handler.now or now
         handler.repeats ?= repeats
@@ -215,8 +218,7 @@ isarr = Array.isArray
 
     return handler
 
-  once: (name, handler, timeout) -> @on name, handler, timeout, false, false
-  onceNow: (name, handler, timeout) -> @now name, handler, timeout, false
+  once: (name, handler, timeout) -> @on name, handler, timeout, false
 
   setState: (state, setChildStates = false) ->
     {@id, @type, @alwaysUpdate} = state

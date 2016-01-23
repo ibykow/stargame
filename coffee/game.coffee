@@ -32,7 +32,6 @@ Physical::explode = ->
     @partitionSize = @width / @rates.partition
     @toroidalLimit = [@width, @height]
     @paused = true
-    @events ||= {}
     @lib ||= {} # keep references of all emitters in existence
 
     @tick =
@@ -87,15 +86,6 @@ Physical::explode = ->
     results = []
     (results = results.concat @getTypeMatching type, info) for type of @lib
     return results
-
-  initEventHandlers: ->
-    super()
-    for name, handlers of @events
-      for info in handlers
-        info.callback = info.callback.bind @
-        @on name, info
-
-  insertProjectile: (projectile) -> # do nothing client-side
 
   logPlayerStates: ->
     for player in @players when player

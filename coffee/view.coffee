@@ -57,7 +57,7 @@ if require?
       rotation: @rotation
       visible: @visible
 
-  initEventHandlers: -> @on e, cb.bind @ for e, cb of Config.client.view.events
+  initHandlers: -> @on name, cb.bind @ for name, cb of Config.client.view.events
 
   offsetDelta: (target) ->
     Util.toroidalDelta @offset, target.offset, @game.toroidalLimit

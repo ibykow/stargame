@@ -6,6 +6,7 @@ if require?
   Game = require './game'
   Player = require './player'
   Star = require './star'
+  Projectile = require './projectile'
   Market = require './market'
   GasStation = require './gasstation'
 
@@ -24,7 +25,7 @@ rnd = Math.random
 (module ? {}).exports = class ServerGame extends Game
   constructor: (@server, @params) ->
     return unless @server?
-    @page = console.log
+    @page = console.log.bind console
     super @params
 
     @types.update = ['Projectile', 'Explosion']
@@ -33,9 +34,21 @@ rnd = Math.random
     @generateStars stars
 
     @starStates = (star.getState() for id, star of @lib['Star'])
-    @newProjectiles = []
+    @newProjectiles = {}
 
-  insertProjectile: (p) -> @newProjectiles.push p if p?
+  initHandlers: ->
+    @on 'new', (model) ->
+      switch model.type
+        when 'Ship'
+          model.on 'fire',
+            bindings: [model]
+            callback: ->
+              return unless @lastFired < @player.inputSequence - @fireRate
+              @lastFired = @player.inputSequence
+              @firing = true
+              projectile = new Projectile @game, shipID: @id
+              @game.newProjectiles[projectile.id] = projectile
+
 
   generateStars: (n) ->
     for i in [0..n]
@@ -46,8 +59,8 @@ rnd = Math.random
         continue unless kidClass = starKidClasses[name]
         new kidClass @, parent: star
 
-  getStates: (initial) ->
-    players = for id, player of @lib['Player']
+  getPlayerStates: ->
+    for id, player of @lib['Player']
       player.dead = false
       state = player.getState()
       # Reset ship
@@ -55,21 +68,13 @@ rnd = Math.random
       player.ship.firing = false
       state
 
-    if initial then lib = @lib['Projectile'] or {} else lib = @newProjectiles
-    projectiles = (projectile.getState() for projectile in lib when not projectile.isDeleted())
-
-    players: players
-    projectiles: projectiles
-
   sendInitialState: (player) ->
     return unless player
-    {players, projectiles} = @getStates 'initial'
-
     # send the id and game information back to the client
     player.socket.emit 'welcome',
       projectiles:
         dead: []
-        new: projectiles
+        new: (p.getState() for id, p of @lib['Projectile'] when not p.deleted)
       game:
         deadShipIDs: []
         height: @height
@@ -78,19 +83,17 @@ rnd = Math.random
         rates: @rates
         starStates: @starStates
         tick: @tick
-      players: players
+      players: @getPlayerStates()
 
   sendState: ->
-    {players, projectiles} = @getStates()
-
     @server.io.emit 'state',
       projectiles:
         dead: @deadProjectileIDs
-        new: projectiles
+        new: (p.getState() for id, p of @newProjectiles when not p.deleted)
       game:
         deadShipIDs: @deadShipIDs
         tick: @tick
-      players: players
+      players: @getPlayerStates()
 
   update: -> super() for [1..conf.updatesPerStep]
 
@@ -99,4 +102,4 @@ rnd = Math.random
     @sendState()
     @deadProjectileIDs = []
     @deadShipIDs = []
-    @newProjectiles = []
+    @newProjectiles = {}

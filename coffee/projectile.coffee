@@ -12,7 +12,7 @@ if require?
     id = @params?.shipID
     @ship = @game.lib['Ship']?[id] or @game.lib['InterpolatedShip']?[id]
 
-    return console.log "WARNING! No ship, no projectile." unless @ship?
+    return console.log "WARNING! No ship means no projectile." unless @ship?
 
     {@damage, @life, @speed} = @params
 
@@ -20,20 +20,19 @@ if require?
     @life ?= life
     @speed ?= speed
 
-    @params.width = @params.height = 2
-    @params.color = @params.color ? '#FFD'
-
     vx = @ship.velocity[0]
     vy = @ship.velocity[1]
     xdir = cos @ship.rotation
     ydir = sin @ship.rotation
 
+    @params.alwaysUpdate = true
+    @params.color = @params.color ? '#FFD'
+    @params.position =
+      [ @ship.position[0] + xdir * (@ship.width + 2),
+        @ship.position[1] + ydir * (@ship.height + 2),
+        @ship.rotation ]
     @params.velocity = [xdir * @speed, ydir * @speed]
-    @params.position = [  @ship.position[0] + xdir * (@ship.width + 2),
-                          @ship.position[1] + ydir * (@ship.height + 2),
-                          @ship.rotation ]
-
-    @params.alwaysUpdate = @params.alwaysUpdate ? true
+    @params.width = @params.height = 2
 
     super @game, @params
 
@@ -42,29 +41,16 @@ if require?
     @life = 0
     super arguments[0]
 
-  initEventHandlers: ->
+  initHandlers: ->
     super()
-
-    events =
-      now:
-        hit:
-          bind: [@]
-          timer: 0
-          repeats: true
-          callback: (model) -> @life -= model.damage
-
-        move:
-          bind: [@]
-          timer: 0
-          repeats: true
-          callback: (data, handler) ->
-            return if @deleted
-            models = @around 1
-            for model in models when not (model.id is @id) and @intersects model
-              handler.repeats = false
-              model.emit 'hit', @
-
-    (@[type] name, info for name, info of event) for type, event of events
+    @now 'hit', (model) => @life -= model.damage
+    @now 'move', (data, handler) =>
+      return if @deleted
+      models = @around 1
+      for model in models when not (model.id is @id) and @intersects model
+        console.log 'hitting' + model
+        handler.repeats = false
+        model.emit 'hit', @
 
   getState: ->
     Object.assign super(),
@@ -82,4 +68,4 @@ if require?
   update: ->
     super()
     @life--
-    @delete 'because it expired' unless @life > 0
+    @delete 'because it died' unless @life > 0

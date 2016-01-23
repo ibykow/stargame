@@ -11,8 +11,9 @@ describe 'Emitter', ->
 
   beforeEach ->
     game =
-      lib: {}
       emit: ->
+      lib: {}
+      page: console.log.bind console
       tick:
         count: 0
 
@@ -131,7 +132,7 @@ describe 'Emitter', ->
 
     describe '.insertView', -> expectBlankFunc 'insertView'
 
-    describe '.initEventHandlers', -> expectBlankFunc 'initEventHandlers'
+    describe '.initHandlers', -> expectBlankFunc 'initHandlers'
 
     describe '.isDeleted', ->
       it 'reports whether the object has been deleted', ->
@@ -180,14 +181,6 @@ describe 'Emitter', ->
         handler = em.once name, testCallback
         expectHandler handler, name,
           callback: testCallback
-          repeats: false
-
-    describe '.onceNow', ->
-      it 'registers a one-time, immediate-execution callback for an event', ->
-        handler = em.onceNow name, testCallback
-        expectHandler handler, name,
-          callback: testCallback
-          now: true
           repeats: false
 
     describe '.setState', ->

@@ -40,8 +40,7 @@ client = null
   resizedCallback: -> # overwrite this when a new game is created
 
   getKeyboardInputs: ->
-    for i in [0...@keymap.length] when @keys[i] and @keymap[i]
-      @keymap[i]
+    @keymap[i] for i in [0...@keymap.length] when @keys[i] and @keymap[i]
 
   events:
     socket:

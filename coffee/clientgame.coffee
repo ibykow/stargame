@@ -29,8 +29,6 @@ Emitter::arrowTo = (view, color, alpha = 1, lineWidth = 1) ->
     alpha: alpha
     lineWidth: lineWidth
 
-Ship::fire = -> @firing = true
-
 (module ? {}).exports = class ClientGame extends Game
   constructor: (@canvas, @params) ->
     return unless @canvas? and @params?
@@ -83,30 +81,18 @@ Ship::fire = -> @firing = true
       @step = 0
       @rate = 1 / Config.server.updatesPerStep
 
-  events:
-    'new': [{
-        timeout: 0
-        repeats: true
-        callback: (data, handler) ->
-          return unless (type = data.type) and (myship = @player.ship)
-          switch type
-            # Add an arrow to a new player's ship
-            when 'InterpolatedShip' then myship.view.arrowTo data.view
-            when 'Explosion' then data.insertView()
-            # Add arrows to other play's ships when our ship (re)generates
-            when 'Ship'
-              (myship.on 'move', @updateScreenOffset.bind @).callback()
-              @each 'InterpolatedShip', (ship) -> myship.view.arrowTo ship.view
-            when 'Star' then data.now 'mouse-click', -> data.explode()
-
-      }, {
-        deleted: true
-        timeout: 0
-        repeats: true
-        callback: (data, handler) ->
-          return unless data?.type is 'Projectile'
-          console.log 'created new projectile at', data.position
-    }]
+  initHandlers: ->
+    @on 'new', (model) =>
+      return unless (type = model.type) and (myship = @player.ship)
+      switch type
+        # Add an arrow to a new player's ship
+        when 'InterpolatedShip' then myship.view.arrowTo model.view
+        when 'Explosion' then model.insertView()
+        # Add arrows to other play's ships when our ship (re)generates
+        when 'Ship'
+          (myship.on 'move', @updateScreenOffset.bind @).callback()
+          @each 'InterpolatedShip', (ship) -> myship.view.arrowTo ship.view
+        when 'Star' then model.now 'mouse-click', model.explode.bind model
 
   resetDeltas: ->
     @c.setTransform 1, 0, 0, 1, 0, 0
@@ -147,19 +133,17 @@ Ship::fire = -> @firing = true
 
     {damaged, firing, fuel, health, position} = state
 
+    @player.ship.damaged = damaged
     @player.ship.firing = firing
-
     @player.ship.fuel = fuel
     @player.ship.health = health
-    @player.ship.damaged = damaged
 
     # do the correction only if we're out of sync with the server
     clientPosition = logEntry.ship.position
 
-    # console.log 'correct', position, 'vs', clientPosition
     return unless Util.vectorDeltaExists clientPosition, position
 
-    console.log 'correcting ship state'
+    console.log 'correcting ship position'
 
     # set the current ship state to the last known (good) server state
     @player.ship.setState state
@@ -344,6 +328,5 @@ Ship::fire = -> @firing = true
     super time # the best kind
     @notifyServer()
     @draw()
-    @deadProjectileIDs = []
     @deadShipIDs = []
     @player.inputs = []

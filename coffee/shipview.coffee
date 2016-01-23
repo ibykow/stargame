@@ -11,6 +11,7 @@ if require?
       super @game, @params
 
     c = @game.c
+    c.globalAlpha = 1
     if @model.fuel
       c.font = "10px Helvetica"
       remain = @model.fuel / @model.fuelCapacity
@@ -43,6 +44,7 @@ if require?
 
   drawHealth: (x, y) ->
     c = @game.c
+    c.globalAlpha = 1
     if @model.health > 0
       remain = @model.health / @model.maxHealth
       rate = floor remain * 0xD0

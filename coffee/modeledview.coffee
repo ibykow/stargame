@@ -14,7 +14,8 @@ if require?
     {width, height, halfWidth, halfHeight} = @model
     [[@offset[0] - halfWidth, @offset[1] - halfHeight], [width, height]]
 
-  initEventHandlers: ->
+  initHandlers: ->
+    super()
     # Pass mouse events onto the model
     for type in Config.client.mouse.event.types
       @now 'mouse-' + type, (data, handler) => @model.emit handler.name, data
