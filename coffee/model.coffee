@@ -29,14 +29,12 @@ isarr = Array.isArray
     super @game, @params
     @updatePartition()
 
-  initHandlers: -> @now 'move', => @updatePartition()
-
   around: (radius) -> @game.around @partition, radius
 
   distanceTo: (model) -> Util.magnitude @positionDelta model
 
   delete: ->
-    delete @game.partitions[@partition[0]][@partition[1]][@id]
+    @leavePartition()
     super arguments[0]
 
   positionDelta: (model) ->
@@ -67,15 +65,24 @@ isarr = Array.isArray
     super state
     {@deleted, @color, @position, @rotation, @width, @height} = state
 
+  leavePartition: ->
+    delete @game.partitions[@partition[0]][@partition[1]][@type]?[@id]
+    @partition = [0, 0]
+
+  enterPartition: (p) ->
+    return unless p?.length is 2
+    @game.partitions[p[0]][p[1]][@type] ?= {}
+    @game.partitions[p[0]][p[1]][@type][@id] = @
+    @partition = p
+
   updatePartition: ->
     x = floor @position[0] / @game.partitionSize
     y = floor @position[1] / @game.partitionSize
 
     return if (@partition[0] is x) and (@partition[1] is y)
 
-    delete @game.partitions[@partition[0]][@partition[1]][@id]
-    @game.partitions[x][y][@id] = @
-    @partition = [x, y]
+    @leavePartition()
+    @enterPartition [x, y]
 
   updatePosition: ->
     [a, b] = @position
@@ -86,7 +93,10 @@ isarr = Array.isArray
 
     @position[0] = x
     @position[1] = y
-    @emit 'move' unless (a is @position[0]) and (b is @position[1])
+
+    unless (a is @position[0]) and (b is @position[1])
+      @updatePartition()
+      @emit 'move', [a, b]
 
   update: ->
     super()

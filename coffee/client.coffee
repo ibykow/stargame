@@ -33,7 +33,7 @@ client = null
 
     @keys = (false for [0..0xFF])
     @mouse =
-      buttons: [false, false, false]
+      buttons: 0
       x: 0
       y: 0
 
@@ -89,11 +89,11 @@ client = null
 
       mousedown: (e) ->
         @mouse.pressed = true
-        @mouse.buttons[e.button] = true
+        @mouse.buttons |= e.button + 1
 
       mouseup: (e) ->
         @mouse.released = true
-        @mouse.buttons[e.button] = false
+        @mouse.buttons ^= @mouse.buttons & (e.button + 1)
 
       mousemove: (e) ->
         @mouse.moved = true

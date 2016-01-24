@@ -35,6 +35,7 @@ rnd = Math.random
 
     @starStates = (star.getState() for id, star of @lib['Star'])
     @newProjectiles = {}
+    Emitter.resetStats()
 
   initHandlers: ->
     @on 'new', (model) ->
@@ -48,7 +49,6 @@ rnd = Math.random
               @firing = true
               projectile = new Projectile @game, shipID: @id
               @game.newProjectiles[projectile.id] = projectile
-
 
   generateStars: (n) ->
     for i in [0..n]

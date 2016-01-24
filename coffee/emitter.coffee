@@ -7,9 +7,29 @@ if require?
 isnum = Util.isNumeric
 isarr = Array.isArray
 
+{max, min} = Math
+
 (module ? {}).exports = class Emitter
   @events = {}
   @ids: {}
+  @stats:
+    immediate:
+      count: 0
+      average:
+        current: 0
+        min: 1000
+        max: 0
+      max: 0
+      min: 10000
+    regular:
+      count: 0
+      average:
+        current: 0
+        min: 1000
+        max: 0
+      max: 0
+      min: 10000
+
   @processHandlers: (game, handlers, name, data) ->
     return unless game? and handlers[name]?
     step = game.tick.count
@@ -24,13 +44,44 @@ isarr = Array.isArray
         handler.timer = null
       return handler.repeats
 
+  @resetStats: ->
+    @stats =
+      immediate:
+        count: 0
+        average:
+          current: 0
+          min: 1000
+          max: 0
+        max: 0
+        min: 10000
+      regular:
+        count: 0
+        average:
+          current: 0
+          min: 1000
+          max: 0
+        max: 0
+        min: 10000
+
+  @processStats: ->
+    for type, stat of @stats
+      # Process stats first to include immediates
+      stat.average.current = stat.count * 0.05 + stat.average.current * 0.95
+      stat.average.min = min stat.average.min, stat.average.current
+      stat.average.max = max stat.average.max, stat.average.current
+      stat.min = min stat.min, stat.count
+      stat.max = max stat.max, stat.count
+      stat.count = 0
+
   @run: (game) ->
     for name, eventsList of @events
       for info in eventsList
+        @stats.regular.count += info.target.listeners[name]?.length or 0
         info.target.listeners[name] = @processHandlers game,
           info.target.listeners, name, info.data
-
         delete @events[name]
+
+    @processStats()
 
   @fromState: (game, state = {}, view) ->
     return unless game
@@ -96,7 +147,7 @@ isarr = Array.isArray
 
   delete: (reason = 'for no particular reason') ->
     @deleted = true
-    @page 'Deleting ' + @ + ' ' + reason
+    # @page 'Deleting ' + @ + ' ' + reason
 
     @emit 'delete', parseInt @id
     if @view?.delete?
@@ -122,7 +173,9 @@ isarr = Array.isArray
       data: data
 
     # Process immediates
-    @immediates[name] = Emitter.processHandlers @game, @immediates, name, data
+    if @immediates[name]?.length
+      Emitter.stats.immediate.count += @immediates[name].length or 0
+      @immediates[name] = Emitter.processHandlers @game, @immediates, name, data
 
     if isarr Emitter.events[name] then Emitter.events[name].push info
     else Emitter.events[name] = [info]

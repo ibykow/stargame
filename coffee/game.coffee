@@ -66,7 +66,10 @@ Physical::explode = ->
 
   at: (partition) ->
     return [] unless partition?.length is 2
-    model for id, model of @partitions[partition[0]][partition[1]]
+    results = []
+    for type, models of @partitions[partition[0]][partition[1]]
+      results.push model for id, model of models
+    return results
 
   each: (type, cb) -> cb value for name, value of @lib[type] or {}
   framesToMs: (frames) -> frames * Config.common.msPerFrame

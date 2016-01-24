@@ -47,7 +47,6 @@ if require?
       return if @deleted
       models = @around 1
       for model in models when not (model.id is @id) and @intersects model
-        console.log 'hitting' + model
         handler.repeats = false
         model.emit 'hit', @
 

@@ -234,7 +234,7 @@ Emitter::arrowTo = (view, color, alpha = 1, lineWidth = 1) ->
       @mouseViews.push view
       view.emit 'mouse-enter' unless ~previousViews.indexOf view
 
-    # Remove items from the old list
+    # Find items that are no longer under the mouse
     for view in previousViews when ~@mouseViews.indexOf(view) is 0
       view.hovering = false
       view.emit 'mouse-leave'
@@ -255,20 +255,21 @@ Emitter::arrowTo = (view, color, alpha = 1, lineWidth = 1) ->
   processServerData: (data) ->
     # Store the most recent server tick data
     @serverTick = data.game.tick
+
     # Make it so we don't fall behind the server game tick
     @tick.count = @serverTick.count + 1 if @serverTick.count > @tick.count
 
-    @processProjectileData data.projectiles
-
-    # remove our ship from the pile
+    # Remove our ship from the pile
     index = data.players.findIndex (s) => s.id is @player.id
-    @player.state = (data.players.splice index, 1)[0]
+    @player.state = data.players.splice(index, 1)[0]
 
+    # Process ships, projectiles
     InterpolatedShip.fromState @, state.ship, true for state in data.players
-
+    @processProjectileData data.projectiles
     @removeShip id for id in data.game.deadShipIDs
-
     @interpolation.reset()
+
+    # Corrections
     @correctPrediction()
 
   removeShip: (id) -> @lib['InterpolatedShip']?[id]?.explode()
