@@ -1,5 +1,6 @@
 if require?
   Config = require './config'
+  Benchmark = require './benchmark'
   Util = require './util'
   Timer = require './timer'
   RingBuffer = require './ringbuffer'
@@ -15,7 +16,6 @@ isnum = Util.isNumeric
 
 Model::explode = (state = position: @position.slice()) ->
   new Explosion @game, state
-  @page 'Exploding' + @
   @delete 'because it exploded'
 
 Physical::explode = ->
@@ -26,6 +26,7 @@ Physical::explode = ->
 (module ? {}).exports = class Game extends Emitter
   constructor: (@params) ->
     {@width, @height, @rates} = @params
+    Emitter.bench = new Benchmark Emitter
     @deadProjectileIDs = []
     @deadShipIDs = []
     @partitions = (({} for [0...@rates.partition]) for [0...@rates.partition])
@@ -39,17 +40,11 @@ Physical::explode = ->
       time: 0
       dt: 0
 
-    @stats =
-      dt:
-        last: 0
-        average: 0
-        min: 10
-        max: 0
-
     @types = update: []
 
     # Emitter expects an initialized game
     super @, @params
+    @bench = new Benchmark @
 
   around: (partition = [0, 0], radius = 1) ->
     return @at partition if radius < 1
@@ -97,32 +92,10 @@ Physical::explode = ->
         id: player.id
         ship: player.ship.getState()
 
-  processStats: ->
-    @stats.dt.average = @stats.dt.average * 0.9 + @stats.dt.last * 0.1
-
-    showStats = @game.tick.count % (60 * 5) is 0
-
-    if @stats.dt.last < @stats.dt.min
-      @stats.dt.min = @stats.dt.last
-      showStats = true
-
-    if @stats.dt.last > @stats.dt.max
-      @stats.dt.max = @stats.dt.last
-      showStats = true
-
-    return unless showStats
-
-    console.log 'Update ∆t ' + @game.tick.count + ' ' + @stats.dt.last + ' ' +
-      @stats.dt.average.toFixed(4) + ' ' + @stats.dt.max
-
   step: (time) ->
     @tick.dt = time - @tick.time
     @tick.time = time
-
-    @stats.dt.last = +new Date
     @update()
-    @stats.dt.last = (+new Date) - @stats.dt.last
-    @processStats()
 
   update: ->
     step = @tick.count++

@@ -32,7 +32,7 @@ Emitter::arrowTo = (view, color, alpha = 1, lineWidth = 1) ->
 (module ? {}).exports = class ClientGame extends Game
   constructor: (@canvas, @params) ->
     return unless @canvas? and @params?
-    @prevTime = +new Date
+    @prevTime = Date.now()
 
     @c = @canvas.getContext '2d'
     @starStates = @params.starStates

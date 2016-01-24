@@ -70,13 +70,13 @@ client = null
         @game.update()
 
         # start the game
-        @frame.run.bind(@) +new Date
+        @frame.run.bind(@) Date.now()
 
       join: (data) -> console.log 'Player ' + data.id + ' joined the game'
 
       leave: (id) ->
         @game.removeShip id
-        console.log 'Player' + id + ' has left the game'
+        console.log 'Player ' + id + ' has left the game'
 
       disconnect: ->
         @frame.stop.bind(@)()
@@ -136,7 +136,7 @@ window.onload = -> client = new Client document.querySelector 'canvas'
 
   if not window.requestAnimationFrame
     window.requestAnimationFrame = (callback, element) ->
-      currTime = +new Date
+      currTime = Date.now()
       timeToCall = Math.max 0, msPerFrame - (currTime - lastTime)
       lastTime = currTime + timeToCall
       window.setTimeout (-> callback lastTime), timeToCall

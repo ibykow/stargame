@@ -1,5 +1,6 @@
 if require?
   Config = require './config'
+  Benchmark = require './benchmark'
   Util = require './util'
   Emitter = require './emitter'
   RingBuffer = require './ringbuffer'
@@ -23,6 +24,7 @@ pesoChar = Config.common.chars.peso
     @generateShip ship
     super @game, @params
     @ship.playerID = @id
+    @bench = new Benchmark @
 
   actions:
     forward: ->
@@ -58,8 +60,16 @@ pesoChar = Config.common.chars.peso
 
     fire: -> @ship?.fire()
 
-    suicide: ->
-      return if @dead or (@game.tick.count - @ship.born < 50)
+    stats: ->
+      return if @game.tick.count - @statsPrintTick < 60
+      @statsPrintTick = @game.tick.count
+      @page 'Statistics'
+      (@page 'Game ' + s) for s in @game.bench.getStatStrings 'step', 'update'
+      (@page 'Player ' + s) for s in @bench.getStatStrings 'update'
+
+    suicide: (mods) ->
+      birthDelta = @game.tick.count - @ship.born
+      return if @dead or (birthDelta < 50) or ((mods & 3) - 3 < 0)
       console.log '' + @ + ' commited suicide on ' + @ship
       @ship.health = 0
 

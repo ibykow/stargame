@@ -35,7 +35,6 @@ rnd = Math.random
 
     @starStates = (star.getState() for id, star of @lib['Star'])
     @newProjectiles = {}
-    Emitter.resetStats()
 
   initHandlers: ->
     @on 'new', (model) ->

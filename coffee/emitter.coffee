@@ -12,23 +12,6 @@ isarr = Array.isArray
 (module ? {}).exports = class Emitter
   @events = {}
   @ids: {}
-  @stats:
-    immediate:
-      count: 0
-      average:
-        current: 0
-        min: 1000
-        max: 0
-      max: 0
-      min: 10000
-    regular:
-      count: 0
-      average:
-        current: 0
-        min: 1000
-        max: 0
-      max: 0
-      min: 10000
 
   @processHandlers: (game, handlers, name, data) ->
     return unless game? and handlers[name]?
@@ -44,44 +27,12 @@ isarr = Array.isArray
         handler.timer = null
       return handler.repeats
 
-  @resetStats: ->
-    @stats =
-      immediate:
-        count: 0
-        average:
-          current: 0
-          min: 1000
-          max: 0
-        max: 0
-        min: 10000
-      regular:
-        count: 0
-        average:
-          current: 0
-          min: 1000
-          max: 0
-        max: 0
-        min: 10000
-
-  @processStats: ->
-    for type, stat of @stats
-      # Process stats first to include immediates
-      stat.average.current = stat.count * 0.05 + stat.average.current * 0.95
-      stat.average.min = min stat.average.min, stat.average.current
-      stat.average.max = max stat.average.max, stat.average.current
-      stat.min = min stat.min, stat.count
-      stat.max = max stat.max, stat.count
-      stat.count = 0
-
   @run: (game) ->
     for name, eventsList of @events
       for info in eventsList
-        @stats.regular.count += info.target.listeners[name]?.length or 0
         info.target.listeners[name] = @processHandlers game,
           info.target.listeners, name, info.data
         delete @events[name]
-
-    @processStats()
 
   @fromState: (game, state = {}, view) ->
     return unless game
@@ -119,7 +70,7 @@ isarr = Array.isArray
 
     if @params.id
       @id = @params.id
-      Emitter.nextID = @params.id if @id > Emitter.nextID
+      Emitter.ids[@type] = @id if @id > Emitter.ids[@type]
     else
       Emitter.ids[@type] ?= 0
       Emitter.ids[@type]++
@@ -129,8 +80,6 @@ isarr = Array.isArray
 
     {@parent} = @params
     @parent.adopt @ if @parent?.id
-
-    Emitter.nextID++
 
     @initHandlers()
     @game.emit 'new', @
@@ -174,7 +123,6 @@ isarr = Array.isArray
 
     # Process immediates
     if @immediates[name]?.length
-      Emitter.stats.immediate.count += @immediates[name].length or 0
       @immediates[name] = Emitter.processHandlers @game, @immediates, name, data
 
     if isarr Emitter.events[name] then Emitter.events[name].push info
@@ -279,5 +227,4 @@ isarr = Array.isArray
         child.setState state.children[name], true
 
   toString: -> '' + this.type + ' ' + this.id
-
   update: -> child.update() for type, child of @children

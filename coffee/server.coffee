@@ -31,17 +31,9 @@ module.exports = class Server
     console.log 'The game is empty. Pausing.'
     @frame.stop.bind(@)()
 
-  processStats: ->
-    @stats.dt.average = @stats.dt.average * 0.9 + @stats.dt.last * 0.1
-    @stats.dt.min = min @stats.dt.min, @stats.dt.last
-    @stats.dt.max = max @stats.dt.max, @stats.dt.last
-    if @game.tick.count % (60 * 5) is 0
-      console.log '∆t', @game.tick.count, @stats.dt.last.toFixed(4),
-        @stats.dt.average.toFixed(4), @stats.dt.max.toFixed(4)
-
   unpause: ->
     console.log 'Unpausing'
-    @frame.run.bind(@) +new Date
+    @frame.run.bind(@) Date.now()
 
   events:
     # @ is the server instance
@@ -104,13 +96,10 @@ module.exports = class Server
     run: (timestamp) ->
       unless @started
         ms = @frameInterval - 3
-        @frame.interval = setInterval (=> @frame.run.bind(@) +new Date), ms
+        @frame.interval = setInterval (=> @frame.run.bind(@) Date.now()), ms
         @started = true
 
-      @stats.dt.last = process.hrtime()[1]
       @game.step timestamp
-      @stats.dt.last = (process.hrtime()[1] - @stats.dt.last) / 1000000
-      @processStats()
 
     stop: ->
       clearInterval @frame.interval

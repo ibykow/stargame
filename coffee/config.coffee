@@ -1,5 +1,6 @@
 # Provide configuration data
 (module ? {}).exports = Config =
+  benchmark: history: cutoff: 10000
   client:
     arrow:
       color: '#0F0'
@@ -31,7 +32,6 @@
     mouse:
       event:
         types: ['click', 'enter', 'leave', 'press', 'release']
-
     pager:
       color: '#0f0'
       fade: 30

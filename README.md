@@ -19,10 +19,10 @@ Then,
 
     $ ./run
 
-The ```run``` shell script installs npm dependencies, compiles the CoffeeScript and starts the application.
+The ```run``` shell script installs npm dependencies, "compiles" the CoffeeScript and starts the application.
 
 #### Connect
-Finally, if all works according to plan, point your browser to the address and port you specified in ```coffee/config.coffee``` and start the star adventure!
+Finally, if everything has worked according to plan, point your browser to the address and port you specified in ```coffee/config.coffee``` and let the star adventure begin!
 
 ### Controls
 | Action  | Key         |
@@ -31,6 +31,12 @@ Finally, if all works according to plan, point your browser to the address and p
 | Turn    | Left, Right |
 | Brake   | Space       |
 | Fire    | F           |
+
+### What's new?
+
+##### 24 Jan 2016
+- Hard at work adding many new bugs.
+- Added a benchmark tool. Let's see if it helps.
 
 ### What's available?
 * canvas rendering
