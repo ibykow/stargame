@@ -45,6 +45,7 @@ Physical::explode = ->
     # Emitter expects an initialized game
     super @, @params
     @bench = new Benchmark @
+    console.log 'Created game ' + @id
 
   around: (partition = [0, 0], radius = 1) ->
     return @at partition if radius < 1

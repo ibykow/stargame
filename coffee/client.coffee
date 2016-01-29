@@ -32,6 +32,7 @@ client = null
       @keymap[code] = action
 
     @keys = (false for [0..0xFF])
+    @modifiers = 0 # Keyboard modifiers keys
     @mouse =
       buttons: 0
       x: 0
@@ -40,7 +41,8 @@ client = null
   resizedCallback: -> # overwrite this when a new game is created
 
   getKeyboardInputs: ->
-    @keymap[i] for i in [0...@keymap.length] when @keys[i] and @keymap[i]
+    map: (@keymap[i] for i in [0...@keymap.length] when @keys[i] and @keymap[i])
+    modifiers: @modifiers
 
   events:
     socket:
@@ -83,8 +85,20 @@ client = null
         @socket.close()
 
     window:
-      keydown: (e) -> @keys[e.keyCode] = true
-      keyup: (e) -> @keys[e.keyCode] = false
+      keydown: (e) ->
+        @keys[e.keyCode] = true
+        @modifiers |= 1 if e.altKey
+        @modifiers |= 2 if e.ctrlKey
+        @modifiers |= 4 if e.metaKey
+        @modifiers |= 8 if e.shiftKey
+
+      keyup: (e) ->
+        @keys[e.keyCode] = false
+        @modifiers ^= @modifiers & 1 if e.altKey
+        @modifiers ^= @modifiers & 2 if e.ctrlKey
+        @modifiers ^= @modifiers & 4 if e.metaKey
+        @modifiers ^= @modifiers & 8 if e.shiftKey
+
       click: (e) -> @mouse.clicked = true
 
       mousedown: (e) ->
@@ -109,22 +123,19 @@ client = null
         @resizedCallback() # lets others get the message
 
   frame:
+    request: null
     run: (timestamp) ->
       @frame.request = window.requestAnimationFrame @frame.run.bind @
       @game.step timestamp
-
     stop: ->
       @game.gameOver()
       window.cancelAnimationFrame @frame.request
 
-    request: null
-
 # Load
-window.onload = -> client = new Client document.querySelector 'canvas'
-{msPerFrame} = Config.common
+window.onload = ->
+  client = new Client document.querySelector 'canvas'
 
-# Frame request code
-(->
+  # Request frame initialization
   lastTime = 0
   vendors = ['webkit', 'moz']
 
@@ -136,10 +147,10 @@ window.onload = -> client = new Client document.querySelector 'canvas'
 
   if not window.requestAnimationFrame
     window.requestAnimationFrame = (callback, element) ->
+      ms = Config.common.msPerFram
       currTime = Date.now()
-      timeToCall = Math.max 0, msPerFrame - (currTime - lastTime)
+      timeToCall = Math.max 0, ms - (currTime - lastTime)
       lastTime = currTime + timeToCall
       window.setTimeout (-> callback lastTime), timeToCall
 
-  window.cancelAnimationFrame ?= (id) -> clearTimeout(id)
-)()
+    window.cancelAnimationFrame ?= (id) -> clearTimeout(id)

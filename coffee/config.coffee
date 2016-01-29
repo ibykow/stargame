@@ -29,6 +29,7 @@
         down: 'reverse'
         f: 'fire'
         s: 'suicide'
+        o: 'stats'
     mouse:
       event:
         types: ['click', 'enter', 'leave', 'press', 'release']
@@ -59,12 +60,7 @@
       ]
     view:
       alpha: 1
-      events:
-        'mouse-enter': -> console.log 'Planning on staying long?'
-        'mouse-leave': -> console.log "Please don't leave me!"
-        'mouse-press': -> console.log "Don't press me Mitch."
-        'mouse-release': -> console.log 'Release me. Set me free.'
-        'mouse-click': -> console.log 'You clicked me!'
+      events: {}
   server:
     projectileCollidableTypes: [ 'Ship', 'Star' ]
     game:

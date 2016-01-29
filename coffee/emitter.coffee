@@ -12,27 +12,11 @@ isarr = Array.isArray
 (module ? {}).exports = class Emitter
   @events = {}
   @ids: {}
-
-  @processHandlers: (game, handlers, name, data) ->
-    return unless game? and handlers[name]?
-    step = game.tick.count
-    handlers[name].filter (handler) ->
-      return false if handler.deleted
-      handler.step.current = step
-      result = handler.callback data, handler
-      handler.step.previous = step
-      handler.deleted = not handler.repeats
-      if handler.timer and handler.deleted
-        handler.timer.delete()
-        handler.timer = null
-      return handler.repeats
-
   @run: (game) ->
-    for name, eventsList of @events
-      for info in eventsList
-        info.target.listeners[name] = @processHandlers game,
-          info.target.listeners, name, info.data
-        delete @events[name]
+    for name, event of @events
+      for info in event
+        info.target.processHandlers 'listeners', name, info.data
+      delete @events[name]
 
   @fromState: (game, state = {}, view) ->
     return unless game
@@ -123,7 +107,8 @@ isarr = Array.isArray
 
     # Process immediates
     if @immediates[name]?.length
-      @immediates[name] = Emitter.processHandlers @game, @immediates, name, data
+      handlers = @immediates[name]
+      @immediates[name] = @processHandlers 'immediates', name, data
 
     if isarr Emitter.events[name] then Emitter.events[name].push info
     else Emitter.events[name] = [info]
@@ -219,6 +204,20 @@ isarr = Array.isArray
     return handler
 
   once: (name, handler, timeout) -> @on name, handler, timeout, false
+
+  processHandlers: (handlerType, name, data) ->
+    return unless handlers = @[handlerType]?[name]
+    step = @game.tick.count
+    @[handlerType][name] = handlers.filter (handler) ->
+      return false if handler.deleted
+      handler.step.current = step
+      result = handler.callback data, handler
+      handler.step.previous = step
+      handler.deleted = not handler.repeats
+      if handler.timer and handler.deleted
+        handler.timer.delete()
+        handler.timer = null
+      handler.repeats
 
   setState: (state, setChildStates = false) ->
     {@id, @type} = state

@@ -213,10 +213,10 @@ Emitter::arrowTo = (view, color, alpha = 1, lineWidth = 1) ->
     params = Config.client.contextMenu.sensor
     params.parent = @contextMenu
 
-    sensor = new Pane @, params
-    sensor.resize()
-    sensor.now 'mouse-enter', => @contextMenu.toggle()
-    sensor.open()
+    @contextMenu.sensor = new Pane @, params
+    @contextMenu.sensor.resize()
+    @contextMenu.sensor.now 'mouse-enter', => @contextMenu.toggle()
+    @contextMenu.sensor.open()
 
   isMouseInBounds: (bounds) ->
     Util.isInSquareBounds [@client.mouse.x, @client.mouse.y], bounds
@@ -315,12 +315,13 @@ Emitter::arrowTo = (view, color, alpha = 1, lineWidth = 1) ->
     @player.inputs = @client.getKeyboardInputs()
     super()
 
-    @proximals = @player.ship.around @screenPartitionRadius
-
+    # @proximals = @player.ship.around @screenPartitionRadius
     # for model in @proximals
     #   model.view.update() if ~@types.proximal.indexOf model.type
     @player.update()
     @interpolation.step++
+    @contextMenu.sensor.update()
+    @contextMenu.update()
 
     # Call this last because mouseUpdate needs visibleViews to be populated
     @updateMouse()

@@ -21,6 +21,8 @@ pesoChar = Config.common.chars.peso
     @logs =
       state: new RingBuffer Player.LOGLEN
       input: new RingBuffer Player.LOGLEN
+    @statsPrintTick = 0
+
     @generateShip ship
     super @game, @params
     @ship.playerID = @id
@@ -56,6 +58,7 @@ pesoChar = Config.common.chars.peso
           @ship.velocity[1] * rate, 0]
 
     left: -> @ship.turn 'left', -Config.common.ship.rates.turn
+
     right: -> @ship.turn 'right', Config.common.ship.rates.turn
 
     fire: -> @ship?.fire()
@@ -70,7 +73,7 @@ pesoChar = Config.common.chars.peso
     suicide: (mods) ->
       birthDelta = @game.tick.count - @ship.born
       return if @dead or (birthDelta < 50) or ((mods & 3) - 3 < 0)
-      console.log '' + @ + ' commited suicide on ' + @ship
+      console.log '' + @ + ' self destructed ' + @ship
       @ship.health = 0
 
     refuel: ->
@@ -151,13 +154,19 @@ pesoChar = Config.common.chars.peso
     @ship.playerID = @id
     @ship.player = @
 
+  processInputs: ->
+    {map, modifiers} = @inputs
+    @actions[action].call @, modifiers for action in map when action?.length
+
   updateInputLog: ->
     entry =
       sequence: @inputSequence
       gameStep: @game.tick.count
       serverStep: @game.serverTick.count
       ship: @ship?.getState()
-      inputs: @inputs.slice()
+      inputs:
+        map: @inputs.map.slice()
+        modifiers: @inputs.modifiers
       gasStationIndex: @gasStationIndex
 
     @logs['input'].insert entry
@@ -165,6 +174,6 @@ pesoChar = Config.common.chars.peso
     @inputSequence++
 
   update: ->
-    @actions[action].bind(@)() for action in @inputs when action?.length
+    @processInputs()
     @ship.update()
     @die() unless @ship.health > 0

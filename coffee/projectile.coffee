@@ -49,6 +49,7 @@ if require?
       for model in models when not (model.id is @id) and @intersects model
         handler.repeats = false
         model.emit 'hit', @
+        @life = 0
 
   getState: ->
     Object.assign super(),

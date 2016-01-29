@@ -20,10 +20,8 @@ isarr = Array.isArray
 
   initHandlers: ->
     super()
-    @now 'hit', (model) =>
-      model.life = 0 if model.type is 'Projectile'
-      console.log '' + @ + ' was hit by ' + model + ' at ' + model.damage
-      @damaged += model.damage
+    @now 'hit', (model) => @damaged += model.damage
+      # console.log '' + @ + ' took ' + model.damage + ' damage from ' + model
 
   getState: ->
     Object.assign super(),

@@ -47,9 +47,9 @@ lg = console.log.bind console
     super @game, @params
 
   initHandlers: ->
-    @now 'hit': (model) => @health -= model.damage or 0
-    @on 'nofuel', (data) => console.log 'Player', @id, 'ran out of fuel'
     super()
+    @on 'nofuel', (data) => console.log 'Player', @id, 'ran out of fuel'
+    @now 'hit', (model) => @health -= model.damage or 0
 
   accelerate: (direction, vector) ->
     return unless isarr vector
