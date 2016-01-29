@@ -19,7 +19,7 @@ Then,
 
     $ ./run
 
-The ```run``` shell script installs npm dependencies, "compiles" the CoffeeScript and starts the application.
+The ```run``` shell script installs npm dependencies, compiles the CoffeeScript and starts the application.
 
 #### Connect
 Finally, if everything has worked according to plan, point your browser to the address and port you specified in ```coffee/config.coffee``` and let the star adventure begin!
@@ -35,8 +35,7 @@ Finally, if everything has worked according to plan, point your browser to the a
 ### What's new?
 
 ##### 24 Jan 2016
-- Hard at work adding many new bugs.
-- Added a benchmark tool. Let's see if it helps.
+- Added a benchmark tool.
 
 ### What's available?
 * canvas rendering
@@ -46,9 +45,3 @@ Finally, if everything has worked according to plan, point your browser to the a
 ### What's missing?
 - upgrades
 - missions/story/gameplay
-
-### What's the point?
-It's done for fun.
-
-###### Player and Computer Generated Missions
-The current idea is to add player *"objectives"* or **"mission fragments"** which could then be **mixed and matched to create new player experiences**. With that, the hope is to make mixing and matching the fragments so straight-forward that it would **allow non-programmers to easily create objectives, missions and stories** on their own, or have the computer generate everything on its own. That way people will be able to get a fresh and unexpected experience every time they play.
