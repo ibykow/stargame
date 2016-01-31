@@ -172,6 +172,7 @@
     names ?= Benchmark.getNamedFunctionsOf target
     return unless names
     target._benchmarkFunctions ?= {}
+    _mark = @mark.bind @
     for name in names
       # Ignore non-existent functions
       unless typeof target[name] is 'function'
@@ -185,7 +186,9 @@
       # Store the original function and replace it in the target
       original = target[name]
       target._benchmarkFunctions[name] = original
-      target[name] = @mark.bind @, name, original.bind target
+      bound = (n, t, o, a...) -> @mark n, o.bind t, a...
+      bound = bound.bind @, name, target, original
+      target[name] = bound
 
   # Unwrap some or all of the target's functions
   unwrap: (target, methodNames = []) ->

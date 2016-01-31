@@ -9,6 +9,7 @@ if require?
     @setState @params
     super @game, @params
 
+  initHandlers: -> # Don't interract with collisions on client-side
   updateVelocity: -> # InterpolatedShip positions don't count on velocity
 
   updatePosition: ->

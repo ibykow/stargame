@@ -137,8 +137,8 @@ describe 'Benchmark', ->
       testWrapper()
 
     it 'should benchmark a benchmark', ->
-      testBench = new Benchmark bench
       bench.wrap target
+      testBench = new Benchmark bench
       target.callme() for [1..1000]
       console.log 'testBench:', testBench, target
 

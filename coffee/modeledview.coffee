@@ -16,7 +16,7 @@ if require?
 
   initHandlers: ->
     super()
-    # Pass mouse events onto the model
+    # Pass mouse events on to the model
     for type in Config.client.mouse.event.types
       @now 'mouse-' + type, (data, handler) => @model.emit handler.name, data
 

@@ -7,12 +7,14 @@ isnum = Util.isNumeric
 
 (module ? {}).exports = class Timer
   @nextID: 1
+  @now: 0
   @pool: {}
   @flush: ->
     @nextID = 1
     @pool = {}
 
   @run: (step) ->
+    @now = step
     # create a place to store ids whose timers don't repeat
     deleted = []
     for id, timer of Timer.pool when timer.isActive
@@ -30,16 +32,14 @@ isnum = Util.isNumeric
       Timer.pool[id].deleted = true
       delete Timer.pool[id]
 
-  constructor: (@start, @period, @callback, @repeats = false) ->
-    return unless (typeof @callback is 'function') and
-      isnum(@start) and (@start >= 0) and
-      isnum(@period) and (@period > 0)
+  constructor: (@period, @callback, @repeats = false) ->
+    return unless typeof @callback is 'function'
 
     @deleted = false
-    @isActive = true
-    @remaining = @period
-    @nextStep = @start + @period
     @id = Timer.nextID
+    @isActive = true
+    @nextStep = Timer.now + @period
+    @remaining = @period
     Timer.nextID++
     Timer.pool[@id] = @
 
@@ -47,6 +47,7 @@ isnum = Util.isNumeric
 
   delete: ->
     return unless Timer.pool[@id]
+    console.log 'Deleting timer ' + @id
     @callback = ->
-    @isActive = true
+    @deleted = true
     @nextStep = 0

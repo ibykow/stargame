@@ -55,7 +55,6 @@ Emitter::arrowTo = (view, color, alpha = 1, lineWidth = 1) ->
     @params.player.socket = @params.socket
     @player = Player.fromState @, @params.player
     @player.state = @params.player
-    @player.ship.insertView()
 
     @player.on 'refuel-error', (data) ->
       switch data.type
@@ -69,7 +68,7 @@ Emitter::arrowTo = (view, color, alpha = 1, lineWidth = 1) ->
     @player.name = 'Guest'
     @lastVerifiedInputSequence = 0
 
-    @generateStars()
+    @generateStars @starStates
     @initContextMenu()
     @minimap = new Minimap @
     @contextMenu.on 'open', => @minimap.resize()
@@ -82,15 +81,17 @@ Emitter::arrowTo = (view, color, alpha = 1, lineWidth = 1) ->
       @rate = 1 / Config.server.updatesPerStep
 
   initHandlers: ->
+    @now 'new', (emitter) -> emitter.insertView?()
+
     @on 'new', (model) =>
       return unless (type = model.type) and (myship = @player.ship)
+
       switch type
         # Add an arrow to a new player's ship
         when 'InterpolatedShip' then myship.view.arrowTo model.view
-        when 'Explosion' then model.insertView()
-        # Add arrows to other play's ships when our ship (re)generates
         when 'Ship'
           (myship.on 'move', @updateScreenOffset.bind @).callback()
+          # Add arrows to other play's ships when our ship (re)generates
           @each 'InterpolatedShip', (ship) -> myship.view.arrowTo ship.view
         when 'Star' then model.now 'mouse-click', model.explode.bind model
 
@@ -106,15 +107,10 @@ Emitter::arrowTo = (view, color, alpha = 1, lineWidth = 1) ->
     @c.fillStyle = Config.client.colors.background.default
     @c.fillRect 0, 0, @canvas.width, @canvas.height
 
-  correctPrediction: ->
-    # Make sure we have a state to work with
-    return unless state = @player.state.ship
-
-    # If there's a ship ID mismatch, regenerate from the server's state
-    return @player.generateShip state, true unless @player.ship?.id is state.id
-
+  # Correct the player's ship state
+  correctPrediction: (state) ->
     inputLog = @player.logs['input']
-    serverInputSequence = @player.state?.inputSequence
+    serverInputSequence = state.inputSequence
 
     return unless serverInputSequence > @lastVerifiedInputSequence
 
@@ -187,7 +183,8 @@ Emitter::arrowTo = (view, color, alpha = 1, lineWidth = 1) ->
     @c.fillText "Shut the fuck up, I've got a gun!",
       @canvas.halfWidth - 130, @canvas.halfHeight - 42
 
-  generateStars: -> Star.fromState @, state, true for state in @starStates
+  generateStars: (states) ->
+    Star.fromState(@, state)?.insertView() for state in states
 
   initContextMenu: ->
     @contextMenu = new Pane @,
@@ -201,7 +198,7 @@ Emitter::arrowTo = (view, color, alpha = 1, lineWidth = 1) ->
 
     @contextMenu.resize()
 
-    timer = new Timer @tick.count, 60 * 30, =>
+    timer = new Timer 60 * 30, =>
       @page 'Move your mouse to the far right to open the menu ->'
 
     timer.repeats = true
@@ -246,7 +243,7 @@ Emitter::arrowTo = (view, color, alpha = 1, lineWidth = 1) ->
 
   processProjectileData: (data) ->
     # Add new projectiles
-    Projectile.fromState @, state, true for state in data.new
+    Projectile.fromState @, state for state in data.new
 
     # Remove dead projectiles
     reason = 'because it died'
@@ -259,18 +256,23 @@ Emitter::arrowTo = (view, color, alpha = 1, lineWidth = 1) ->
     # Make it so we don't fall behind the server game tick
     @tick.count = @serverTick.count + 1 if @serverTick.count > @tick.count
 
-    # Remove our ship from the pile
-    index = data.players.findIndex (s) => s.id is @player.id
-    @player.state = data.players.splice(index, 1)[0]
-
-    # Process ships, projectiles
-    InterpolatedShip.fromState @, state.ship, true for state in data.players
     @processProjectileData data.projectiles
-    @removeShip id for id in data.game.deadShipIDs
-    @interpolation.reset()
 
-    # Corrections
-    @correctPrediction()
+    ships = data.game.ships
+    return unless ships.length
+
+    # Remove our ship from the pile
+    if @player.ship?
+      index = ships.findIndex (s) => s.id is @player.ship.id
+      @correctPrediction ships.splice(index, 1)[0]
+
+    for state in ships
+      state.type = 'InterpolatedShip'
+      InterpolatedShip.fromState @, state
+
+    @removeShip id for id in data.game.deadShipIDs
+
+    @interpolation.reset()
 
   removeShip: (id) -> @lib['InterpolatedShip']?[id]?.explode()
 
@@ -280,7 +282,7 @@ Emitter::arrowTo = (view, color, alpha = 1, lineWidth = 1) ->
     @emit 'resize'
 
   testExplosion: -> Explosion.fromState @,
-    position: @player.ship.position.slice(), true
+    position: @player.ship.position.slice()
 
   testPager: -> @pager.page('Hello, World Number ' + i) for i in [1..20]
 

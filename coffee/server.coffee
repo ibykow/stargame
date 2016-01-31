@@ -48,7 +48,7 @@ module.exports = class Server
         # associate event handlers
         socket.on(event, cb.bind player) for event, cb of @events.socket
 
-        @game.sendInitialState player
+        player.sendInitialState()
         @game.emit 'join', player.id
 
     # @ is the player instance
@@ -58,7 +58,9 @@ module.exports = class Server
         console.log 'Player', @id, 'joined'
 
         @name = name
-        @now 'die', => @generateShip Config.common.ship
+        @on 'lost ship', =>
+          @generateShip Config.common.ship
+          @socket.emit 'ship', @ship.getState()
 
         # Introduce ourselves to the other players
         @socket.broadcast.emit 'join', { name: name, id: @id }
@@ -70,12 +72,14 @@ module.exports = class Server
       disconnect: (reason) ->
         return unless @?
 
-        # Tell the others that this player has left
-        @game.server.io.emit 'leave', @ship.id
+        lg '' + @ + ' disconnected'
+        if @ship?.explode
+          # Tell the others that this player has left
+          @game.server.io.emit 'leave', @ship.id
+          @ship.explode()
 
         # Destroy the player object associated with this socket
         @delete 'due to socket ' + reason
-
         @game.server.numPlayers--
 
         # Pause the game if it's empty

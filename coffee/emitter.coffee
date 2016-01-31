@@ -18,29 +18,27 @@ isarr = Array.isArray
         info.target.processHandlers 'listeners', name, info.data
       delete @events[name]
 
-  @fromState: (game, state = {}, view) ->
+  @fromState: (game, state = {}) ->
     return unless game
 
-    console.log 'WARNING! Deleted state:', @name, state.id if state.deleted
+    # Overwrite the type to match the current/real constructor
+    type = @name
 
-    emitter = game.lib[@name]?[state.id]
+    console.log 'WARNING! Deleted state:', type, state.id if state.deleted
 
-    if emitter
-      # Overwrite the type to match the current/real constructor
-      state.type = @name
-      emitter.setState state
-    else
-      emitter = new @ game, state
-      emitter.insertView?() if view
+    if emitter = game.lib[type]?[state.id] then emitter.setState state
+    else emitter = new @ game, state
 
     for name, child of state.children
       child.parent = emitter
-      emitter.children[name] = global[child.type].fromState game, child, view
+      emitter.children[name] = global[child.type].fromState game, child
 
-    emitter
+    return emitter
 
   constructor: (@game, @params = {}) ->
     return unless @game?
+    {@parent, @type} = @params
+
     @born = @game.tick.count
     @children = {}
     @deleted = @params.deleted or false
@@ -48,7 +46,7 @@ isarr = Array.isArray
     @isEmitter = true
     @listeners = {}
     @page = @game.page
-    @type = @constructor.name
+    @type ?= @constructor.name
 
     @game.lib[@type] = {} unless @game.lib[@type]
 
@@ -61,8 +59,6 @@ isarr = Array.isArray
       @id = Emitter.ids[@type]
 
     @game.lib[@type][@id] = @
-
-    {@parent} = @params
     @parent.adopt @ if @parent?.id
 
     @initHandlers()
@@ -80,25 +76,20 @@ isarr = Array.isArray
 
   delete: (reason = 'for no particular reason') ->
     @deleted = true
-    # @page 'Deleting ' + @ + ' ' + reason
+    # console.log 'Deleting ' + @ + ' ' + reason
 
     @emit 'delete', parseInt @id
-    if @view?.delete?
-      @view.delete 'because its model is ' + @.toString()
-      @view = null
 
     @parent = null
-    for name, child of @children
-      child.delete 'because its parent is ' + @.toString()
+    child.delete 'because its parent is ' + @ for name, child of @children
+
     @children = {}
     @listeners = {}
     @immediates = {}
 
     @getState = null
 
-    if o = @game.lib[@type]?[@id]
-      console.log 'WARNING: ' + @ + 'should have id ' + o.id unless o is @
-      delete @game.lib[@type][@id]
+    delete @game.lib[@type]?[@id]
 
   emit: (name, data = {}) -> # Emits an event. TODO: Prevent infinite loops.
     info =
@@ -136,7 +127,6 @@ isarr = Array.isArray
 
   initHandlers: ->
 
-  insertView: -> # do nothing
   isDeleted: -> @deleted or (@getState is null)
 
   # Returns whether there's a match between ourselves and the state provided
@@ -195,7 +185,7 @@ isarr = Array.isArray
         handler.timedOut = true
         handler.callback handler
 
-      handler.timer = new Timer step, timeout, timercb.bind @, handler
+      handler.timer = new Timer timeout, timercb.bind @, handler
 
     if now then type = 'immediates' else type = 'listeners'
     if isarr @[type][name] then @[type][name].push handler
@@ -221,6 +211,7 @@ isarr = Array.isArray
 
   setState: (state, setChildStates = false) ->
     {@id, @type} = state
+
     if setChildStates and state.children
       for name, child of @children when state.children[name]?
         child.setState state.children[name], true

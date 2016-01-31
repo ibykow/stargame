@@ -130,8 +130,6 @@ describe 'Emitter', ->
         expect(em.isDeleted()).toBe true
         expect(em.getState).toBe null
 
-    describe '.insertView', -> expectBlankFunc 'insertView'
-
     describe '.initHandlers', -> expectBlankFunc 'initHandlers'
 
     describe '.isDeleted', ->

@@ -46,8 +46,20 @@ client = null
 
   events:
     socket:
+      disconnect: ->
+        @frame.stop.bind(@)()
+        @socket.close()
+
       error: (err) ->
         console.log "Error:", err
+
+      join: (data) -> console.log 'Player ' + data.id + ' joined the game'
+
+      leave: (id) ->
+        @game.removeShip id
+        console.log 'Player ' + id + ' has left the game'
+
+      ship: (state) -> @game.player.generateShip state, true
 
       welcome: (data) ->
         return console.log 'Error (Welcome):', data unless data?.game?
@@ -68,36 +80,25 @@ client = null
         # process the new state
         callback data
 
-        # Update here for the first time so that stats stay 'clean'
-        @game.update()
-
         # start the game
         @frame.run.bind(@) Date.now()
 
-      join: (data) -> console.log 'Player ' + data.id + ' joined the game'
-
-      leave: (id) ->
-        @game.removeShip id
-        console.log 'Player ' + id + ' has left the game'
-
-      disconnect: ->
-        @frame.stop.bind(@)()
-        @socket.close()
-
     window:
       keydown: (e) ->
+        bits = Config.common.modifiers.bits
         @keys[e.keyCode] = true
-        @modifiers |= 1 if e.altKey
-        @modifiers |= 2 if e.ctrlKey
-        @modifiers |= 4 if e.metaKey
-        @modifiers |= 8 if e.shiftKey
+        @modifiers |= bits.alt if e.altKey
+        @modifiers |= bits.ctrl if e.ctrlKey
+        @modifiers |= bits.meta if e.metaKey
+        @modifiers |= bits.shift if e.shiftKey
 
       keyup: (e) ->
+        bits = Config.common.modifiers.bits
         @keys[e.keyCode] = false
-        @modifiers ^= @modifiers & 1 if e.altKey
-        @modifiers ^= @modifiers & 2 if e.ctrlKey
-        @modifiers ^= @modifiers & 4 if e.metaKey
-        @modifiers ^= @modifiers & 8 if e.shiftKey
+        @modifiers ^= @modifiers & bits.alt if e.altKey
+        @modifiers ^= @modifiers & bits.ctrl if e.ctrlKey
+        @modifiers ^= @modifiers & bits.meta if e.metaKey
+        @modifiers ^= @modifiers & bits.shift if e.shiftKey
 
       click: (e) -> @mouse.clicked = true
 

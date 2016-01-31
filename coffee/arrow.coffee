@@ -15,9 +15,10 @@ isarr = Array.isArray
     @color ?= @b.color or conf.color
     @lineWidth ?= conf.lineWidth
     super @game, @params
-    console.log '' + @ + ' points from ' + @a + ' to ' + @b
+    console.log 'Pointing ' + @ + ' from ' + @a + ' to ' + @b
 
   delete: ->
+    console.log 'Deleting ' + @ + ' from ' + @a + ' to ' + @b
     @deleted = true
     super arguments[0]
 

@@ -9,9 +9,10 @@ isarr = Array.isArray
 (module ? {}).exports = class Physical extends Model
   constructor: (@game, @params = {}) ->
     return unless @game?
-    {@mass, @velocity} = @params
+    {@holographic, @mass, @velocity} = @params
     @collisions = {} # current collisions stored by type
     @damaged = 0
+    @holographic ?= false
     @magnitude = 0
     @physical = true
     @velocity ?= [0, 0]
@@ -20,8 +21,7 @@ isarr = Array.isArray
 
   initHandlers: ->
     super()
-    @now 'hit', (model) => @damaged += model.damage
-      # console.log '' + @ + ' took ' + model.damage + ' damage from ' + model
+    @now 'hit', (model) => @damaged += model.damage unless @holographic
 
   getState: ->
     Object.assign super(),

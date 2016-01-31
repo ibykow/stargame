@@ -27,7 +27,9 @@ lg = console.log.bind console
 
   constructor: (@game, @params) ->
     return unless @game?
+
     @braking = false
+    @decoys = []
     @fireRate = rates.fire
     @firing = false
     @gear = 0
@@ -46,10 +48,14 @@ lg = console.log.bind console
     @fuel = parseInt @fuelCapacity
     super @game, @params
 
+  createDecoy: -> @page 'Creating decoy'
+
   initHandlers: ->
     super()
     @on 'nofuel', (data) => console.log 'Player', @id, 'ran out of fuel'
-    @now 'hit', (model) => @health -= model.damage or 0
+
+    # Holographs don't do collision detection
+    @now 'hit', (model) => @health -= model.damage or 0 unless @holographic
 
   accelerate: (direction, vector) ->
     return unless isarr vector
@@ -62,6 +68,16 @@ lg = console.log.bind console
   delete: ->
     @player?.ship = null
     super arguments[0]
+
+  die: ->
+    return if @dead
+    console.log 'deleting ship ' + @id
+    @dead = true
+    @game.deadShipIDs.push @id
+    player = @player
+    @explode()
+    @emit 'death'
+    player?.emit 'lost ship'
 
   fire: -> @emit 'fire'
 
@@ -85,6 +101,10 @@ lg = console.log.bind console
     @emit 'turn',
       direction: direction
       amount: amount
+
+  update: ->
+    super()
+    @die() unless @health > 0
 
   insertView: ->
     @view = new ShipView @game, model: @

@@ -35,6 +35,11 @@ isarr = Array.isArray
 
   delete: ->
     @leavePartition()
+
+    if @view?.delete?
+      @view.delete 'because its model is ' + @
+      @view = null
+
     super arguments[0]
 
   positionDelta: (model) ->

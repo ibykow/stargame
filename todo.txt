@@ -91,9 +91,9 @@ Events
       death
 
 Player Events
-  - join
-  - leave
-  - die
+  √ join
+  √ leave
+  √ die
   √ move
   √ no fuel
   √ re-fuel

@@ -7,7 +7,7 @@ describe 'Timer', ->
   callback = -> counter++
 
   beforeEach ->
-    timer = new Timer start, period, callback, repeats
+    timer = new Timer period, callback, repeats
     counter = 1
 
   afterEach ->
@@ -17,13 +17,12 @@ describe 'Timer', ->
   describe '.new', ->
     it 'creates a new timer', ->
       expect((Object.keys Timer.pool).length).toBe 1
-      expect(timer.start).toBe start
       expect(timer.period).toBe period
       expect(timer.callback).toBe callback
       expect(timer.repeats).toBe repeats
       expect(timer.id).toBe 1
       expect(timer.isActive).toBe true
-      expect(timer.nextStep).toBe start + period
+      expect(timer.nextStep).toBe period
       expect(counter).toBe 1
       expect(Timer.pool[timer.id]).toBe timer
       expect(Timer.nextID).toBe 2
@@ -31,7 +30,7 @@ describe 'Timer', ->
     it 'should increment Timer.nextID', ->
       for i in [2..10]
         expect(Timer.nextID).toBe i
-        t = new Timer start, period, callback, repeats
+        t = new Timer period, callback, repeats
         expect(t.id).toBe i
 
   describe '.delete', ->
@@ -39,7 +38,7 @@ describe 'Timer', ->
       expect(timer).toBeDefined()
       expect(counter).toBe 1
       timer.delete()
-      Timer.run start + period
+      Timer.run period
       expect(Timer.pool[timer.id]).not.toBeDefined()
       expect(counter).toBe 1
 

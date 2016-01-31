@@ -27,9 +27,11 @@
         right: 'right'
         up: 'forward'
         down: 'reverse'
+        d: 'decoy'
         f: 'fire'
-        s: 'suicide'
+        i: 'info'
         o: 'stats'
+        s: 'suicide'
     mouse:
       event:
         types: ['click', 'enter', 'leave', 'press', 'release']
@@ -88,10 +90,6 @@
     url:
       address: 'localhost' #'192.168.0.100'
       port: 3000
-    projectile:
-      damage: 2
-      life: 60 * 3
-      speed: 10
     button:
       width: 50
       height: 50
@@ -122,7 +120,17 @@
       width: 10
       height: 10
       veloctiy: [0,0]
+    modifiers:
+      bits:
+        alt: 1
+        ctrl: 2
+        meta: 4
+        shift: 8
     msPerFrame: 16
+    projectile:
+      damage: 2
+      life: 60 * 3
+      speed: 10
     ringbuffer:
       max: 50
     ship:

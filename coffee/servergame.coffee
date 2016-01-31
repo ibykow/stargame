@@ -5,6 +5,8 @@ if require?
   Server = require './server'
   Game = require './game'
   Player = require './player'
+  Ship = require './ship'
+  DecoyShip = require './decoyship'
   Star = require './star'
   Projectile = require './projectile'
   Market = require './market'
@@ -17,6 +19,9 @@ starKidClasses =
 conf = Config.server
 # On the server-side, players keep only the inputs necessary to do updates.
 Player.LOGLEN = conf.updatesPerStep + 1
+
+Ship::createDecoy = ->
+  @decoys.push new DecoyShip @game, Object.assign @getState(), source: @
 
 {abs, floor, sqrt, round, trunc} = Math
 isarr = Array.isArray
@@ -58,41 +63,23 @@ rnd = Math.random
         continue unless kidClass = starKidClasses[name]
         new kidClass @, parent: star
 
-  getPlayerStates: ->
-    for id, player of @lib['Player']
-      player.dead = false
-      state = player.getState()
-      # Reset ship
-      player.ship.damaged = 0
-      player.ship.firing = false
+  getShipStates: ->
+    for id, ship of @lib['Ship'] when not ship.deleted
+      state = Object.assign ship.getState(),
+        inputSequence: ship.player?.inputSequence
+      ship.damaged = 0
+      ship.firing = false
       state
-
-  sendInitialState: (player) ->
-    return unless player
-    # send the id and game information back to the client
-    player.socket.emit 'welcome',
-      projectiles:
-        dead: []
-        new: (p.getState() for id, p of @lib['Projectile'] when not p.deleted)
-      game:
-        deadShipIDs: []
-        height: @height
-        width: @width
-        player: player.getState()
-        rates: @rates
-        starStates: @starStates
-        tick: @tick
-      players: @getPlayerStates()
 
   sendState: ->
     @server.io.emit 'state',
+      game:
+        deadShipIDs: @deadShipIDs
+        ships: @getShipStates()
+        tick: @tick
       projectiles:
         dead: @deadProjectileIDs
         new: (p.getState() for id, p of @newProjectiles when not p.deleted)
-      game:
-        deadShipIDs: @deadShipIDs
-        tick: @tick
-      players: @getPlayerStates()
 
   update: -> super() for [1..conf.updatesPerStep]
 

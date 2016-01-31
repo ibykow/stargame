@@ -23,8 +23,8 @@ pesoChar = Config.common.chars.peso
       input: new RingBuffer Player.LOGLEN
     @statsPrintTick = 0
 
-    @generateShip ship
     super @game, @params
+    @generateShip ship
     @ship.playerID = @id
     @bench = new Benchmark @
 
@@ -57,11 +57,16 @@ pesoChar = Config.common.chars.peso
         [ @ship.velocity[0] * rate,
           @ship.velocity[1] * rate, 0]
 
+    decoy: -> @ship.createDecoy()
+
     left: -> @ship.turn 'left', -Config.common.ship.rates.turn
 
     right: -> @ship.turn 'right', Config.common.ship.rates.turn
 
     fire: -> @ship?.fire()
+
+    # Use for general info
+    info: -> console.log Object.keys @game.lib['Ship']
 
     stats: ->
       return if @game.tick.count - @statsPrintTick < 60
@@ -71,8 +76,10 @@ pesoChar = Config.common.chars.peso
       (@page 'Player ' + s) for s in @bench.getStatStrings 'update'
 
     suicide: (mods) ->
+      bits = Config.common.modifiers.bits
+      mask = bits.alt | bits.ctrl
       birthDelta = @game.tick.count - @ship.born
-      return if @dead or (birthDelta < 50) or ((mods & 3) - 3 < 0)
+      return unless ((mods & mask) is mask) and (birthDelta > 50)
       console.log '' + @ + ' self destructed ' + @ship
       @ship.health = 0
 
@@ -123,16 +130,9 @@ pesoChar = Config.common.chars.peso
         delta: fuelDelta
         price: price
 
-  die: ->
-    return if @dead
-    @dead = true
-    @game.deadShipIDs.push @ship.id
-    @ship.explode()
-    @emit 'die'
-
   initEventHandler: ->
     super()
-    @on 'refuel',(data) =>
+    @on 'refuel', (data) =>
       {index, delta, price} = data
       console.log 'Gas station', index, 'sold', delta.toFixed(2) +
         'L of fuel to player', @id
@@ -147,16 +147,34 @@ pesoChar = Config.common.chars.peso
     @inputSequence = state.inputSequence
     @ship.setState state.ship
 
-  generateShip: (state, view) ->
+  generateShip: (state) ->
     @logs['input'].reset()
     @ship?.delete? 'to replace it with a shinier one: ' + state.id
-    @ship = Ship.fromState @game, state, view
+    @ship = Ship.fromState @game, state
     @ship.playerID = @id
     @ship.player = @
+    console.log 'Generated ' + @ship + ' for ' + @
 
-  processInputs: ->
-    {map, modifiers} = @inputs
+  processInputs: (inputs) ->
+    {map, modifiers} = inputs
     @actions[action].call @, modifiers for action in map when action?.length
+
+  sendInitialState: ->
+    # send the id and game information back to the client
+    projectiles = @game.lib['Projectile']
+    @socket.emit 'welcome',
+      game:
+        deadShipIDs: @game.deadShipIDs
+        height: @game.height
+        width: @game.width
+        player: @getState()
+        rates: @game.rates
+        ships: @game.getShipStates()
+        starStates: @game.starStates
+        tick: @game.tick
+      projectiles:
+        dead: []
+        new: (p.getState() for id, p of projectiles when not p.deleted)
 
   updateInputLog: ->
     entry =
@@ -174,6 +192,5 @@ pesoChar = Config.common.chars.peso
     @inputSequence++
 
   update: ->
-    @processInputs()
+    @processInputs @inputs
     @ship.update()
-    @die() unless @ship.health > 0
