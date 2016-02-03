@@ -74,4 +74,6 @@ if require?
     {@alpha, @offset, @rotation, @visible} = state
 
   resize: -> # called when the window is resized
-  update: -> @game.visibleViews.push @ if @visible
+  update: ->
+    super()
+    @game.visibleViews.push @ if @visible

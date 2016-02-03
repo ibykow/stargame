@@ -8,6 +8,8 @@ isarr = Array.isArray
   PI: pi
   TWO_PI: pi * 2
 
+  bitsEqual: (a, b) -> (a & b) is b
+
   # Returns a list of keys which differ between objects
   diff: (a, b) ->
     results = []

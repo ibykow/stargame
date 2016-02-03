@@ -44,13 +44,13 @@ Emitter::arrowTo = (view, color, alpha = 1, lineWidth = 1) ->
 
     @visibleViews = []
     @mouseViews = [] # views under the mouse
-    @proximals = [] # All emitters around the player's ship
 
     @pager = new Pager @
     @page = @pager.page.bind @pager
-
     super @params
     @types = Config.client.types
+
+    @minimap = new Minimap @
 
     @params.player.socket = @params.socket
     @player = Player.fromState @, @params.player
@@ -70,10 +70,9 @@ Emitter::arrowTo = (view, color, alpha = 1, lineWidth = 1) ->
 
     @generateStars @starStates
     @initContextMenu()
-    @minimap = new Minimap @
-    @contextMenu.on 'open', => @minimap.resize()
-    @contextMenu.on 'close', => @minimap.resize()
-    @contextMenu.close()
+
+    @player.actions['zoomIn'] = @minimap.zoomIn.bind @minimap
+    @player.actions['zoomOut'] = @minimap.zoomOut.bind @minimap
 
   interpolation:
     reset: ->
@@ -84,15 +83,16 @@ Emitter::arrowTo = (view, color, alpha = 1, lineWidth = 1) ->
     @now 'new', (emitter) -> emitter.insertView?()
 
     @on 'new', (model) =>
-      return unless (type = model.type) and (myship = @player.ship)
+      return unless @player.ship and type = model?.type
 
       switch type
-        # Add an arrow to a new player's ship
-        when 'InterpolatedShip' then myship.view.arrowTo model.view
+        when 'InterpolatedShip' then @minimap.track model
         when 'Ship'
-          (myship.on 'move', @updateScreenOffset.bind @).callback()
-          # Add arrows to other play's ships when our ship (re)generates
-          @each 'InterpolatedShip', (ship) -> myship.view.arrowTo ship.view
+          @updateScreenOffset()
+          model.on 'move', (@updateScreenOffset.bind @)
+          model.now 'delete', => @minimap.visible = false
+          @minimap.visible = true if @minimap.count
+
         when 'Star' then model.now 'mouse-click', model.explode.bind model
 
   resetDeltas: ->
@@ -138,8 +138,12 @@ Emitter::arrowTo = (view, color, alpha = 1, lineWidth = 1) ->
     clientPosition = logEntry.ship.position
 
     return unless Util.vectorDeltaExists clientPosition, position
+    delta = Util.toroidalDelta clientPosition, position, @toroidalLimit
 
-    console.log 'correcting ship position'
+    console.log 'Correcting ship position by ' + delta
+
+    # Just jump to the correct position if the error is small
+    return @player.position = position if (delta[0] < 5) and (delta[1] < 5)
 
     # set the current ship state to the last known (good) server state
     @player.ship.setState state
@@ -167,7 +171,7 @@ Emitter::arrowTo = (view, color, alpha = 1, lineWidth = 1) ->
     @clearScreen()
 
     view.draw() for view in @visibleViews
-    @player.ship?.view.drawHUD 2, 2
+    @player.ship?.view.drawHUD @hudX, 2
     @pager.draw()
 
   gameOver: ->
@@ -177,14 +181,8 @@ Emitter::arrowTo = (view, color, alpha = 1, lineWidth = 1) ->
     @c.fillStyle = "#FFF"
     @c.font = '30px Helvetica'
     @c.fillText 'Game Over!', @canvas.halfWidth - 80, @canvas.halfHeight - 80
-    @c.font = '14px Courier New'
-    @c.fillText "Alright, that's it! I'm sick of it!",
-      @canvas.halfWidth - 135, @canvas.halfHeight - 60
-    @c.fillText "Shut the fuck up, I've got a gun!",
-      @canvas.halfWidth - 130, @canvas.halfHeight - 42
 
-  generateStars: (states) ->
-    Star.fromState(@, state)?.insertView() for state in states
+  generateStars: (states) -> Star.fromState @, state for state in states
 
   initContextMenu: ->
     @contextMenu = new Pane @,
@@ -214,6 +212,7 @@ Emitter::arrowTo = (view, color, alpha = 1, lineWidth = 1) ->
     @contextMenu.sensor.resize()
     @contextMenu.sensor.now 'mouse-enter', => @contextMenu.toggle()
     @contextMenu.sensor.open()
+    @contextMenu.close()
 
   isMouseInBounds: (bounds) ->
     Util.isInSquareBounds [@client.mouse.x, @client.mouse.y], bounds
@@ -276,9 +275,10 @@ Emitter::arrowTo = (view, color, alpha = 1, lineWidth = 1) ->
 
   removeShip: (id) -> @lib['InterpolatedShip']?[id]?.explode()
 
-  resized: ->
-    screenSize = max @client.canvas.halfWidth, @client.canvas.halfHeight
-    @screenPartitionRadius = (floor screenSize / @partitionSize) + 2
+  resize: ->
+    @screenSize = max @client.canvas.width, @client.canvas.height
+    @screenPartitionRadius = 1 + ceil @screenSize / @partitionSize
+    @hudX = @client.canvas.width - 70
     @emit 'resize'
 
   testExplosion: -> Explosion.fromState @,
@@ -317,13 +317,14 @@ Emitter::arrowTo = (view, color, alpha = 1, lineWidth = 1) ->
     @player.inputs = @client.getKeyboardInputs()
     super()
 
-    # @proximals = @player.ship.around @screenPartitionRadius
-    # for model in @proximals
-    #   model.view.update() if ~@types.proximal.indexOf model.type
+    @stars = @player.ship.around @screenPartitionRadius, 'Star'
+    star.view.update() for star in @stars
+
     @player.update()
     @interpolation.step++
     @contextMenu.sensor.update()
     @contextMenu.update()
+    @minimap.update()
 
     # Call this last because mouseUpdate needs visibleViews to be populated
     @updateMouse()

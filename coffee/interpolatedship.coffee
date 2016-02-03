@@ -13,9 +13,13 @@ if require?
   updateVelocity: -> # InterpolatedShip positions don't count on velocity
 
   updatePosition: ->
+    [x, y] = @position
     rate = @game.interpolation.rate * @game.interpolation.step
     @position = Util.lerp @prev.position, @next.position, rate
     @rotation = Util.lerp([@prev.rotation], [@next.rotation], rate)[0]
+    unless (x is @position[0]) and (y is @position[1])
+      @updatePartition()
+      @emit 'move', [x, y]
 
   setState: (state) ->
     super state

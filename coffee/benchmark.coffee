@@ -40,6 +40,7 @@
 
   at: (key) ->
     @stats[key] ?=
+      count: 0
       history: []
       index: 0
       key: key
@@ -75,6 +76,7 @@
   mark: (key = 'master', callback, args...) ->
     return @_fail 'Function not provided' unless typeof callback is 'function'
     stat = @at key
+    stat.count++
     return callback args... if stat.running
 
     @start key

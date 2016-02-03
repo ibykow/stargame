@@ -21,10 +21,10 @@ rnd = Math.random
 
   initHandlers: ->
     # We move and die with the source
-    @source.now 'delete', (id) =>
+    @source.now 'delete', (info) =>
       new Timer floor(rnd() * 180), =>
         @game.deadShipIDs.push @id
-        @explode 'because it was a decoy of ship ' + id
+        @explode 'because it was a decoy of ship ' + info.id
 
     move = @move.bind @
     @source.now 'move', move

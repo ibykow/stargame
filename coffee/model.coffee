@@ -29,7 +29,7 @@ isarr = Array.isArray
     super @game, @params
     @updatePartition()
 
-  around: (radius) -> @game.around @partition, radius
+  around: (radius, type) -> @game.around @partition, radius, type
 
   distanceTo: (model) -> Util.magnitude @positionDelta model
 
@@ -88,23 +88,5 @@ isarr = Array.isArray
 
     @leavePartition()
     @enterPartition [x, y]
-
-  updatePosition: ->
-    [a, b] = @position
-    x = trunc((@position[0] + @velocity[0] + @game.width) * 100) / 100
-    y = trunc((@position[1] + @velocity[1] + @game.height) * 100) / 100
-    x %= @game.width
-    y %= @game.height
-
-    @position[0] = x
-    @position[1] = y
-
-    unless (a is @position[0]) and (b is @position[1])
-      @updatePartition()
-      @emit 'move', [a, b]
-
-  update: ->
-    super()
-    @updatePosition()
 
   insertView: -> @view = new ModeledView @game, model: @

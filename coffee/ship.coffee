@@ -11,6 +11,7 @@ rates = Config.common.ship.rates
 lg = console.log.bind console
 
 (module ? {}).exports = class Ship extends Physical
+  @conf: Config.common.ship
   @glideBrake: ->
     # glideBrake: A drop-in replacement for the 'brake' instance function.
     # A constant rate of friction means that holding the brake button
@@ -39,12 +40,12 @@ lg = console.log.bind console
 
     # how many input sequences to skip before next fire
 
-    # TODO create 'ship engine' class around brakePower and accFactor
+    # TODO create 'ship engine' class around brakePower and accelerationFactor
     # Would allow for engines as upgrades/purchases
     @brakePower = 550
-    @accFactor = rates.acceleration
+    @accelerationFactor = rates.acceleration
 
-    @fuelCapacity = 1000
+    @fuelCapacity = 10000
     @fuel = parseInt @fuelCapacity
     super @game, @params
 
@@ -57,13 +58,42 @@ lg = console.log.bind console
     # Holographs don't do collision detection
     @now 'hit', (model) => @health -= model.damage or 0 unless @holographic
 
-  accelerate: (direction, vector) ->
-    return unless isarr vector
-    @velocity[0] += vector[0]
-    @velocity[1] += vector[1]
-    @emit 'accelerate',
-      direction: direction
-      vector: vector
+  accelerate: (amount = 1) ->
+    return unless @fuel > 0
+    @accelerating = true
+    @gear = amount
+
+    rate = @accelerationFactor * amount
+
+    x = rate * cos @rotation
+    y = rate * sin @rotation
+
+    @velocity[0] += x
+    @velocity[1] += y
+
+    @emit 'acceleration',
+      amount: amount
+      rate: rate
+      vector: [x, y]
+
+    @fuel -= abs rate
+    @emit 'nofuel' unless @fuel > 0
+
+  brake: ->
+    return unless @magnitude
+    @accelerating = true
+    @gear = 0
+    rate = Ship.conf.rates.brake
+    rate = min(@magnitude * @magnitude / @brakePower, rate) - 1
+
+    x = @velocity[0] * rate
+    y = @velocity[1] * rate
+    @velocity[0] += x
+    @velocity[1] += y
+
+    @emit 'brake',
+      rate: rate
+      vector: [x, y]
 
   delete: ->
     @player?.ship = null
@@ -99,8 +129,8 @@ lg = console.log.bind console
   turn: (direction, amount) ->
     @rotation += amount
     @emit 'turn',
-      direction: direction
       amount: amount
+      direction: direction
 
   update: ->
     super()

@@ -11,16 +11,14 @@ rnd = Math.random
     {@fuelPrice} = @params
     @fuelPrice ?= floor(Config.common.fuel.price.min + rnd() *
       (Config.common.fuel.price.max - Config.common.fuel.price.min) * 100) / 100
+
+    @params.color = '#0F0'
+    @params.emblemCharacter = 'G'
+
     super @game, @params
-    @color = "#0F0"
 
   getState: -> Object.assign super(), fuelPrice: @fuelPrice
 
   setState: (state) ->
     super state
     {@fuelPrice} = state
-
-  insertView: ->
-    @view = new FacilityView @game,
-      offset: [@parent.halfWidth - @width, -2 - @parent.halfHeight]
-      model: @

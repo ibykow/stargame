@@ -29,33 +29,10 @@ pesoChar = Config.common.chars.peso
     @bench = new Benchmark @
 
   actions:
-    forward: ->
-      return unless @ship.fuel > 0
-      @ship.fuel -= @ship.accFactor
-      @ship.accelerate 'forward',
-        [ cos(@ship.rotation) * @ship.accFactor,
-          sin(@ship.rotation) * @ship.accFactor, 0 ]
+    forward: -> @ship.accelerate 1
+    reverse: -> @ship.accelerate -0.5
 
-      @emit 'nofuel' if @ship.fuel < 1
-
-    reverse: ->
-      return unless @ship.fuel > 0
-      @ship.fuel--
-      @ship.accelerate 'reverse',
-        [ -(cos @ship.rotation),
-          -(sin @ship.rotation), 0 ]
-
-      @emit 'nofuel' if @ship.fuel < 1
-
-    brake: ->
-      magnitude = @ship.magnitude
-      return unless magnitude
-      @ship.braking = true
-      rate = Config.common.ship.rates.brake
-      rate = (min magnitude * magnitude / @ship.brakePower, rate) - 1
-      @ship.accelerate 'brake',
-        [ @ship.velocity[0] * rate,
-          @ship.velocity[1] * rate, 0]
+    brake: -> @ship.brake()
 
     decoy: -> @ship.createDecoy()
 
@@ -66,7 +43,7 @@ pesoChar = Config.common.chars.peso
     fire: -> @ship?.fire()
 
     # Use for general info
-    info: -> console.log Object.keys @game.lib['Ship']
+    info: -> console.log Object.keys @game.lib['Projectile']
 
     stats: ->
       return if @game.tick.count - @statsPrintTick < 60
@@ -157,7 +134,7 @@ pesoChar = Config.common.chars.peso
 
   processInputs: (inputs) ->
     {map, modifiers} = inputs
-    @actions[action].call @, modifiers for action in map when action?.length
+    @actions[action]?.call @, modifiers for action in map
 
   sendInitialState: ->
     # send the id and game information back to the client
@@ -192,5 +169,6 @@ pesoChar = Config.common.chars.peso
     @inputSequence++
 
   update: ->
+    @ship.accelerating = false
     @processInputs @inputs
     @ship.update()

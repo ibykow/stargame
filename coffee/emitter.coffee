@@ -78,7 +78,9 @@ isarr = Array.isArray
     @deleted = true
     # console.log 'Deleting ' + @ + ' ' + reason
 
-    @emit 'delete', parseInt @id
+    @emit 'delete',
+      id: parseInt @id
+      type: @type.slice()
 
     @parent = null
     child.delete 'because its parent is ' + @ for name, child of @children
@@ -179,6 +181,7 @@ isarr = Array.isArray
       else return
 
     handler.name = name
+    handler.target = @
 
     if timeout > 0
       timercb = (handler, timer) ->

@@ -51,6 +51,11 @@ if require?
         model.emit 'hit', @
         @life = 0
 
+  insertView: ->
+    @view = ModeledView.fromState @game,
+      type: 'ProjectileView'
+      model: @
+
   getState: ->
     Object.assign super(),
       damage: @damage

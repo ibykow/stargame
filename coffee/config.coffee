@@ -21,12 +21,16 @@
         right: 39
         up: 38
         down: 40
+        '=': 187
+        '-': 189
       map:
         space: 'brake'
         left: 'left'
         right: 'right'
         up: 'forward'
         down: 'reverse'
+        '=': 'zoomIn'
+        '-': 'zoomOut'
         d: 'decoy'
         f: 'fire'
         i: 'info'
@@ -56,7 +60,7 @@
         'Explosion',
         'ExplosionView',
         'Projectile',
-        'ModeledView',
+        'ProjectileView',
         'Arrow',
         'ShipView'
       ]
@@ -66,9 +70,9 @@
   server:
     projectileCollidableTypes: [ 'Ship', 'Star' ]
     game:
-      width: (1 << 17) + 1
-      height: (1 << 17) + 1
-      stars: 4000
+      width: (1 << 16) + 1
+      height: (1 << 16) + 1
+      stars: 10000
       rates:
         friction: 0.99
         partition: 100
@@ -77,18 +81,12 @@
       height: 20
     starKid:
       rates:
-        GasStation: 0.2 # probability of a star having a gas station
-        Market: 0.4
-        # Mine:
-        #   silver: 0.2
-        #   gold: 0.1
-        #   platinum: 0.05
-        #   ununpentium: 0.01
-
+        GasStation: 0.5 # probability of a star having a gas station
+        Market: 0.5
     updatesPerStep: 5
   common:
     url:
-      address: 'localhost' #'192.168.0.100'
+      address: '192.168.0.101' #'localhost'
       port: 3000
     button:
       width: 50
@@ -135,7 +133,7 @@
       max: 50
     ship:
       rates:
-        acceleration: 2
+        acceleration: 1
         brake: 0.96
         fire: 4
         turn: 0.06

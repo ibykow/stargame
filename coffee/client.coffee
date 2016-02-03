@@ -18,12 +18,8 @@ client = null
     uri = 'http://' + url.address + ':' + url.port
     @socket = io.connect uri
 
-    # initialize event listeners
+    # initialize socket event listeners
     @socket.on(event, cb.bind @) for event, cb of @events.socket
-    window.addEventListener(event, cb.bind @) for event, cb of @events.window
-
-    # resize the canvas for the first time
-    @events.window.resize.call @
 
     # intialize the keymap
     @keymap = new Array 0xFF
@@ -37,8 +33,6 @@ client = null
       buttons: 0
       x: 0
       y: 0
-
-  resizedCallback: -> # overwrite this when a new game is created
 
   getKeyboardInputs: ->
     map: (@keymap[i] for i in [0...@keymap.length] when @keys[i] and @keymap[i])
@@ -66,11 +60,16 @@ client = null
 
         console.log 'Welcome:', data
 
+        window.addEventListener(evt, cb.bind @) for evt, cb of @events.window
+
         data.game.socket = @socket
         @game = new ClientGame @canvas, data.game
         @game.client = @
+
+        # resize the canvas for the first time
+        @events.window.resize.call @
+
         @socket.emit 'join', @game.player.name
-        @resizedCallback = @game.resized.bind @game
         @events.window.resize.call @ # Resize one more time
 
         # update the state event handler
@@ -85,8 +84,9 @@ client = null
 
     window:
       keydown: (e) ->
-        bits = Config.common.modifiers.bits
         @keys[e.keyCode] = true
+        @lastKey = e.keyCode
+        bits = Config.common.modifiers.bits
         @modifiers |= bits.alt if e.altKey
         @modifiers |= bits.ctrl if e.ctrlKey
         @modifiers |= bits.meta if e.metaKey
@@ -121,7 +121,7 @@ client = null
         @canvas.halfWidth = @canvas.width >> 1
         @canvas.halfHeight = @canvas.height >> 1
         @canvas.boundingRect = @canvas.getBoundingClientRect()
-        @resizedCallback() # lets others get the message
+        @game.resize()
 
   frame:
     request: null

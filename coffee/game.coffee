@@ -10,9 +10,10 @@ if require?
   Explosion = require './explosion'
   Player = require './player'
 
-{min, max} = Math
+{min, max, sqrt} = Math
 isarr = Array.isArray
 isnum = Util.isNumeric
+lg = console.log.bind console
 
 Model::explode = (state = position: @position.slice()) ->
   new Explosion @game, state
@@ -26,6 +27,7 @@ Physical::explode = ->
 (module ? {}).exports = class Game extends Emitter
   constructor: (@params) ->
     {@width, @height, @rates} = @params
+    @size = sqrt @width**2 + @height**2
     Emitter.bench = new Benchmark Emitter
     @deadProjectileIDs = []
     @deadShipIDs = []
@@ -47,24 +49,37 @@ Physical::explode = ->
     @bench = new Benchmark @
     console.log 'Created game ' + @id
 
-  around: (partition = [0, 0], radius = 1) ->
-    return @at partition if radius < 1
+  around: (partition = [0, 0]) ->
+    if isnum arguments[1]
+      radius = arguments[1]
+      type = arguments[2]
+    else
+      radius = arguments[2]
+      type = arguments[1]
 
-    parts = @rates.partition
+    return @at partition, type unless radius > 1
+
     results = []
-
-    for x in [-radius...radius]
-      for y in [-radius...radius]
-        results = results.concat @at [(partition[0] - x + parts) % parts,
-          (partition[1] - y + parts) % parts]
+    parts = @rates.partition
+    for i in [-radius...radius]
+      for j in [-radius...radius]
+        x = (partition[0] + i + parts) % parts
+        y = (partition[1] + j + parts) % parts
+        results = results.concat @at [x, y], type
 
     results
 
-  at: (partition) ->
+  at: (partition, type) ->
     return [] unless partition?.length is 2
+
     results = []
-    for type, models of @partitions[partition[0]][partition[1]]
+    if type
+      models = @partitions[partition[0]][partition[1]][type] or {}
       results.push model for id, model of models
+
+    else
+      for type, models of @partitions[partition[0]][partition[1]]
+        results.push model for id, model of models
     return results
 
   each: (type, cb) -> cb value for name, value of @lib[type] or {}
@@ -102,4 +117,4 @@ Physical::explode = ->
     step = @tick.count++
     Timer.run step # Timer loop
     Emitter.run @ # Event loop
-    (@each type, (e) -> e.update()) for type in @types.update # Updates
+    (@each type, (e) -> e.update()) for type in @types.update
