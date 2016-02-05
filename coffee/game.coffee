@@ -2,6 +2,7 @@ if require?
   Config = require './config'
   Benchmark = require './benchmark'
   Util = require './util'
+  Olib = require './olib'
   Timer = require './timer'
   RingBuffer = require './ringbuffer'
   Emitter = require './emitter'
@@ -35,7 +36,7 @@ Physical::explode = ->
     @partitionSize = @width / @rates.partition
     @toroidalLimit = [@width, @height]
     @paused = true
-    @lib ||= {} # keep references of all emitters in existence
+    @lib = new Olib() # keep references of all emitters in existence
 
     @tick =
       count: @params.tick?.count or 0
@@ -82,7 +83,6 @@ Physical::explode = ->
         results.push model for id, model of models
     return results
 
-  each: (type, cb) -> cb value for name, value of @lib[type] or {}
   framesToMs: (frames) -> frames * Config.common.msPerFrame
   msToFrames: (ms) -> ms / Config.common.msPerFrame
   randomPosition: -> [Util.randomInt(0, @width), Util.randomInt(0, @height)]
@@ -93,7 +93,7 @@ Physical::explode = ->
 
     results = []
     lib = @lib[type] or {}
-    @each type, (emitter) -> results.push emitter if callback emitter
+    @lib.each type, (emitter) -> results.push emitter if callback emitter
     return results
 
   getAllMatching: (info) ->
@@ -117,4 +117,4 @@ Physical::explode = ->
     step = @tick.count++
     Timer.run step # Timer loop
     Emitter.run @ # Event loop
-    (@each type, (e) -> e.update()) for type in @types.update
+    (@lib.each type, (e) -> e.update()) for type in @types.update

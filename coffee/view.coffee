@@ -23,10 +23,10 @@ if require?
 
   delete: ->
     # Collect and remove any arrows pointing to the ship
-    if @game.lib['Arrow']?
-      for id, arrow of @game.lib['Arrow'] when not arrow.deleted
-        if (@equals arrow.a) or @equals arrow.b
-          arrow.delete 'because ' + @ + ' is being deleted'
+    @game.lib.each 'Arrow', (arrow) =>
+      return if arrow.deleted
+      if not arrow.deleted and (@equals(arrow.a) or @equals(arrow.b))
+        arrow.delete 'because ' + @ + ' is being deleted'
 
     super arguments[0]
 

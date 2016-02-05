@@ -1,6 +1,7 @@
 global = global or window
 
 if require?
+  Olib = require './olib'
   Emitter = require './emitter'
   Phyiscal = require './physical'
   View = require './view'
@@ -18,8 +19,6 @@ if require?
 {abs, floor, max, min} = Math
 rnd = Math.random
 isarr = Array.isArray
-
-pesoChar = Config.common.chars.peso
 
 Emitter::arrowTo = (view, color, alpha = 1, lineWidth = 1) ->
   new Arrow @game,
@@ -245,8 +244,7 @@ Emitter::arrowTo = (view, color, alpha = 1, lineWidth = 1) ->
     Projectile.fromState @, state for state in data.new
 
     # Remove dead projectiles
-    reason = 'because it died'
-    @lib['Projectile']?[id]?.delete reason for id in data.dead
+    @lib.get('Projectile', id)?.delete 'because it died' for id in data.dead
 
   processServerData: (data) ->
     # Store the most recent server tick data
@@ -273,7 +271,7 @@ Emitter::arrowTo = (view, color, alpha = 1, lineWidth = 1) ->
 
     @interpolation.reset()
 
-  removeShip: (id) -> @lib['InterpolatedShip']?[id]?.explode()
+  removeShip: (id) -> @lib.get('InterpolatedShip', id)?.explode()
 
   resize: ->
     @screenSize = max @client.canvas.width, @client.canvas.height

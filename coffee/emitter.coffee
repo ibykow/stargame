@@ -1,6 +1,7 @@
 if require?
   Config = require './config'
   Util = require './util'
+  Olib = require './olib'
   Timer = require './timer'
   RingBuffer = require './ringbuffer'
 
@@ -26,12 +27,13 @@ isarr = Array.isArray
 
     console.log 'WARNING! Deleted state:', type, state.id if state.deleted
 
-    if emitter = game.lib[type]?[state.id] then emitter.setState state
+    if emitter = game.lib.get type, state.id then emitter.setState state
     else emitter = new @ game, state
 
-    for name, child of state.children
-      child.parent = emitter
-      emitter.children[name] = global[child.type].fromState game, child
+    for type, data of state.children
+      for id, state of data
+        state.parent = emitter
+        global[state.type].fromState game, state
 
     return emitter
 
@@ -40,7 +42,7 @@ isarr = Array.isArray
     {@parent, @type} = @params
 
     @born = @game.tick.count
-    @children = {}
+    @children = new Olib()
     @deleted = @params.deleted or false
     @immediates = {} # immediate listeners
     @isEmitter = true
@@ -48,17 +50,9 @@ isarr = Array.isArray
     @page = @game.page
     @type ?= @constructor.name
 
-    @game.lib[@type] = {} unless @game.lib[@type]
+    @id = @params.id if @params.id
+    @game.lib.put @
 
-    if @params.id
-      @id = @params.id
-      Emitter.ids[@type] = @id if @id > Emitter.ids[@type]
-    else
-      Emitter.ids[@type] ?= 0
-      Emitter.ids[@type]++
-      @id = Emitter.ids[@type]
-
-    @game.lib[@type][@id] = @
     @parent.adopt @ if @parent?.id
 
     @initHandlers()
@@ -66,12 +60,9 @@ isarr = Array.isArray
 
   # (Re)places child and force updates child's parent
   adopt: (child) ->
-    return unless child?.id
-    @children[child.id] = child
-    return if child.parent is @
-
-    # Take the child away from its current parent if present
-    delete child.parent.children[child.id] if child.parent?
+    return unless child
+    child.parent?.remove? child
+    @children.put child
     child.parent = @
 
   delete: (reason = 'for no particular reason') ->
@@ -82,16 +73,16 @@ isarr = Array.isArray
       id: parseInt @id
       type: @type.slice()
 
+    @parent.children.remove @ if @parent and not @parent.deleted
     @parent = null
-    child.delete 'because its parent is ' + @ for name, child of @children
+
+    @children.each (child) => child.delete 'because its parent is ' + @
 
     @children = {}
     @listeners = {}
     @immediates = {}
-
     @getState = null
-
-    delete @game.lib[@type]?[@id]
+    @game.lib.remove @
 
   emit: (name, data = {}) -> # Emits an event. TODO: Prevent infinite loops.
     info =
@@ -109,22 +100,18 @@ isarr = Array.isArray
   equals: (emitter) -> @id is emitter.id and (@type is emitter.type)
 
   getChildrenMatching: (info) ->
-    results = []
-    (results.push child if child.matches info) for id, child of @children
-
-    return results
+    (@children.filter (child) -> child.matches info) if info
 
   getState: ->
-    states = {}
-    states[name] = child.getState() for name, child of @children
+    childStates = @children.map (child) -> child.getState()
 
-    if @parent? then parentState =
+    if @parent then parentState =
       id: @parent.id
       type: @parent.type
 
     id: @id
     type: @constructor.name
-    children: states
+    children: childStates
     parent: parentState or null
 
   initHandlers: ->
@@ -215,9 +202,10 @@ isarr = Array.isArray
   setState: (state, setChildStates = false) ->
     {@id, @type} = state
 
-    if setChildStates and state.children
-      for name, child of @children when state.children[name]?
-        child.setState state.children[name], true
+    return unless setChildStates and state.children
+    for type, dict of @children
+      for id, childState of dict
+        child.setState childState, true if child = @children.get state
 
   toString: -> '' + this.type + ' ' + this.id
-  update: -> child.update() for type, child of @children
+  update: -> @children.each (child) -> child.update()

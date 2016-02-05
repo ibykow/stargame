@@ -1,6 +1,7 @@
 if require?
   Config = require './config'
   Util = require './util'
+  Olib = require './olib'
   Pane = require './pane'
 
 {ceil, sqrt} = Math
@@ -12,7 +13,7 @@ if require?
     @size ?= 100
     @zoom = 100
     @params.visible = false
-    @lib = {}
+    @lib = new Olib()
     super @game, @params
 
   getState: -> Object.assign super(),
@@ -44,10 +45,9 @@ if require?
 
     c.globalAlpha = 1
 
-    for type, model of @lib
-      for id, info of model
-        c.fillStyle = info.color
-        c.fillRect info.offset[0], info.offset[1], info.size, info.size
+    @lib.each (info) ->
+      c.fillStyle = info.color
+      c.fillRect info.offset[0], info.offset[1], info.size, info.size
 
     ship = @game.player.ship
     c.fillStyle = ship.color
@@ -95,36 +95,34 @@ if require?
 
     model.now 'delete', (data, handler) => @untrack handler.target
 
-    @lib[model.type] ?= {}
-    @lib[model.type][model.id] =
+    @lib.put
       color: color or model.color or '#0F0'
       model: model
+      id: model.id
       size: 3
+      type: model.type
 
     @count++
     @visible = true
 
   untrack: (model) ->
-    return unless model and info = @lib[model.type]?[model.id]
-    delete @lib[model.type][model.id]
+    return unless model and info = @lib.get model.type, model.id
+    @lib.remove model.type, model.id
     @count--
     @visible = false unless @count
 
   update: ->
     return unless ship = @game.player.ship
     super()
-    for name, types of @lib
-      for id, info of types
-        info.delta = info.model.positionDelta ship
-        [x, y] = info.delta
-        m = sqrt x*x + y*y
-
-        if m > @range then ratio = @size / m else ratio = @ratio
-        x *= ratio
-        y *= ratio
-
-        info.position = [x, y]
-        info.offset = [x - 1,y - 1]
+    @lib.each (info) =>
+      info.delta = info.model.positionDelta ship
+      [x, y] = info.delta
+      m = sqrt x*x + y*y
+      if m > @range then ratio = @size / m else ratio = @ratio
+      x *= ratio
+      y *= ratio
+      info.position = [x, y]
+      info.offset = [x - 1,y - 1]
 
   updateRange: ->
     @range = @game.size * 10 / @zoom

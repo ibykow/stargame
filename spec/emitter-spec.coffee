@@ -1,5 +1,6 @@
 Config = require '../coffee/config'
 Util = require '../coffee/Util'
+Olib = require '../coffee/olib'
 Emitter = require '../coffee/emitter'
 
 isnum = Util.isNumeric
@@ -7,12 +8,12 @@ isnum = Util.isNumeric
 describe 'Emitter', ->
   [child, em, game] = []
 
-  afterEach -> Emitter.ids = {}
+  afterEach -> Olib.ids = {}
 
   beforeEach ->
     game =
       emit: ->
-      lib: {}
+      lib: new Olib()
       page: console.log.bind console
       tick:
         count: 0
@@ -22,7 +23,7 @@ describe 'Emitter', ->
   expectChild = ->
     expect(child).toBeDefined()
     expect(child.parent).toBe em
-    expect(em.children[child.id]).toBe child
+    expect(em.children.get child.type, child.id).toBe child
 
   # TODO: Check if body of function is empty
   expectBlankFunc = (n) -> it 'is a blank function', ->
@@ -54,15 +55,15 @@ describe 'Emitter', ->
     expect(em.id).toBeGreaterThan 0
     expect(em.game).toBe game
     expect(em.type).toBe 'Emitter'
-    expect(game.lib['Emitter'][em.id]).toBe em
+    expect(game.lib.get 'Emitter', em.id).toBe em
     expect(em.type).toBe 'Emitter'
 
-  expectRemoved = (em) ->
-    expect(game.lib[em.type][em.id]).not.toBeDefined()
-    expect(em.parent).toBe null
-    expect(em.children).toEqual {}
-    expect(em.listeners).toEqual {}
-    expect(em.immediates).toEqual {}
+  expectRemoved = (emitter) ->
+    expect(game.lib.get emitter.type, emitter.id).not.toBeDefined()
+    expect(emitter.parent).toBe null
+    expect(emitter.children).toEqual {}
+    expect(emitter.listeners).toEqual {}
+    expect(emitter.immediates).toEqual {}
 
   describe 'class side', ->
     it 'should have a dictionary of events', ->

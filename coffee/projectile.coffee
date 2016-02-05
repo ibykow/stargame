@@ -10,7 +10,7 @@ if require?
   constructor: (@game, @params) ->
     return unless @game?
     id = @params?.shipID
-    @ship = @game.lib['Ship']?[id] or @game.lib['InterpolatedShip']?[id]
+    @ship = @game.lib.get('Ship', id) or @game.lib.get('InterpolatedShip', id)
 
     return console.log "WARNING! No ship means no projectile." unless @ship?
 

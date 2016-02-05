@@ -43,7 +43,7 @@ pesoChar = Config.common.chars.peso
     fire: -> @ship?.fire()
 
     # Use for general info
-    info: -> console.log Object.keys @game.lib['Projectile']
+    info: -> console.log Object.keys @game.lib.at 'Star'
 
     stats: ->
       return if @game.tick.count - @statsPrintTick < 60
@@ -138,7 +138,7 @@ pesoChar = Config.common.chars.peso
 
   sendInitialState: ->
     # send the id and game information back to the client
-    projectiles = @game.lib['Projectile']
+    projectiles = @game.lib.at 'Projectile'
     @socket.emit 'welcome',
       game:
         deadShipIDs: @game.deadShipIDs

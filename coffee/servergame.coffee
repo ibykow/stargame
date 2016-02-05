@@ -38,7 +38,7 @@ rnd = Math.random
     {stars} = @params
     @generateStars stars
 
-    @starStates = (star.getState() for id, star of @lib['Star'])
+    @starStates = @lib.each 'Star', (star) -> star.getState()
     @newProjectiles = {}
 
   initHandlers: ->
@@ -64,12 +64,13 @@ rnd = Math.random
         new kidClass @, parent: star
 
   getShipStates: ->
-    for id, ship of @lib['Ship'] when not ship.deleted
+    @lib.each 'Ship', (ship) ->
+      return if ship.deleted
       state = Object.assign ship.getState(),
         inputSequence: ship.player?.inputSequence
       ship.damaged = 0
       ship.firing = false
-      state
+      return state
 
   sendState: ->
     @server.io.emit 'state',
